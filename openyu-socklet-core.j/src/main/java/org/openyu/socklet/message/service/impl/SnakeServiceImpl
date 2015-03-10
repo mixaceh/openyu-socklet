@@ -1,0 +1,203 @@
+// ------------------------------------------
+// 2014/12/12 SnakeServiceImpl
+// ------------------------------------------
+// public byte[] hs(CategoryType categoryType, String sender) {
+// byte[] result = new byte[0];
+// //
+// ByteArrayOutputStream out = null;
+// ByteArrayOutputStream checksumOut = null;
+// try {
+//
+// if (StringUtil.isBlank(sender)) {
+// LOGGER.warn("sender: is blank");
+// return result;
+// }
+// //
+// out = new ByteArrayOutputStream();
+// checksumOut = new ByteArrayOutputStream();
+// {
+//
+// byte[] categoryTypeBytes = ByteUtil.toBytes(categoryType
+// .getValue());
+// checksumOut.write(categoryTypeBytes);
+//
+// byte[] priorityTypeBytes = ByteUtil.toBytes(PriorityType.URGENT
+// .getValue());
+// checksumOut.write(priorityTypeBytes);
+//
+// byte[] senderLengthBytes = ByteUtil.toShortBytes(sender
+// .length());
+// checksumOut.write(senderLengthBytes);
+//
+// byte[] senderBytes = ByteUtil.toBytes(sender);
+// checksumOut.write(senderBytes);
+//
+// StringBuilder checksumBuff = new StringBuilder();
+// long checksum = ByteUtil.toLong(ChecksumUtil.crc32(checksumOut
+// .toByteArray()));
+// checksumBuff.append(checksum);
+// byte[] checksumLengthBytes = ByteUtil.toShortBytes(checksumBuff
+// .length());
+// byte[] checksumBytes = ByteUtil
+// .toBytes(checksumBuff.toString());
+//
+// int totalLength = (2 + 1 + 1) + (2 + sender.length())
+// + (2 + checksumBuff.length());
+// byte[] totalLengthBytes = ByteUtil.toShortBytes(totalLength);
+//
+// out.write(totalLengthBytes);
+// out.write(ByteUtil.toBytes(2651630762402063737L * 3 + 1));
+// out.write(categoryTypeBytes);
+// out.write(priorityTypeBytes);
+// out.write(senderLengthBytes);
+// out.write(senderBytes);
+// out.write(checksumLengthBytes);
+// out.write(checksumBytes);
+// //
+// result = out.toByteArray();
+// }
+// } catch (Exception ex) {
+// ex.printStackTrace();
+// } finally {
+// IoUtil.close(out);
+// IoUtil.close(checksumOut);
+// }
+//
+// return result;
+// }
+//
+// public Message unhs(byte[] bytes) {
+// Message result = null;
+// if (bytes == null) {
+// LOGGER.warn("bytes is null");
+// return result;
+// }
+// ByteArrayOutputStream expectedChecksumOut = null;
+// try {
+// int pos = 0;
+// int totalLength = ByteUtil.toShortInt(ByteUtil.read(bytes, pos, 2));// 0-1
+// pos += 2;
+// if (bytes.length < 4) {
+// LOGGER.warn("data[" + bytes.length + "] < 4 bytes");
+// return result;
+// } else if (bytes.length < totalLength) {
+// LOGGER.warn("data[" + bytes.length + "] < [" + totalLength
+// + "] bytes");
+// return result;
+// }
+// long buff = ByteUtil.toLong(ByteUtil.read(bytes, pos, 8));
+// if (buff != 1590978457441238242L * 5 + 2) {
+// LOGGER.error("Invalid message");
+// return result;
+// }
+// pos += 8;
+// expectedChecksumOut = new ByteArrayOutputStream();
+// byte[] categoryTypeBytes = ByteUtil.read(bytes, pos, 1);
+// byte categoryTypeValue = ByteUtil.toByte(categoryTypeBytes);// 2
+// CategoryType categoryType = EnumUtil.valueOf(CategoryType.class,
+// categoryTypeValue);
+// expectedChecksumOut.write(categoryTypeBytes);
+// pos += 1;
+// //
+// byte[] priorityTypeBytes = ByteUtil.read(bytes, pos, 1);
+// byte priorityTypeValue = ByteUtil.toByte(priorityTypeBytes);// 3
+// PriorityType priorityType = EnumUtil.valueOf(PriorityType.class,
+// priorityTypeValue);
+// expectedChecksumOut.write(priorityTypeBytes);
+// pos += 1;
+//
+// if (CategoryType.HANDSHAKE_RABBIT.equals(categoryType)
+// || CategoryType.HANDSHAKE_DRAGON.equals(categoryType)
+// || CategoryType.HANDSHAKE_SERVER.equals(categoryType)) {
+// byte[] senderLengthBytes = ByteUtil.read(bytes, pos, 2);
+// int senderLength = ByteUtil.toShortInt(senderLengthBytes);
+// expectedChecksumOut.write(senderLengthBytes);
+// pos += 2;
+// //
+// byte[] senderBytes = ByteUtil.read(bytes, pos, senderLength);
+// StringBuilder sender = new StringBuilder();
+// sender.append(ByteUtil.toString(senderBytes));
+// expectedChecksumOut.write(senderBytes);
+// pos += senderLength;
+//
+// int checksumLength = ByteUtil.toShortInt(ByteUtil.read(bytes,
+// pos, 2));
+// pos += 2;
+// //
+// byte[] checksumBytes = ByteUtil
+// .read(bytes, pos, checksumLength);
+// pos += checksumLength;
+// if (checksumBytes == null) {
+// LOGGER.warn("checksum is null");
+// return result;
+// }
+//
+// StringBuilder checksumBuff = new StringBuilder();
+// checksumBuff.append(ByteUtil.toString(checksumBytes));
+// pos += checksumLength;
+// StringBuilder expectedChecksumBuff = new StringBuilder();
+// long expectedChecksum = ByteUtil.toLong(ChecksumUtil
+// .crc32(expectedChecksumOut.toByteArray()));
+// expectedChecksumBuff.append(expectedChecksum);
+// if (!expectedChecksumBuff.toString().equals(
+// checksumBuff.toString())) {
+// LOGGER.warn("checksum: " + checksumBuff + " is invalid");
+// return result;
+// }
+//
+// result = new MessageImpl(categoryType, priorityType);
+// result.setSender(sender.toString());
+// }
+// } catch (Exception ex) {
+// ex.printStackTrace();
+// } finally {
+// IoUtil.close(expectedChecksumOut);
+// }
+// return result;
+// }
+
+// ------------------------------------------
+// 2014/12/12 SnakeServiceImplTest
+// ------------------------------------------
+// @Test
+// public void hsClient() {
+// String sender = "TEST_USER_1";
+// byte[] result = null;
+// //
+// int count = 1;
+// long beg = System.currentTimeMillis();
+// for (int i = 0; i < count; i++) {
+// result = snakeService.hs(CategoryType.HANDSHAKE_RABBIT, sender);
+//
+// }
+// long end = System.currentTimeMillis();
+// System.out.println(count + " times: " + (end - beg) + " mills. ");
+//
+// System.out.println("length: " + result.length);// 49+checksum=91
+//
+// assertEquals(28, result.length);
+// SystemUtil.println(result);
+// }
+//
+// @Test
+// public void unhsClient() {
+// String sender = "TEST_USER_1";
+// byte[] value = snakeService
+// .hs(CategoryType.HANDSHAKE_RABBIT, sender);
+// System.out.println("length: " + value.length);// 28
+// SystemUtil.println(value);
+// //
+// Message result = null;
+// //
+// int count = 1;
+// long beg = System.currentTimeMillis();
+// for (int i = 0; i < count; i++) {
+// result = snakeService.unhs(value);
+//
+// }
+// long end = System.currentTimeMillis();
+// System.out.println(count + " times: " + (end - beg) + " mills. ");
+//
+// System.out.println(result.getSender());// TEST_USER_1
+// assertEquals(sender, result.getSender());
+// }

@@ -1,0 +1,38 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.openyu.socklet</groupId>
+		<artifactId>openyu-socklet-parent</artifactId>
+		<version>1</version>
+		<relativePath>pom/socklet-parent/pom.xml</relativePath>
+	</parent>
+
+	<artifactId>openyu-socklet</artifactId>
+	<version>1.0.0</version>
+	<packaging>pom</packaging>
+
+	<name>OpenYu Socklet 1.x</name>
+	<description>OpenYu Socklet 1.x</description>
+	<url>http://socklet.openyu.org</url>
+	<organization>
+		<name>OpenYu</name>
+		<url>http://www.openyu.org</url>
+	</organization>
+
+	<licenses>
+		<license>
+			<name>Apache 2</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+			<comments>A business-friendly OSS license</comments>
+		</license>
+	</licenses>
+	
+	<!--  
+	<modules>
+		<module>openyu-socklet-core.j</module>
+	</modules>
+	-->
+
+</project>

@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="
+             http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+             http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+             ">
+	<bean
+		id="messageService"
+		class="org.openyu.socklet.message.service.impl.MessageServiceImpl"
+		parent="baseServiceSupporter" />
+
+	<bean
+		id="protocolService"
+		class="org.openyu.socklet.message.service.impl.ProtocolServiceImpl"
+		parent="baseServiceSupporter"
+		p:checksum="${protocolService.checksum}"
+		p:checksumType="${protocolService.checksumType}"
+		p:checksumKey="${protocolService.checksumKey}"
+		p:compress="${protocolService.compress}"
+		p:compressType="${protocolService.compressType}"
+		p:security="${protocolService.security}"
+		p:securityType="${protocolService.securityType}"
+		p:securityKey="${protocolService.securityKey}" />
+
+	<!-- 執行緒服務 -->
+	<bean
+		id="acceptorThreadService"
+		parent="threadService"
+		p:maxExecutorSize="2"
+		p:corePoolSize="50"
+		p:keepAliveSeconds="300"
+		p:maxPoolSize="50"
+		p:queueCapacity="25" />
+
+	<!-- 接收器服務 -->
+	<bean
+		id="acceptorServiceSupporter"
+		class="org.openyu.socklet.acceptor.service.impl.AcceptorServiceImpl"
+		parent="baseServiceSupporter"
+		p:threadService-ref="acceptorThreadService" />
+
+	<!-- socklet -->
+	<bean
+		id="sockletThreadService"
+		parent="threadService"
+		p:maxExecutorSize="2"
+		p:corePoolSize="100"
+		p:keepAliveSeconds="300"
+		p:maxPoolSize="100"
+		p:queueCapacity="50" />
+
+	<bean
+		id="sockletServiceSupporter"
+		class="org.openyu.socklet.socklet.service.supporter.SockletServiceSupporter"
+		parent="baseServiceSupporter"
+		abstract="true"
+		p:threadService-ref="sockletThreadService" />
+
+	<!--listener -->
+	<bean
+		id="contextListenerSupporter"
+		class="org.openyu.socklet.context.service.event.supporter.ContextListenerSupporter"
+		parent="baseListenerSupporter"
+		abstract="true" />
+
+	<bean
+		id="relationListenerSupporter"
+		class="org.openyu.socklet.acceptor.service.event.supporter.RelationListenerSupporter"
+		parent="baseListenerSupporter"
+		abstract="true" />
+
+	<bean
+		id="sessionListenerSupporter"
+		class="org.openyu.socklet.session.service.event.supporter.SessionListenerSupporter"
+		parent="baseListenerSupporter"
+		abstract="true" />
+
+	<!-- system -->
+	<bean
+		id="systemContextAdapter"
+		class="org.openyu.socklet.context.service.event.adapter.ContextAdapter"
+		parent="contextListenerSupporter"
+		abstract="true"
+		p:acceptors-ref="systemContextAdapterAcceptors" />
+
+	<util:set
+		id="systemContextAdapterAcceptors"
+		set-class="java.util.LinkedHashSet">
+		<value>system</value>
+	</util:set>
+
+	<bean
+		id="systemRelationAdapter"
+		class="org.openyu.socklet.acceptor.service.event.adapter.RelationAdapter"
+		parent="relationListenerSupporter"
+		abstract="true"
+		p:acceptors-ref="systemRelationAdapterAcceptors" />
+
+	<util:set
+		id="systemRelationAdapterAcceptors"
+		set-class="java.util.LinkedHashSet">
+		<value>system</value>
+	</util:set>
+
+	<!-- slave -->
+	<bean
+		id="slaveSessionAdapter"
+		class="org.openyu.socklet.session.service.event.adapter.SessionAdapter"
+		parent="sessionListenerSupporter"
+		abstract="true"
+		p:acceptors-ref="slaveSessionAdapterAcceptors" />
+
+	<util:set
+		id="slaveSessionAdapterAcceptors"
+		set-class="java.util.LinkedHashSet">
+		<value>slave1</value>
+		<value>slave2</value>
+		<value>slave3</value>
+		<value>slave4</value>
+		<value>slave5</value>
+		<value>slave6</value>
+		<value>slave7</value>
+		<value>slave8</value>
+		<value>slave9</value>
+		<value>slave10</value>
+	</util:set>	
+
+	<!-- system, slave -->
+	<bean
+		id="systemSlaveSessionAdapter"
+		class="org.openyu.socklet.session.service.event.adapter.SessionAdapter"
+		parent="sessionListenerSupporter"
+		abstract="true"
+		p:acceptors-ref="systemSlaveSessionAdapterAcceptors" />
+
+	<util:set
+		id="systemSlaveSessionAdapterAcceptors"
+		set-class="java.util.LinkedHashSet">
+		<value>system</value>
+		<value>slave1</value>
+		<value>slave2</value>
+		<value>slave3</value>
+		<value>slave4</value>
+		<value>slave5</value>
+		<value>slave6</value>
+		<value>slave7</value>
+		<value>slave8</value>
+		<value>slave9</value>
+		<value>slave10</value>
+	</util:set>
+	
+</beans>

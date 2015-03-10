@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<client>
+	<id>TEST_ROLE</id>
+	<ip>127.0.0.1</ip>
+	<!-- slave1 -->
+	<port>4110</port>
+
+	<moduleTypeName>org.openyu.socklet.core.net.socklet.CoreModuleType
+	</moduleTypeName>
+	<messageTypeName>org.openyu.socklet.core.net.socklet.CoreMessageType
+	</messageTypeName>
+</client>
