@@ -10,6 +10,6 @@ set _CLASSPATH=.;..\*;..\lib\*;..\..\*;..\..\lib\*;..\..\..\*;..\..\..\lib\*;..\
 
 rem @echo Using classpath:%_CLASSPATH%
 
-java -Xmn96m -Xms192m -Xmx192m -Xss128k -XX:PermSize=64m -cp %_CLASSPATH% -XX:+UseParNewGC -Djava.net.preferIPv4Stack=true -verbose:gc org.openyu.socklet.core.App %1 %2 %3 %4 %5 %6 %7 %8 %9
+java -Xmn96m -Xms192m -Xmx192m -Xss256k -XX:PermSize=128m -XX:MaxPermSize=128m -cp %_CLASSPATH% -XX:+UseParNewGC -Djava.net.preferIPv4Stack=true -verbose:gc org.openyu.socklet.core.App %1 %2 %3 %4 %5 %6 %7 %8 %9
 
 set _CLASSPATH=.

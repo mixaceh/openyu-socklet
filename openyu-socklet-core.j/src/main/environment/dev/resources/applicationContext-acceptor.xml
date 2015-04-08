@@ -537,7 +537,7 @@
 		</property>
 	</bean>
 
-	<!-- account -->
+	<!-- account 
 	<bean
 		id="accountService"
 		class="org.openyu.socklet.account.service.impl.AccountServiceImpl"
@@ -564,8 +564,9 @@
 			</props>
 		</property>
 	</bean>
+	-->
 
-	<!-- login -->
+	<!-- login 
 	<bean
 		id="loginService"
 		class="org.openyu.socklet.login.service.impl.LoginServiceImpl"
@@ -592,15 +593,15 @@
 			</props>
 		</property>
 	</bean>
+	-->
 
-	<!-- core -->
+	<!-- core 
 	<bean
 		id="coreService"
 		class="org.openyu.socklet.core.service.impl.CoreServiceImpl"
 		parent="baseServiceSupporter">
 	</bean>
 
-	<!-- socklet -->
 	<bean
 		id="coreSocklet"
 		class="org.openyu.socklet.core.net.socklet.CoreSocklet"
@@ -623,8 +624,9 @@
 			</props>
 		</property>
 	</bean>
+	-->
 	
-	<!-- listener -->
+	<!-- listener
 	<bean
 		id="coreRelationAdapter"
 		class="org.openyu.socklet.core.service.adapter.CoreRelationAdapter"
@@ -648,8 +650,9 @@
 			</set>
 		</property>
 	</bean>
+	-->
 	
-	<!-- chat -->
+	<!-- chat 
 	<bean
 		id="chatService"
 		class="org.openyu.socklet.chat.service.impl.ChatServiceImpl"
@@ -678,8 +681,9 @@
 			</props>
 		</property>
 	</bean>
+	-->
 
-	<!-- fourSymbol -->
+	<!-- fourSymbol 
 	<bean
 		id="fourSymbolService"
 		class="org.openyu.socklet.fourSymbol.service.impl.FourSymbolServiceImpl"
@@ -698,7 +702,7 @@
 				<value>slave1</value>
 				<value>slave2</value>
 				<value>slave3</value>
-				<!-- 02 -->
+				
 				<value>slave1_02</value>
 				<value>slave2_02</value>
 				<value>slave3_02</value>
@@ -712,4 +716,5 @@
 			</props>
 		</property>
 	</bean>
+	-->
 </beans>

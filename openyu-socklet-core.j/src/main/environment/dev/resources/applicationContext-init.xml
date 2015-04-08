@@ -73,14 +73,15 @@
 	</bean>  	
 
 	<!-- velocity -->
-	<bean id="velocityEngine" class="org.springframework.ui.velocity.VelocityEngineFactoryBean">
+	<bean id="velocityConfigurer"
+		class="org.springframework.web.servlet.view.velocity.VelocityConfigurer">
 		<property name="resourceLoaderPath" value="file:../custom/template/vm" />
 		<property name="configLocation" value="file:../etc/velocity.properties" />
 	</bean>
 
-	<!-- freeMarker -->
-	<bean id="freeMarkerConfiguration"
-		class="org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean">
+	<!-- freemarker -->
+	<bean id="freeMarkerConfigurer"
+		class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">
 		<property name="templateLoaderPath" value="file:../custom/template/ftl" />
 		<property name="configLocation" value="file:../etc/freemarker.properties" />
 	</bean>

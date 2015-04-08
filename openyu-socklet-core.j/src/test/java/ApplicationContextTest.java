@@ -2,16 +2,15 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.openyu.commons.junit.supporter.BaseTestSupporter;
-import org.openyu.commons.lang.BooleanHelper;
 
 public class ApplicationContextTest extends BaseTestSupporter {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		beg = System.currentTimeMillis();
+		begTime = System.currentTimeMillis();
 		applicationContext = new ClassPathXmlApplicationContext(
 				new String[] { "applicationContext.xml" });
-		end = System.currentTimeMillis();
+		endTime = System.currentTimeMillis();
 	}
 
 	@Test

@@ -75,8 +75,8 @@ public final class StandaloneBootstrap extends BootstrapSupporter {
 		if (!started) {
 			// 計算所耗費的記憶體(bytes)
 			RuntimeHelper.gc();
-			long startUsed = RuntimeHelper.usedMemory();
-			long start = System.nanoTime();
+			long begUsedMemory = RuntimeHelper.usedMemory();
+			long begTime = System.nanoTime();
 			try {
 				// 建構applicationContext
 				buildApplicationContext(args);
@@ -93,17 +93,16 @@ public final class StandaloneBootstrap extends BootstrapSupporter {
 				ex.printStackTrace();
 			}
 			//
-			//
-			long dur = System.nanoTime() - start;
-			dur = TimeUnit.NANOSECONDS.toMillis(dur);
+			long durTime = System.nanoTime() - begTime;
+			durTime = TimeUnit.NANOSECONDS.toMillis(durTime);
 			//
 			RuntimeHelper.gc();
-			double used = RuntimeHelper.usedMemory() - startUsed;
-			used = ByteUnit.BYTE.toMB(used);
+			double durUsedMemory = RuntimeHelper.usedMemory() - begUsedMemory;
+			durUsedMemory = ByteUnit.BYTE.toMB(durUsedMemory);
 
 			String msgPattern = "[{0}] ({1}) start in {2} ms, memory used {3} MB";
 			StringBuilder msg = new StringBuilder(MessageFormat.format(
-					msgPattern, id, instanceId, dur, used));
+					msgPattern, id, instanceId, durTime, durUsedMemory));
 			//
 			if (started) {
 				LOGGER.info(msg.toString());
