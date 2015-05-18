@@ -2,7 +2,11 @@ package org.openyu.socklet.message.service;
 
 import java.io.Serializable;
 import java.util.List;
+
+import org.openyu.commons.security.SecurityType;
 import org.openyu.commons.service.BaseService;
+import org.openyu.commons.util.ChecksumType;
+import org.openyu.commons.util.CompressType;
 import org.openyu.socklet.message.vo.CategoryType;
 import org.openyu.socklet.message.vo.HeadType;
 import org.openyu.socklet.message.vo.Message;
@@ -15,6 +19,81 @@ import org.openyu.socklet.message.vo.Packet;
  */
 public interface ProtocolService extends BaseService {
 
+	/**
+	 * 是否檢查碼
+	 * 
+	 * @return
+	 */
+	boolean isChecksum();
+
+	void setChecksum(boolean checksum);
+
+	/**
+	 * 檢查碼類別
+	 * 
+	 * @return
+	 */
+	ChecksumType getChecksumType();
+
+	void setChecksumType(ChecksumType checksumType);
+
+	/**
+	 * 檢查碼key
+	 * 
+	 * @return
+	 */
+	String getChecksumKey();
+
+	void setChecksumKey(String checksumKey);
+
+	/**
+	 * 是否加密
+	 * 
+	 * @return
+	 */
+	boolean isSecurity();
+
+	void setSecurity(boolean security);
+
+	/**
+	 * 加密類別
+	 * 
+	 * @return
+	 */
+	SecurityType getSecurityType();
+
+	void setSecurityType(SecurityType securityType);
+
+	/**
+	 * 加密key
+	 * 
+	 * @return
+	 */
+	String getSecurityKey();
+
+	void setSecurityKey(String securityKey);
+
+	/**
+	 * 是否壓縮
+	 * 
+	 * @return
+	 */
+	boolean isCompress();
+
+	void setCompress(boolean compress);
+
+	/**
+	 * 壓縮類別
+	 * 
+	 * @return
+	 */
+	CompressType getCompressType();
+
+	void setCompressType(CompressType compressType);
+
+	// ------------------------------------------
+	// handshake
+	// ------------------------------------------
 	/**
 	 * 握手協定,組成byte[]
 	 * 
@@ -33,6 +112,9 @@ public interface ProtocolService extends BaseService {
 	 */
 	Message dehandshake(byte[] values);
 
+	// ------------------------------------------
+	// assemble
+	// ------------------------------------------
 	/**
 	 * 訊息協定,組成byte[]
 	 * 
