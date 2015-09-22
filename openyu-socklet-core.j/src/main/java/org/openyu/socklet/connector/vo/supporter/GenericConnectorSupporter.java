@@ -435,7 +435,7 @@ public abstract class GenericConnectorSupporter extends BaseModelSupporter
 				}
 			}
 			//
-			LOGGER.info("Break of " + getClass().getSimpleName());
+			LOGGER.info("Break off " + getClass().getSimpleName());
 		}
 	}
 

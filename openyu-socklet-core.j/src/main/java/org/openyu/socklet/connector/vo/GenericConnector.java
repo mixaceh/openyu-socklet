@@ -64,12 +64,16 @@ public interface GenericConnector extends BaseModel {
 	void setStarted(boolean started);
 
 	/**
-	 * 啟動
+	 * 開啟
+	 * 
+	 * open
 	 */
 	void start();
 
 	/**
 	 * 關閉
+	 * 
+	 * close
 	 */
 	void shutdown();
 

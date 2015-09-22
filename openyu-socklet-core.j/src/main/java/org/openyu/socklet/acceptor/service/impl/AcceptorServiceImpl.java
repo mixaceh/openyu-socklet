@@ -914,7 +914,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 				}
 			}
 			//
-			LOGGER.info("Break of " + getClass().getSimpleName());
+			LOGGER.warn("Break off " + getClass().getSimpleName());
 		}
 	}
 
@@ -1023,7 +1023,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 				}
 			}
 			//
-			LOGGER.info("Break of " + getClass().getSimpleName());
+			LOGGER.warn("Break off " + getClass().getSimpleName());
 		}
 	}
 
@@ -1771,7 +1771,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 				}
 			}
 			//
-			LOGGER.info("Break of " + getClass().getSimpleName());
+			LOGGER.warn("Break off " + getClass().getSimpleName());
 		}
 	}
 
@@ -1821,7 +1821,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 				}
 			}
 			//
-			LOGGER.info("Break of " + getClass().getSimpleName());
+			LOGGER.warn("Break off " + getClass().getSimpleName());
 		}
 	}
 

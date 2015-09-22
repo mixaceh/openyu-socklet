@@ -273,7 +273,7 @@ public abstract class SocketConnectorSupporter extends
 			if (!started) {
 				readKeyQueue.setCancel(true);
 			}
-			LOGGER.info("Break of " + getClass().getSimpleName());
+			LOGGER.info("Break off " + getClass().getSimpleName());
 		}
 	}
 

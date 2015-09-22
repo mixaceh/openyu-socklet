@@ -28,7 +28,7 @@ public class AcceptorServiceImplTest extends CoreTestSupporter
 		applicationContext = new ClassPathXmlApplicationContext(new String[] {
 				"META-INF/applicationContext-commons-core.xml",//
 				"META-INF/applicationContext-socklet-core.xml",//
-				"applicationContext-aceptor.xml",//
+				"applicationContext-acceptor.xml",//
 		});
 
 		messageService = (MessageService) applicationContext.getBean("messageService");
