@@ -25,6 +25,7 @@ import org.openyu.commons.nio.NioHelper;
 import org.openyu.commons.security.AuthKeyService;
 import org.openyu.commons.service.supporter.BaseServiceSupporter;
 import org.openyu.commons.thread.ThreadHelper;
+import org.openyu.commons.thread.ThreadService;
 import org.openyu.commons.thread.supporter.BaseRunnableSupporter;
 import org.openyu.commons.thread.supporter.TriggerQueueSupporter;
 import org.openyu.commons.util.ConfigHelper;
@@ -81,6 +82,24 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 
 	private static transient final Logger LOGGER = LoggerFactory
 			.getLogger(AcceptorServiceImpl.class);
+	/**
+	 * 線程服務
+	 */
+	@Autowired
+	@Qualifier("threadService")
+	protected transient ThreadService threadService;
+
+	@Autowired
+	@Qualifier("messageService")
+	protected transient MessageService messageService;
+
+	@Autowired
+	@Qualifier("protocolService")
+	protected transient ProtocolService protocolService;
+
+	@Autowired
+	@Qualifier("authKeyService")
+	protected transient AuthKeyService authKeyService;
 
 	private String id;
 
@@ -142,18 +161,6 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	// ------------------------------------------------
 
 	private Map<String, String> initParameters = new ConcurrentHashMap<String, String>();
-
-	@Autowired
-	@Qualifier("messageService")
-	protected transient MessageService messageService;
-
-	@Autowired
-	@Qualifier("protocolService")
-	protected transient ProtocolService protocolService;
-
-	@Autowired
-	@Qualifier("authKeyService")
-	protected transient AuthKeyService authKeyService;
 
 	/**
 	 * 模組類別名稱
@@ -901,7 +908,13 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 * 監聽主動端連線
 	 */
 	protected class ListenInitiativeRunner extends BaseRunnableSupporter {
-		public void execute() {
+
+		public ListenInitiativeRunner(ThreadService threadService) {
+			super(threadService);
+		}
+
+		@Override
+		protected void doRun() throws Exception {
 			while (true) {
 				try {
 					if (!started) {
@@ -913,8 +926,6 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 					// ex.printStackTrace();
 				}
 			}
-			//
-			LOGGER.warn("Break off " + getClass().getSimpleName());
 		}
 	}
 
@@ -1010,7 +1021,12 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 */
 	protected class ListenClusterRunner extends BaseRunnableSupporter {
 
-		public void execute() {
+		public ListenClusterRunner(ThreadService threadService) {
+			super(threadService);
+		}
+
+		@Override
+		protected void doRun() throws Exception {
 			while (true) {
 				try {
 					if (!started) {
@@ -1022,8 +1038,6 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 					// ex.printStackTrace();
 				}
 			}
-			//
-			LOGGER.warn("Break off " + getClass().getSimpleName());
 		}
 	}
 
@@ -1173,10 +1187,13 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	}
 
 	protected class SendClientQueue<E> extends TriggerQueueSupporter<Message> {
-		public SendClientQueue() {
+
+		public SendClientQueue(ThreadService threadService) {
+			super(threadService);
 		}
 
-		public void process(Message e) {
+		@Override
+		public void doExecute(Message e) throws Exception {
 			sendClient(e);
 		}
 	}
@@ -1262,10 +1279,13 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 */
 	protected class ReceiveClientQueue<E> extends
 			TriggerQueueSupporter<Message> {
-		public ReceiveClientQueue() {
+
+		public ReceiveClientQueue(ThreadService threadService) {
+			super(threadService);
 		}
 
-		public void process(Message e) {
+		@Override
+		public void doExecute(Message e) throws Exception {
 			dispatch(e);
 		}
 	}
@@ -1373,10 +1393,13 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 * srcModule=CLIENT, destModule= CORE
 	 */
 	protected class SendServerQueue<E> extends TriggerQueueSupporter<Message> {
-		public SendServerQueue() {
+
+		public SendServerQueue(ThreadService threadService) {
+			super(threadService);
 		}
 
-		public void process(Message e) {
+		@Override
+		public void doExecute(Message e) throws Exception {
 			dispatch(e);
 		}
 	}
@@ -1389,10 +1412,13 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 */
 	protected class SendRelationQueue<E> extends
 			TriggerQueueSupporter<RelationMessage> {
-		public SendRelationQueue() {
+
+		public SendRelationQueue(ThreadService threadService) {
+			super(threadService);
 		}
 
-		public void process(RelationMessage e) {
+		@Override
+		public void doExecute(RelationMessage e) throws Exception {
 			sendRelation(e);
 		}
 	}
@@ -1451,10 +1477,13 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 */
 	protected class ReceiveRelationQueue<E> extends
 			TriggerQueueSupporter<Message> {
-		public ReceiveRelationQueue() {
+
+		public ReceiveRelationQueue(ThreadService threadService) {
+			super(threadService);
 		}
 
-		public void process(Message e) {
+		@Override
+		public void doExecute(Message e) throws Exception {
 			dispatch(e);
 		}
 	}
@@ -1463,10 +1492,13 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	// MESSAGE_ACCEPTOR
 	// --------------------------------------------------
 	protected class SendAcceptorQueue<E> extends TriggerQueueSupporter<Message> {
-		public SendAcceptorQueue() {
+
+		public SendAcceptorQueue(ThreadService threadService) {
+			super(threadService);
 		}
 
-		public void process(Message e) {
+		@Override
+		public void doExecute(Message e) throws Exception {
 			sendAcceptor(e);
 		}
 	}
@@ -1500,10 +1532,13 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 */
 	protected class ReceiveAcceptorQueue<E> extends
 			TriggerQueueSupporter<Message> {
-		public ReceiveAcceptorQueue() {
+
+		public ReceiveAcceptorQueue(ThreadService threadService) {
+			super(threadService);
 		}
 
-		public void process(Message e) {
+		@Override
+		public void doExecute(Message e) throws Exception {
 			receiveAcceptor(e);
 		}
 	}
@@ -1639,10 +1674,13 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 * sender=slave1...n
 	 */
 	protected class SendSyncQueue<E> extends TriggerQueueSupporter<Message> {
-		public SendSyncQueue() {
+		
+		public SendSyncQueue(ThreadService threadService) {
+			super(threadService);
 		}
 
-		public void process(Message e) {
+		@Override
+		public void doExecute(Message e) throws Exception {
 			sendSync(e);
 		}
 	}
@@ -1686,10 +1724,13 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	}
 
 	protected class ReceiveSyncQueue<E> extends TriggerQueueSupporter<Message> {
-		public ReceiveSyncQueue() {
+
+		public ReceiveSyncQueue(ThreadService threadService) {
+			super(threadService);
 		}
 
-		public void process(Message e) {
+		@Override
+		public void doExecute(Message e) throws Exception {
 			receiveSync(e);
 		}
 	}
@@ -1758,7 +1799,13 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 * 監聽客戶端連線
 	 */
 	protected class ListenClientRunner extends BaseRunnableSupporter {
-		public void execute() {
+
+		public ListenClientRunner(ThreadService threadService) {
+			super(threadService);
+		}
+
+		@Override
+		protected void doRun() throws Exception {
 			while (true) {
 				try {
 					if (!started) {
@@ -1770,8 +1817,6 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 					// ex.printStackTrace();
 				}
 			}
-			//
-			LOGGER.warn("Break off " + getClass().getSimpleName());
 		}
 	}
 
@@ -1808,7 +1853,13 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 * 監聽被動端連線
 	 */
 	protected class ListenPassiveRunner extends BaseRunnableSupporter {
-		public void execute() {
+
+		public ListenPassiveRunner(ThreadService threadService) {
+			super(threadService);
+		}
+
+		@Override
+		protected void doRun() throws Exception {
 			while (true) {
 				try {
 					if (!started) {
@@ -1820,8 +1871,6 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 					// ex.printStackTrace();
 				}
 			}
-			//
-			LOGGER.warn("Break off " + getClass().getSimpleName());
 		}
 	}
 
