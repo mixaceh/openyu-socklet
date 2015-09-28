@@ -920,7 +920,7 @@
 		<dependency>
 			<groupId>org.hibernate.common</groupId>
 			<artifactId>hibernate-commons-annotations</artifactId>
-			<version>4.0.5.Final</version>
+			<version>4.0.4.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
