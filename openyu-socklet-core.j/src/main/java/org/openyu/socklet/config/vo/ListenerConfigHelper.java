@@ -2,11 +2,10 @@ package org.openyu.socklet.config.vo;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-
+import org.openyu.commons.helper.supporter.BaseHelperSupporter;
 import org.openyu.commons.lang.BooleanHelper;
 import org.openyu.commons.lang.CharHelper;
 import org.openyu.commons.lang.NumberHelper;
-import org.openyu.commons.service.supporter.BaseHelperSupporter;
 
 public class ListenerConfigHelper extends BaseHelperSupporter
 {

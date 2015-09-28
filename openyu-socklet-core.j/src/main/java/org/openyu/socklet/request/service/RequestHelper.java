@@ -3,10 +3,10 @@ package org.openyu.socklet.request.service;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.openyu.socklet.request.vo.Request;
+import org.openyu.commons.helper.supporter.BaseHelperSupporter;
 import org.openyu.commons.lang.BooleanHelper;
 import org.openyu.commons.lang.CharHelper;
 import org.openyu.commons.lang.NumberHelper;
-import org.openyu.commons.service.supporter.BaseHelperSupporter;
 
 public class RequestHelper extends BaseHelperSupporter
 {

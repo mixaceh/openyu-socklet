@@ -5,8 +5,8 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.junit.Test;
-import org.openyu.commons.bean.BaseCollector;
 import org.openyu.commons.bootstrap.CollectorBootstrap;
+import org.openyu.commons.collector.BaseCollector;
 
 public class CollectorBootstrapTest {
 
