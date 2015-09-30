@@ -55,25 +55,40 @@ import org.openyu.socklet.message.vo.impl.MessageImpl;
 import org.openyu.socklet.message.vo.impl.ClusterMessageImpl;
 import org.openyu.socklet.socklet.service.SockletService;
 
-/*
+/**
+ * 接收器服務
+ * 
  * SockletAceptor(master,slave1-...),可依多個port, 啟動多個SockletServer(socket server)
- * +-多個 ExtSockletContext(SockletEngine),合併context,engine,
- *   改為單個ExtSockletContext
- * 		+-多個ExtSocklet(module)
- * 			+-單個ExtSockletConfig
- * 			+-單個ExtSockletRequest
- * 			+-單個ExtSockletResponse
+ * 
+ * +-多個 ExtSockletContext(SockletEngine),合併context,engine
+ * 
+ * 改為單個ExtSockletContext
+ * 
+ * +-多個ExtSocklet(module)
+ * 
+ * +-單個ExtSockletConfig
+ * 
+ * +-單個ExtSockletRequest
+ * 
+ * +-單個ExtSockletResponse
+ * 
  * +-多個SockletServer(實體socket server)
  * 
  * 刪除 ServerConf replace by spring *.xml
+ * 
  * applicationContext-gss.xml(servicemap.ini)
+ * 
  * applicationContext-global,zone1.xml(network.ini)
  * 
  * AceptorService啟動順序
+ * 
  * +-單ContextService
+ * 
  * +-多ServerService
- * 	+--relationServers
- * 	+--clientServers
+ * 
+ * +--relationServers
+ * 
+ * +--clientServers
  */
 public class AcceptorServiceImpl extends BaseServiceSupporter implements
 		AcceptorService {
@@ -1674,7 +1689,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 * sender=slave1...n
 	 */
 	protected class SendSyncQueue<E> extends TriggerQueueSupporter<Message> {
-		
+
 		public SendSyncQueue(ThreadService threadService) {
 			super(threadService);
 		}

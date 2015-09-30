@@ -7,8 +7,9 @@ import java.util.List;
 import org.junit.Test;
 import org.openyu.commons.bootstrap.CollectorBootstrap;
 import org.openyu.commons.collector.BaseCollector;
+import org.openyu.commons.junit.supporter.BaseTestSupporter;
 
-public class CollectorBootstrapTest {
+public class CollectorBootstrapTest extends BaseTestSupporter{
 
 	private static String[] configLocations = new String[] {
 			"applicationContext-init.xml",//

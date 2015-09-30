@@ -7,8 +7,8 @@ import org.openyu.commons.model.supporter.BaseModelSupporter;
 import org.openyu.socklet.acceptor.service.AcceptorService;
 import org.openyu.socklet.acceptor.vo.AcceptorStarter;
 
-public class AcceptorStarterImpl extends BaseModelSupporter implements AcceptorStarter
-{
+public class AcceptorStarterImpl extends BaseModelSupporter implements
+		AcceptorStarter {
 
 	private static final long serialVersionUID = -7726187889378711025L;
 
@@ -16,50 +16,41 @@ public class AcceptorStarterImpl extends BaseModelSupporter implements AcceptorS
 
 	private AcceptorService acceptorService;
 
-	public AcceptorStarterImpl()
-	{}
+	public AcceptorStarterImpl() {
+	}
 
-	public String getId()
-	{
+	public String getId() {
 		return id;
 	}
 
-	public void setId(String id)
-	{
+	public void setId(String id) {
 		this.id = id;
 	}
 
-	public AcceptorService getAcceptorService()
-	{
+	public AcceptorService getAcceptorService() {
 		return acceptorService;
 	}
 
-	public void setAcceptorService(AcceptorService acceptorService)
-	{
+	public void setAcceptorService(AcceptorService acceptorService) {
 		this.acceptorService = acceptorService;
 	}
 
-	public boolean equals(Object object)
-	{
-		if (!(object instanceof AcceptorStarterImpl))
-		{
+	public boolean equals(Object object) {
+		if (!(object instanceof AcceptorStarterImpl)) {
 			return false;
 		}
-		if (this == object)
-		{
+		if (this == object) {
 			return true;
 		}
 		AcceptorStarterImpl other = (AcceptorStarterImpl) object;
 		return new EqualsBuilder().append(id, other.id).isEquals();
 	}
 
-	public int hashCode()
-	{
+	public int hashCode() {
 		return new HashCodeBuilder().append(id).toHashCode();
 	}
 
-	public Object clone()
-	{
+	public Object clone() {
 		AcceptorStarterImpl copy = null;
 		copy = (AcceptorStarterImpl) super.clone();
 		return copy;
