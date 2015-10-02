@@ -75,7 +75,6 @@
 			<list>
 				<value>file:src/test/config/etc/authKeyService.properties</value>
 				<value>file:src/test/config/etc/protocolService.properties</value>
-				<!-- 2015/09/30 改為 config.xml/config-acceptor.xml -->
 				<!--  
 				<value>file:src/test/config/etc/acceptorService.properties</value>
 				-->
