@@ -1,6 +1,5 @@
 package org.openyu.socklet.acceptor.service.impl;
 
-import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
@@ -90,13 +89,11 @@ import org.openyu.socklet.socklet.service.SockletService;
  * 
  * +--clientServers
  */
-public class AcceptorServiceImpl extends BaseServiceSupporter implements
-		AcceptorService {
+public class AcceptorServiceImpl extends BaseServiceSupporter implements AcceptorService {
 
 	private static final long serialVersionUID = 3758237740118194791L;
 
-	private static transient final Logger LOGGER = LoggerFactory
-			.getLogger(AcceptorServiceImpl.class);
+	private static transient final Logger LOGGER = LoggerFactory.getLogger(AcceptorServiceImpl.class);
 	/**
 	 * 線程服務
 	 */
@@ -152,9 +149,6 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	private Map<String, AcceptorConnector> syncClients = new ConcurrentHashMap<String, AcceptorConnector>();
 
 	private int maxClient;
-
-	// 判斷是否啟動
-	private boolean started;
 
 	// ------------------------------------------------
 	// cluster
@@ -224,7 +218,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 * 
 	 * srcModule=FOUR_SYMBOL, destModule= CLIENT
 	 */
-	private SendClientQueue<Message> sendClientQueue = new SendClientQueue<Message>();
+	private SendClientQueue<Message> sendClientQueue;
 
 	/**
 	 * receive
@@ -233,7 +227,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 * 
 	 * srcModule=CLIENT, destModule= FOUR_SYMBOL
 	 */
-	private ReceiveClientQueue<Message> receiveClientQueue = new ReceiveClientQueue<Message>();
+	private ReceiveClientQueue<Message> receiveClientQueue;
 
 	/**
 	 * send
@@ -246,7 +240,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 * 
 	 * srcModule=CLIENT, destModule= CORE
 	 */
-	private SendServerQueue<Message> sendServerQueue = new SendServerQueue<Message>();
+	private SendServerQueue<Message> sendServerQueue;
 
 	/**
 	 * send
@@ -259,7 +253,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 * 
 	 * srcModule=slave1.CLIENT, destModule= slave2.CORE
 	 */
-	private SendRelationQueue<RelationMessage> sendRelationQueue = new SendRelationQueue<RelationMessage>();
+	private SendRelationQueue<RelationMessage> sendRelationQueue;
 
 	/**
 	 * receive
@@ -273,21 +267,21 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 * srcModule=slave1.CLIENT, destModule= slave2.CORE
 	 * 
 	 */
-	private ReceiveRelationQueue<Message> receiveRelationQueue = new ReceiveRelationQueue<Message>();
+	private ReceiveRelationQueue<Message> receiveRelationQueue;
 
 	/**
 	 * send
 	 * 
 	 * udp, server->relation, MESSAGE_ACCEPTOR
 	 */
-	private SendAcceptorQueue<Message> sendAcceptorQueue = new SendAcceptorQueue<Message>();
+	private SendAcceptorQueue<Message> sendAcceptorQueue;
 
 	/**
 	 * receive
 	 * 
 	 * udp, server->relation, MESSAGE_ACCEPTOR
 	 */
-	private ReceiveAcceptorQueue<Message> receiveAcceptorQueue = new ReceiveAcceptorQueue<Message>();
+	private ReceiveAcceptorQueue<Message> receiveAcceptorQueue;
 
 	/**
 	 * send
@@ -298,7 +292,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 * 
 	 * srcModule=ROLE, destModule= ROLE
 	 */
-	private SendSyncQueue<Message> sendSyncQueue = new SendSyncQueue<Message>();
+	private SendSyncQueue<Message> sendSyncQueue;
 
 	/**
 	 * receive
@@ -309,7 +303,16 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 * 
 	 * srcModule=ROLE, destModule= ROLE
 	 */
-	private ReceiveSyncQueue<Message> receiveSyncQueue = new ReceiveSyncQueue<Message>();
+	private ReceiveSyncQueue<Message> receiveSyncQueue;
+
+	// runner
+	private ListenClusterRunner listenClusterRunner;
+
+	private ListenClientRunner listenClientRunner;
+
+	private ListenPassiveRunner listenPassiveRunner;
+
+	private ListenInitiativeRunner listenInitiativeRunner;
 
 	/**
 	 * 實例id
@@ -352,35 +355,6 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 
 	public AcceptorServiceImpl() {
 	}
-
-	/**
-	 * 初始化
-	 *
-	 * @throws Exception
-	 */
-	protected void init() throws Exception {
-		boolean debug = ConfigHelper.isDebug();
-		if (debug) {
-			int mod = getClass().getModifiers();
-			if (!Modifier.isAbstract(mod)) {
-				LOGGER.info("Initialization of " + getClass().getSimpleName()
-						+ (id != null ? " [" + id + "]" : ""));
-			}
-		}
-	}
-
-	// /**
-	// * 重新再注入from xml
-	// *
-	// * @return
-	// */
-	// public AuthKeyService getAuthKeyService() {
-	// return authKeyService;
-	// }
-	//
-	// public void setAuthKeyService(AuthKeyService authKeyService) {
-	// this.authKeyService = authKeyService;
-	// }
 
 	/**
 	 * 模組類別名稱
@@ -497,18 +471,6 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 		return clusterChannel;
 	}
 
-	protected void clusterSend(org.jgroups.Message msg) {
-		try {
-			if (clusterChannel != null && clusterChannel.isConnected()) {
-				clusterChannel.send(msg);
-			} else {
-				LOGGER.warn("[" + id + "] ClusterChannel Had not been started");
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-	}
-
 	public List<String> getRelations() {
 		return relations;
 	}
@@ -594,78 +556,143 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	// 3.context
 	// 4.cluster
 	// 5.connect
-	public void start() {
-		try {
-			if (!started) {
-				// ------------------------------------------------
-				// tcp message
-				// ------------------------------------------------
-				// client
-				threadService.submit(sendClientQueue);
-				messageService.setClientQueue(sendClientQueue);
-				threadService.submit(receiveClientQueue);
+	@Override
+	protected void doStart() throws Exception {
+		// ------------------------------------------------
+		// tcp message
+		// ------------------------------------------------
+		// client
+		sendClientQueue = new SendClientQueue<Message>(threadService);
+		sendClientQueue.start();
+		messageService.setClientQueue(sendClientQueue);
+		//
+		receiveClientQueue = new ReceiveClientQueue<Message>(threadService);
+		receiveClientQueue.start();
 
-				// server
-				threadService.submit(sendServerQueue);
-				messageService.setServerQueue(sendServerQueue);
+		// server
+		sendServerQueue = new SendServerQueue<Message>(threadService);
+		sendServerQueue.start();
+		messageService.setServerQueue(sendServerQueue);
 
-				// relation
-				threadService.submit(sendRelationQueue);
-				threadService.submit(receiveRelationQueue);
+		// relation
+		sendRelationQueue = new SendRelationQueue<RelationMessage>(threadService);
+		sendRelationQueue.start();
+		//
+		receiveRelationQueue = new ReceiveRelationQueue<Message>(threadService);
+		receiveRelationQueue.start();
 
-				// ------------------------------------------------
-				// udp message
-				// ------------------------------------------------
-				// aceptor
-				threadService.submit(sendAcceptorQueue);
-				threadService.submit(receiveAcceptorQueue);
+		// ------------------------------------------------
+		// udp message
+		// ------------------------------------------------
+		// aceptor
+		sendAcceptorQueue = new SendAcceptorQueue<Message>(threadService);
+		sendAcceptorQueue.start();
+		//
+		receiveAcceptorQueue = new ReceiveAcceptorQueue<Message>(threadService);
+		receiveAcceptorQueue.start();
 
-				// sync
-				threadService.submit(sendSyncQueue);
-				messageService.setSyncQueue(sendSyncQueue);
-				threadService.submit(receiveSyncQueue);
+		// sync
+		sendSyncQueue = new SendSyncQueue<Message>(threadService);
+		sendSyncQueue.start();
+		messageService.setSyncQueue(sendSyncQueue);
 
-				// ------------------------------------------------
-				// ContextService,須等內部完全啟動後,再繼續
-				// ------------------------------------------------
-				contextService = new ContextServiceImpl(id, this);
-				contextService.start();
+		receiveSyncQueue = new ReceiveSyncQueue<Message>(threadService);
+		receiveSyncQueue.start();
 
-				// ------------------------------------------------
-				started = true;
-				// ------------------------------------------------
+		// ------------------------------------------------
+		// ContextService,須等內部完全啟動後,再繼續
+		// ------------------------------------------------
+		contextService = new ContextServiceImpl(id, this);
+		contextService.start();
 
-				// cluster
-				startCluster();
-				threadService.submit(new ListenClusterRunner());
+		// cluster
+		startCluster();
+		listenClusterRunner = new ListenClusterRunner(threadService);
+		listenClusterRunner.start();
 
-				// ------------------------------------------------
-				// ServerService
-				// ------------------------------------------------
-				startRelationServers();
-				startClientServers();
+		// ------------------------------------------------
+		// ServerService
+		// ------------------------------------------------
+		startRelationServers();
+		startClientServers();
 
-				// acceptorConnectors
-				threadService.submit(new ListenClientRunner());
-				// passiveRelations
-				threadService.submit(new ListenPassiveRunner());
-				// initiativeRelations
-				buildInitiativeRelations();
-				threadService.submit(new ListenInitiativeRunner());
+		// acceptorConnectors
+		listenClientRunner = new ListenClientRunner(threadService);
+		listenClientRunner.start();
+		// passiveRelations
+		listenPassiveRunner = new ListenPassiveRunner(threadService);
+		listenPassiveRunner.start();
+		// initiativeRelations
+		buildInitiativeRelations();
+		listenInitiativeRunner = new ListenInitiativeRunner(threadService);
+		listenInitiativeRunner.start();
+	}
 
-				//
-				if (started) {
-					LOGGER.info("[" + id + "] (" + instanceId
-							+ ") AcceptorService Had been started");
-				} else {
-					LOGGER.error("[" + id + "] (" + instanceId
-							+ ") AcceptorService Started fail");
+	// ------------------------------------------------
+	// shutdown step by step
+	// ------------------------------------------------
+	// 3.context
+	// 2.externals
+	// 1.internals
+	// 4.cluster
+	// 5.connect
+	@Override
+	protected void doShutdown() throws Exception {
+		// acceptorConnectors
+		for (AcceptorConnector acceptorConnector : acceptorConnectors.values()) {
+			ServerService serverService = clientServices.get(acceptorConnector.getServer());
+			serverService.close(acceptorConnector);
+		}
+
+		// passiveRelations
+		for (GenericRelation passiveRelation : passiveRelations.values()) {
+			for (GenericConnector relationClient : passiveRelation.getClients().values()) {
+				if (relationClient instanceof AcceptorConnector) {
+					AcceptorConnector acceptorConnector = (AcceptorConnector) relationClient;
+					ServerService serverService = relationServices.get(acceptorConnector.getServer());
+					serverService.close(relationClient);
 				}
+			}
+		}
+
+		// clientServerServices
+		for (Map.Entry<String, ServerService> entry : clientServices.entrySet()) {
+			String key = entry.getKey();
+			ServerService serverService = (ServerService) entry.getValue();
+			serverService.shutdown();
+			clientServices.remove(key);
+		}
+
+		// relationServerServices
+		for (Map.Entry<String, ServerService> entry : relationServices.entrySet()) {
+			ServerService serverService = entry.getValue();
+			serverService.shutdown();
+			relationServices.remove(entry.getKey());
+		}
+
+		// cluster
+		try {
+			if (clusterChannel != null && clusterChannel.isConnected()) {
+				clusterChannel.close();
+				clusterChannel = null;
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			started = false;
-			LOGGER.error("[" + id + "] AcceptorService Started fail");
+		}
+
+		// context
+		contextService.shutdown();
+	}
+
+	protected void clusterSend(org.jgroups.Message msg) {
+		try {
+			if (clusterChannel != null && clusterChannel.isConnected()) {
+				clusterChannel.send(msg);
+			} else {
+				LOGGER.warn("[" + id + "] ClusterChannel Had not been started");
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 	}
 
@@ -686,20 +713,18 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 			// [0]=ip
 			// [1]=port
 			if (buff.length == 2) {
-				ServerService serverService = new ServerServiceImpl(ipPort,
-						true, this);
+				ServerService serverService = new ServerServiceImpl(ipPort, true, this);
 				//
 				serverService.setIp(buff[0]);
 				int port = NumberHelper.toInt(buff[1]);
 				serverService.setPort(port);
 				//
-				int maxCounter = (int) NumberHelper.divide(maxClient,
-						relationServers.size());
+				int maxCounter = (int) NumberHelper.divide(maxClient, relationServers.size());
 				serverService.setMaxClient(maxCounter);
 				serverService.start();
 			} else {
-				LOGGER.error("[" + id + "]" + " Wrong [" + ipPort
-						+ "] format, ex: [localhost:2000] or [127.0.0.1:2000]");
+				LOGGER.error(
+						"[" + id + "]" + " Wrong [" + ipPort + "] format, ex: [localhost:2000] or [127.0.0.1:2000]");
 			}
 		}
 	}
@@ -712,8 +737,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 		// clientServers, localhost:2100
 		// ------------------------------------------------
 		if (clientServers == null || clientServers.isEmpty()) {
-			LOGGER.warn("[" + id + "]"
-					+ " ClientServer is null, not been started");
+			LOGGER.warn("[" + id + "]" + " ClientServer is null, not been started");
 			return;
 		}
 
@@ -730,20 +754,18 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 			// [0]=ip
 			// [1]=port
 			if (buff.length == 2) {
-				ServerService serverService = new ServerServiceImpl(ipPort,
-						false, this);
+				ServerService serverService = new ServerServiceImpl(ipPort, false, this);
 				//
 				serverService.setIp(buff[0]);
 				int port = NumberHelper.toInt(buff[1]);
 				serverService.setPort(port);
 				//
-				int maxCounter = (int) NumberHelper.divide(maxClient,
-						relationServers.size());
+				int maxCounter = (int) NumberHelper.divide(maxClient, relationServers.size());
 				serverService.setMaxClient(maxCounter);
 				serverService.start();
 			} else {
-				LOGGER.error("[" + id + "]" + " Wrong [" + ipPort
-						+ "] format, ex: [localhost:2000] or [127.0.0.1:2000]");
+				LOGGER.error(
+						"[" + id + "]" + " Wrong [" + ipPort + "] format, ex: [localhost:2000] or [127.0.0.1:2000]");
 			}
 		}
 	}
@@ -769,14 +791,9 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 				}
 				// 2.slave1:192.168.9.28:3110 在另一台實體主機上
 				else if (buff.length == 3) {
-					buildRemoteRelation(buff[0], buff[1],
-							NumberHelper.toInt(buff[2]));
+					buildRemoteRelation(buff[0], buff[1], NumberHelper.toInt(buff[2]));
 				} else {
-					LOGGER.error("["
-							+ id
-							+ "]"
-							+ " Wrong ["
-							+ relation
+					LOGGER.error("[" + id + "]" + " Wrong [" + relation
 							+ "] format, ex: [slave1] or [slave1:127.0.0.2:3110]");
 				}
 			}
@@ -800,12 +817,10 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 		// 訊息接收者
 		InitiativeReceiver initiativeReceiver = new InitiativeReceiver();
 		// 主動關係連線
-		GenericRelation initiativeRelation = initiativeRelations
-				.get(acceptorId);
+		GenericRelation initiativeRelation = initiativeRelations.get(acceptorId);
 		if (initiativeRelation == null) {
 			initiativeRelation = new GenericRelationImpl(acceptorId);
-			initiativeRelations.put(initiativeRelation.getId(),
-					initiativeRelation);
+			initiativeRelations.put(initiativeRelation.getId(), initiativeRelation);
 		}
 
 		// localhost:3110
@@ -824,20 +839,17 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 					// slave2:0:localhost:3000
 					String relationClientId = id + ":" + i + ":" + ipPort;
 					// System.out.println(relationClientId);
-					boolean contains = initiativeRelation.getClients()
-							.containsKey(relationClientId);
+					boolean contains = initiativeRelation.getClients().containsKey(relationClientId);
 					if (!contains) {
 						// slave2:0:localhost:3000
-						RelationConnector relationConnector = new RelationConnectorImpl(
-								relationClientId, moduleTypeClass,
-								messageTypeClass, protocolService, ip, port);
+						RelationConnector relationConnector = new RelationConnectorImpl(relationClientId,
+								moduleTypeClass, messageTypeClass, protocolService, ip, port);
 						// relationClient.setThreadService(threadService);
 						relationConnector.setReceiver(initiativeReceiver);
 						relationConnector.setRetryNumber(retryNumber);
 						relationConnector.setRetryPauseMills(retryPauseMills);
 						//
-						initiativeRelation.getClients().put(
-								relationConnector.getId(), relationConnector);
+						initiativeRelation.getClients().put(relationConnector.getId(), relationConnector);
 					}
 				}
 			}
@@ -862,31 +874,26 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 		// 訊息接收者
 		InitiativeReceiver initiativeReceiver = new InitiativeReceiver();
 		// 主動關係連線
-		GenericRelation initiativeRelation = initiativeRelations
-				.get(acceptorId);
+		GenericRelation initiativeRelation = initiativeRelations.get(acceptorId);
 		if (initiativeRelation == null) {
 			initiativeRelation = new GenericRelationImpl(acceptorId);
-			initiativeRelations.put(initiativeRelation.getId(),
-					initiativeRelation);
+			initiativeRelations.put(initiativeRelation.getId(), initiativeRelation);
 		}
 		//
 		for (int i = 0; i < RELATION_CLIENT_COUNT; i++) {
 			// slave2:0:localhost:3000
 			String relationClientId = id + ":" + i + ":" + ip + ":" + port;
 			// System.out.println(relationClientId);
-			boolean contains = initiativeRelation.getClients().containsKey(
-					relationClientId);
+			boolean contains = initiativeRelation.getClients().containsKey(relationClientId);
 			if (!contains) {
 				// slave2:0:localhost:3000
-				RelationConnector relationConnector = new RelationConnectorImpl(
-						relationClientId, moduleTypeClass, messageTypeClass,
-						protocolService, ip, port);
+				RelationConnector relationConnector = new RelationConnectorImpl(relationClientId, moduleTypeClass,
+						messageTypeClass, protocolService, ip, port);
 				relationConnector.setReceiver(initiativeReceiver);
 				relationConnector.setRetryNumber(retryNumber);
 				relationConnector.setRetryPauseMills(retryPauseMills);
 				//
-				initiativeRelation.getClients().put(relationConnector.getId(),
-						relationConnector);
+				initiativeRelation.getClients().put(relationConnector.getId(), relationConnector);
 			}
 		}
 	}
@@ -896,14 +903,11 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 		// 找AcceptorService
 		if (acceptorId != null) {
 			try {
-				String[] names = applicationContext
-						.getBeanNamesForType(AcceptorService.class);
+				String[] names = applicationContext.getBeanNamesForType(AcceptorService.class);
 				for (String name : names) {
 					try {
-						AcceptorService acceptorService = (AcceptorService) applicationContext
-								.getBean(name);
-						if (acceptorId
-								.equalsIgnoreCase(acceptorService.getId())) {
+						AcceptorService acceptorService = (AcceptorService) applicationContext.getBean(name);
+						if (acceptorId.equalsIgnoreCase(acceptorService.getId())) {
 							result = acceptorService;
 							break;
 						}
@@ -932,7 +936,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 		protected void doRun() throws Exception {
 			while (true) {
 				try {
-					if (!started) {
+					if (isShutdown()) {
 						break;
 					}
 					listenInitiative();
@@ -947,39 +951,31 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	/**
 	 * 監聽主動端連線
 	 */
-	protected void listenInitiative() {
+	protected void listenInitiative() throws Exception {
 		int relationsSize = initiativeRelations.size();
 		for (GenericRelation initiativeRelation : initiativeRelations.values()) {
 			boolean clientStarted = false;
 			String relationId = initiativeRelation.getId();
 			int clientSize = initiativeRelation.getClients().size();
-			for (GenericConnector genericConnector : initiativeRelation
-					.getClients().values()) {
+			for (GenericConnector genericConnector : initiativeRelation.getClients().values()) {
 				// 當未連上時,就連看看
 				// System.out.println(relationId + ", " +
 				// genericClient.isStarted());
 				if (genericConnector.isStarted()
-				// 0=無限
-						|| (relationRetryNumber != 0 && relationTries >= (relationRetryNumber
-								* relationsSize * clientSize))) {
+						// 0=無限
+						|| (relationRetryNumber != 0
+								&& relationTries >= (relationRetryNumber * relationsSize * clientSize))) {
 					continue;
 				} else {
 					genericConnector.setTries(0);
 					//
 					relationTries++;
-					int buffTries = (relationTries
-							% (relationsSize * clientSize) == 0 ? relationTries
-							/ (relationsSize * clientSize)
+					int buffTries = (relationTries % (relationsSize * clientSize) == 0
+							? relationTries / (relationsSize * clientSize)
 							: (relationTries / (relationsSize * clientSize)) + 1);
-					ThreadHelper.sleep(NioHelper.retryPause(buffTries,
-							relationRetryPauseMills));
-					LOGGER.info("Retrying connect to ["
-							+ relationId
-							+ "]. Already tried ["
-							+ buffTries
-							+ "/"
-							+ (relationRetryNumber != 0 ? relationRetryNumber
-									: "N") + "] time(s).");
+					ThreadHelper.sleep(NioHelper.retryPause(buffTries, relationRetryPauseMills));
+					LOGGER.info("Retrying connect to [" + relationId + "]. Already tried [" + buffTries + "/"
+							+ (relationRetryNumber != 0 ? relationRetryNumber : "N") + "] time(s).");
 				}
 				//
 				genericConnector.start();
@@ -987,8 +983,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 				if (genericConnector.isStarted()) {
 					if (!initiativeRelation.isConnected()) {
 						// 網路層同步,所有slave都會收到
-						for (AcceptorConnector currentClient : acceptorConnectors
-								.values()) {
+						for (AcceptorConnector currentClient : acceptorConnectors.values()) {
 							sendSyncClientConnect(currentClient);
 						}
 
@@ -1044,7 +1039,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 		protected void doRun() throws Exception {
 			while (true) {
 				try {
-					if (!started) {
+					if (isShutdown()) {
 						break;
 					}
 					ThreadHelper.sleep(CLUSTER_LISTEN_MILLS);
@@ -1063,8 +1058,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 		try {
 			if (clusterChannel != null && !clusterChannel.isConnected()) {
 				clusterChannel.connect(cluster);
-				LOGGER.info("ClusterChannel Had ["
-						+ clusterChannel.getView().size() + "] members, "
+				LOGGER.info("ClusterChannel Had [" + clusterChannel.getView().size() + "] members, "
 						+ clusterChannel.getView());
 				// log.info("[" + id + "] ClusterChannel has been started");
 			}
@@ -1082,82 +1076,70 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	// 1.internals
 	// 4.cluster
 	// 5.connect
-	public void shutdown() {
-		try {
-			if (started) {
-				// acceptorConnectors
-				for (AcceptorConnector acceptorConnector : acceptorConnectors
-						.values()) {
-					ServerService serverService = clientServices
-							.get(acceptorConnector.getServer());
-					serverService.close(acceptorConnector);
-				}
+	// public void shutdown() {
+	// try {
+	// if (started) {
+	// // acceptorConnectors
+	// for (AcceptorConnector acceptorConnector : acceptorConnectors.values()) {
+	// ServerService serverService =
+	// clientServices.get(acceptorConnector.getServer());
+	// serverService.close(acceptorConnector);
+	// }
+	//
+	// // passiveRelations
+	// for (GenericRelation passiveRelation : passiveRelations.values()) {
+	// for (GenericConnector relationClient :
+	// passiveRelation.getClients().values()) {
+	// if (relationClient instanceof AcceptorConnector) {
+	// AcceptorConnector acceptorConnector = (AcceptorConnector) relationClient;
+	// ServerService serverService =
+	// relationServices.get(acceptorConnector.getServer());
+	// serverService.close(relationClient);
+	// }
+	// }
+	// }
+	//
+	// // clientServerServices
+	// for (Map.Entry<String, ServerService> entry : clientServices.entrySet())
+	// {
+	// String key = entry.getKey();
+	// ServerService serverService = (ServerService) entry.getValue();
+	// serverService.shutdown();
+	// clientServices.remove(key);
+	// }
+	//
+	// // relationServerServices
+	// for (Map.Entry<String, ServerService> entry :
+	// relationServices.entrySet()) {
+	// ServerService serverService = entry.getValue();
+	// serverService.shutdown();
+	// relationServices.remove(entry.getKey());
+	// }
+	//
+	// // cluster
+	// try {
+	// if (clusterChannel != null && clusterChannel.isConnected()) {
+	// clusterChannel.close();
+	// clusterChannel = null;
+	// }
+	// } catch (Exception ex) {
+	// ex.printStackTrace();
+	// }
+	//
+	// // context
+	// contextService.shutdown();
+	//
+	// started = false;
+	// LOGGER.info("[" + id + "] AcceptorService Had been shutdown");
+	// }
+	// } catch (Exception ex) {
+	// ex.printStackTrace();
+	// started = false;
+	// LOGGER.error("[" + id + "] AcceptorService Shutdown fail");
+	// }
+	// }
 
-				// passiveRelations
-				for (GenericRelation passiveRelation : passiveRelations
-						.values()) {
-					for (GenericConnector relationClient : passiveRelation
-							.getClients().values()) {
-						if (relationClient instanceof AcceptorConnector) {
-							AcceptorConnector acceptorConnector = (AcceptorConnector) relationClient;
-							ServerService serverService = relationServices
-									.get(acceptorConnector.getServer());
-							serverService.close(relationClient);
-						}
-					}
-				}
-
-				// clientServerServices
-				for (Map.Entry<String, ServerService> entry : clientServices
-						.entrySet()) {
-					String key = entry.getKey();
-					ServerService serverService = (ServerService) entry
-							.getValue();
-					serverService.shutdown();
-					clientServices.remove(key);
-				}
-
-				// relationServerServices
-				for (Map.Entry<String, ServerService> entry : relationServices
-						.entrySet()) {
-					ServerService serverService = entry.getValue();
-					serverService.shutdown();
-					relationServices.remove(entry.getKey());
-				}
-
-				// cluster
-				try {
-					if (clusterChannel != null && clusterChannel.isConnected()) {
-						clusterChannel.close();
-						clusterChannel = null;
-					}
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-
-				// context
-				contextService.shutdown();
-
-				started = false;
-				LOGGER.info("[" + id + "] AcceptorService Had been shutdown");
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			started = false;
-			LOGGER.error("[" + id + "] AcceptorService Shutdown fail");
-		}
-
-	}
-
-	public boolean isStarted() {
-		return started;
-	}
-
-	public void setStarted(boolean started) {
-		this.started = started;
-	}
-
-	public boolean addMessage(Message message) {
+	public boolean addMessage(Message message) throws Exception {
 		boolean result = false;
 		//
 		CategoryType categoryType = message.getCategoryType();
@@ -1167,21 +1149,18 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 		if (CategoryType.MESSAGE_CLIENT == categoryType) {
 			if (message.getSrcModule() == null) {
 				@SuppressWarnings("unchecked")
-				ModuleType moduleType = (ModuleType) EnumHelper.valueOf(
-						moduleTypeClass, CLIENT);
+				ModuleType moduleType = (ModuleType) EnumHelper.valueOf(moduleTypeClass, CLIENT);
 				message.setSrcModule(moduleType);
 			}
 			result = receiveClientQueue.offer(message);
 		}
 		// MESSAGE_RELATION
-		else if (CategoryType.MESSAGE_RELATION == categoryType
-				&& !CLIENT.equals(message.getDestModule().name())) {
+		else if (CategoryType.MESSAGE_RELATION == categoryType && !CLIENT.equals(message.getDestModule().name())) {
 			// result = receiveRelations.offer(message);
 			result = receiveRelationQueue.offer(message);
 		}
 		// MESSAGE_RELATION,dest=CLIENT
-		else if (CategoryType.MESSAGE_RELATION == categoryType
-				&& CLIENT.equals(message.getDestModule().name())) {
+		else if (CategoryType.MESSAGE_RELATION == categoryType && CLIENT.equals(message.getDestModule().name())) {
 			messageService.addMessage(message);
 		} else {
 			LOGGER.warn("Undefined: " + categoryType + ", " + message);
@@ -1190,7 +1169,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 		return result;
 	}
 
-	public boolean addMessages(List<Message> messages) {
+	public boolean addMessages(List<Message> messages) throws Exception {
 		boolean result = false;
 		for (Message message : messages) {
 			if (message == null) {
@@ -1220,15 +1199,14 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 * 
 	 * srcModule=FOUR_SYMBOL, destModule= CLIENT
 	 */
-	protected void sendClient(Message message) {
+	protected void sendClient(Message message) throws Exception {
 		// slave1...n
 		// MESSAGE_SERVER
 		if (CategoryType.MESSAGE_SERVER.equals(message.getCategoryType())) {
 			message.setSender(id);
 		}
 		// 若MESSAGE_RELATION,會有sender
-		else if (CategoryType.MESSAGE_RELATION
-				.equals(message.getCategoryType())) {
+		else if (CategoryType.MESSAGE_RELATION.equals(message.getCategoryType())) {
 			//
 		}
 
@@ -1241,8 +1219,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 		if (receiverSize > 0) {
 			for (String receiver : message.getReceivers()) {
 				// 本地acceptorConnector
-				AcceptorConnector acceptorConnector = acceptorConnectors
-						.get(receiver);
+				AcceptorConnector acceptorConnector = acceptorConnectors.get(receiver);
 				if (acceptorConnector != null) {
 					if (!acceptorConnector.isValid()) {
 						continue;
@@ -1263,8 +1240,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 					acceptorConnector = syncClients.get(receiver);
 					if (acceptorConnector != null) {
 						if (!acceptorConnector.isValid()) {
-							LOGGER.warn("[" + receiver
-									+ "] Has no connection to send");
+							LOGGER.warn("[" + receiver + "] Has no connection to send");
 							continue;
 						}
 						// clone message
@@ -1272,16 +1248,14 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 						cloneMessage.getReceivers().clear();
 						cloneMessage.addReceiver(receiver);
 						cloneMessage.setSender(id);
-						cloneMessage
-								.setCategoryType(CategoryType.MESSAGE_RELATION);
+						cloneMessage.setCategoryType(CategoryType.MESSAGE_RELATION);
 						//
-						RelationMessage relationMessage = new RelationMessage(
-								acceptorConnector.getAcceptor(), cloneMessage);
+						RelationMessage relationMessage = new RelationMessage(acceptorConnector.getAcceptor(),
+								cloneMessage);
 						// sendRelations.offer(relationMessage);
 						sendRelationQueue.offer(relationMessage);
 					} else {
-						LOGGER.warn("[" + receiver
-								+ "] Has no connection to send");
+						LOGGER.warn("[" + receiver + "] Has no connection to send");
 						continue;
 					}
 				}
@@ -1292,8 +1266,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	/**
 	 * 接收client訊息
 	 */
-	protected class ReceiveClientQueue<E> extends
-			TriggerQueueSupporter<Message> {
+	protected class ReceiveClientQueue<E> extends TriggerQueueSupporter<Message> {
 
 		public ReceiveClientQueue(ThreadService threadService) {
 			super(threadService);
@@ -1340,13 +1313,11 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 * 
 	 * @param message
 	 */
-	protected void dispatch(Message message) {
+	protected void dispatch(Message message) throws Exception {
 		@SuppressWarnings("unchecked")
-		Enum<?> destModule = EnumHelper.valueOf(moduleTypeClass, message
-				.getDestModule().getValue());
+		Enum<?> destModule = EnumHelper.valueOf(moduleTypeClass, message.getDestModule().getValue());
 		// System.out.println("destModule: " + destModule);
-		SockletService sockletService = contextService.getSockletServices()
-				.get(destModule);
+		SockletService sockletService = contextService.getSockletServices().get(destModule);
 		// System.out.println("sockletService: " + sockletService);
 		// 若在此acceptor的sockletService,則執行service
 		if (message.getSender() == null) {
@@ -1370,8 +1341,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 		}
 		// 若不在此acceptor的sockletService,則轉發到其他acceptor
 		else {
-			sockletService = contextService.getRelationServices().get(
-					destModule);
+			sockletService = contextService.getRelationServices().get(destModule);
 			if (sockletService != null) {
 				for (String acceptor : sockletService.getAcceptors()) {
 					Message cloneMessage = (Message) message.clone();
@@ -1382,8 +1352,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 						System.out.println(cloneMessage);
 					}
 
-					RelationMessage relationMessage = new RelationMessage(
-							acceptor, cloneMessage);
+					RelationMessage relationMessage = new RelationMessage(acceptor, cloneMessage);
 					// sendRelations.offer(relationMessage);
 					sendRelationQueue.offer(relationMessage);
 				}
@@ -1425,8 +1394,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	/**
 	 * 發送relation訊息
 	 */
-	protected class SendRelationQueue<E> extends
-			TriggerQueueSupporter<RelationMessage> {
+	protected class SendRelationQueue<E> extends TriggerQueueSupporter<RelationMessage> {
 
 		public SendRelationQueue(ThreadService threadService) {
 			super(threadService);
@@ -1453,8 +1421,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 				return;
 			}
 			// 先找主動關係連線
-			GenericRelation initiativeRelation = initiativeRelations
-					.get(acceptor);
+			GenericRelation initiativeRelation = initiativeRelations.get(acceptor);
 			// System.out.println("initiativeRelation: " + initiativeRelation);
 			if (initiativeRelation != null && initiativeRelation.isConnected()) {
 				int write = initiativeRelation.send(message);
@@ -1464,8 +1431,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 				// System.out.println("write: " + write);
 			} else {
 				// 再找被動關係連線
-				GenericRelation passiveRelation = passiveRelations
-						.get(acceptor);
+				GenericRelation passiveRelation = passiveRelations.get(acceptor);
 				// System.out.println("passiveRelation: " + passiveRelation);
 				if (passiveRelation != null && passiveRelation.isConnected()) {
 					passiveRelation.send(message);
@@ -1490,8 +1456,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 * 
 	 * srcModule=slave1.CLIENT, destModule= slave2.CORE
 	 */
-	protected class ReceiveRelationQueue<E> extends
-			TriggerQueueSupporter<Message> {
+	protected class ReceiveRelationQueue<E> extends TriggerQueueSupporter<Message> {
 
 		public ReceiveRelationQueue(ThreadService threadService) {
 			super(threadService);
@@ -1532,10 +1497,8 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 		//
 		byte[] buff = protocolService.assemble(message);
 		if (buff != null) {
-			ClusterMessage clusterMessage = new ClusterMessageImpl(
-					CategoryType.MESSAGE_ACCEPTOR, buff);
-			org.jgroups.Message msg = new org.jgroups.Message(null, null,
-					clusterMessage);
+			ClusterMessage clusterMessage = new ClusterMessageImpl(CategoryType.MESSAGE_ACCEPTOR, buff);
+			org.jgroups.Message msg = new org.jgroups.Message(null, null, clusterMessage);
 			clusterSend(msg);
 		}
 	}
@@ -1545,8 +1508,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 * 
 	 * udp,server->relation, MESSAGE_ACCEPTOR
 	 */
-	protected class ReceiveAcceptorQueue<E> extends
-			TriggerQueueSupporter<Message> {
+	protected class ReceiveAcceptorQueue<E> extends TriggerQueueSupporter<Message> {
 
 		public ReceiveAcceptorQueue(ThreadService threadService) {
 			super(threadService);
@@ -1559,8 +1521,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	}
 
 	protected void receiveAcceptor(Message message) {
-		AcceptorMessageType messageType = (AcceptorMessageType) message
-				.getMessageType();
+		AcceptorMessageType messageType = (AcceptorMessageType) message.getMessageType();
 		switch (messageType) {
 		case ACCEPTOR_SYNC_CLIENT_CONNECT_REQUEST: {
 			String clientSender = message.getString(0);
@@ -1571,8 +1532,8 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 			int serverPort = message.getInt(5);
 			String clientIp = message.getString(6);
 			int clientPort = message.getInt(7);
-			syncClientConnect(clientSender, clientAcceptor, authKey, handshake,
-					serverIp, serverPort, clientIp, clientPort);
+			syncClientConnect(clientSender, clientAcceptor, authKey, handshake, serverIp, serverPort, clientIp,
+					clientPort);
 			break;
 		}
 		case ACCEPTOR_SYNC_CLIENT_DISCONNECT_REQUEST: {
@@ -1593,8 +1554,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 * @return
 	 */
 	protected Message createAcceptor(MessageType messageType) {
-		Message result = new MessageImpl(CategoryType.MESSAGE_ACCEPTOR,
-				PriorityType.MEDIUM, id, messageType);
+		Message result = new MessageImpl(CategoryType.MESSAGE_ACCEPTOR, PriorityType.MEDIUM, id, messageType);
 		return result;
 	}
 
@@ -1603,7 +1563,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 * 
 	 * @param acceptorConnector
 	 */
-	protected void sendSyncClientConnect(AcceptorConnector acceptorConnector) {
+	protected void sendSyncClientConnect(AcceptorConnector acceptorConnector) throws Exception {
 		Message message = createAcceptor(AcceptorMessageType.ACCEPTOR_SYNC_CLIENT_CONNECT_REQUEST);
 		//
 		message.addString(acceptorConnector.getSender());// client sender
@@ -1631,11 +1591,9 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 * @param clientIp
 	 * @param clientPort
 	 */
-	protected void syncClientConnect(String clientSender,
-			String clientAcceptor, byte[] authKey, boolean handshake,
+	protected void syncClientConnect(String clientSender, String clientAcceptor, byte[] authKey, boolean handshake,
 			String serverIp, int serverPort, String clientIp, int clientPort) {
-		AcceptorConnector acceptorConnector = new AcceptorConnectorImpl(
-				ByteHelper.toString(authKey));// 認證碼當id
+		AcceptorConnector acceptorConnector = new AcceptorConnectorImpl(ByteHelper.toString(authKey));// 認證碼當id
 		acceptorConnector.setSender(clientSender);
 		acceptorConnector.setAcceptor(clientAcceptor);
 		acceptorConnector.setAuthKey(authKey);
@@ -1656,7 +1614,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 * 
 	 * @param acceptorConnector
 	 */
-	protected void sendSyncClientDisconnect(GenericConnector genericConnector) {
+	protected void sendSyncClientDisconnect(GenericConnector genericConnector) throws Exception {
 		Message message = createAcceptor(AcceptorMessageType.ACCEPTOR_SYNC_CLIENT_DISCONNECT_REQUEST);
 		//
 		message.addString(genericConnector.getSender());// client sender
@@ -1723,17 +1681,14 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 		}
 
 		// 若只有一個member,cluster就不用發訊息了
-		if (clusterChannel == null || !clusterChannel.isConnected()
-				|| clusterChannel.getView().size() < 2) {
+		if (clusterChannel == null || !clusterChannel.isConnected() || clusterChannel.getView().size() < 2) {
 			return;
 		}
 		//
 		byte[] buff = protocolService.assemble(message);
 		if (buff != null) {
-			ClusterMessage syncMessage = new ClusterMessageImpl(
-					CategoryType.MESSAGE_SYNC, buff);
-			org.jgroups.Message msg = new org.jgroups.Message(null, null,
-					syncMessage);
+			ClusterMessage syncMessage = new ClusterMessageImpl(CategoryType.MESSAGE_SYNC, buff);
+			org.jgroups.Message msg = new org.jgroups.Message(null, null, syncMessage);
 			clusterSend(msg);
 		}
 	}
@@ -1766,11 +1721,9 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 */
 	protected void receiveSync(Message message) {
 		@SuppressWarnings("unchecked")
-		Enum<?> destModule = EnumHelper.valueOf(moduleTypeClass, message
-				.getDestModule().getValue());
+		Enum<?> destModule = EnumHelper.valueOf(moduleTypeClass, message.getDestModule().getValue());
 		// System.out.println("destModule: " + destModule);
-		SockletService sockletService = contextService.getSockletServices()
-				.get(destModule);
+		SockletService sockletService = contextService.getSockletServices().get(destModule);
 		// System.out.println("sockletService: " + sockletService);
 		// 若在此acceptor的sockletService,則執行service
 		if (sockletService != null) {
@@ -1806,7 +1759,11 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 			// from [account] MESSAGE_RELATION, (11101) LOGIN_AUTHORIZE_REQUEST,
 			// (11000) ACCOUNT => (11100) LOGIN to []
 			// System.out.println("InitiativeReceiver: " + message);
-			addMessage(message);
+			try {
+				addMessage(message);
+			} catch (Exception e) {
+				LOGGER.error(new StringBuilder("Exception encountered during receive()").toString(), e);
+			}
 		}
 	}
 
@@ -1823,9 +1780,10 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 		protected void doRun() throws Exception {
 			while (true) {
 				try {
-					if (!started) {
+					if (isShutdown()) {
 						break;
 					}
+					//
 					listenClient();
 					ThreadHelper.sleep(CLIENT_LISTEN_MILLS);
 				} catch (Exception ex) {
@@ -1844,9 +1802,9 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 			boolean disconnected = false;
 			try {
 				// check by read
-				int read = acceptorConnector.getSocketChannel().read(
-						ByteBuffer.allocate(1));
-				// System.out.println("listenClient..."+acceptorConnector.getSender()+" "+read);
+				int read = acceptorConnector.getSocketChannel().read(ByteBuffer.allocate(1));
+				// System.out.println("listenClient..."+acceptorConnector.getSender()+"
+				// "+read);
 				// 斷線了
 				if (read == -1) {
 					disconnected = true;
@@ -1857,8 +1815,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 			}
 			// 若斷線就關閉client連線
 			if (disconnected) {
-				ServerService serverService = clientServices
-						.get(acceptorConnector.getServer());
+				ServerService serverService = clientServices.get(acceptorConnector.getServer());
 				serverService.close(acceptorConnector);
 			}
 		}
@@ -1877,7 +1834,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 		protected void doRun() throws Exception {
 			while (true) {
 				try {
-					if (!started) {
+					if (isShutdown()) {
 						break;
 					}
 					listenPassive();
@@ -1895,23 +1852,19 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	protected void listenPassive() {
 		// passiveRelations
 		for (GenericRelation passiveRelation : passiveRelations.values()) {
-			for (GenericConnector genericConnector : passiveRelation
-					.getClients().values()) {
+			for (GenericConnector genericConnector : passiveRelation.getClients().values()) {
 				try {
 					// check by read
-					genericConnector.getSocketChannel().read(
-							ByteBuffer.allocate(1));
+					genericConnector.getSocketChannel().read(ByteBuffer.allocate(1));
 				} catch (Exception ex) {
 					// ex.printStackTrace();
 					if (genericConnector instanceof AcceptorConnector) {
 						AcceptorConnector acceptorConnector = (AcceptorConnector) genericConnector;
-						ServerService serverService = clientServices
-								.get(acceptorConnector.getServer());
+						ServerService serverService = clientServices.get(acceptorConnector.getServer());
 						if (serverService != null) {
 							serverService.close(acceptorConnector);
 						} else {
-							serverService = relationServices
-									.get(acceptorConnector.getServer());
+							serverService = relationServices.get(acceptorConnector.getServer());
 							if (serverService != null) {
 								serverService.close(acceptorConnector);
 							}
@@ -1926,6 +1879,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 	 * cluster接收者
 	 */
 	protected class ClusterReceiver extends ReceiverAdapter {
+
 		public void receive(org.jgroups.Message msg) {
 			Object object = msg.getObject();
 			if (object instanceof ClusterMessage) {
@@ -1936,23 +1890,29 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 				case MESSAGE_ACCEPTOR: {
 					byte[] buff = clusterMessage.getBody();
 					//
-					List<Message> messages = protocolService
-							.disassemble(buff, AcceptorModuleType.class,
-									AcceptorMessageType.class);
+					List<Message> messages = protocolService.disassemble(buff, AcceptorModuleType.class,
+							AcceptorMessageType.class);
 					for (Message message : messages) {
-						receiveAcceptorQueue.offer(message);
+						try {
+							receiveAcceptorQueue.offer(message);
+						} catch (Exception e) {
+							LOGGER.error(new StringBuilder("Exception encountered during receive()").toString(), e);
+						}
 					}
 					break;
 				}
-				// 邏輯用
+					// 邏輯用
 				case MESSAGE_SYNC: {
 					byte[] buff = clusterMessage.getBody();
 					//
 					@SuppressWarnings("unchecked")
-					List<Message> messages = protocolService.disassemble(buff,
-							moduleTypeClass, messageTypeClass);
+					List<Message> messages = protocolService.disassemble(buff, moduleTypeClass, messageTypeClass);
 					for (Message message : messages) {
-						receiveSyncQueue.offer(message);
+						try {
+							receiveSyncQueue.offer(message);
+						} catch (Exception e) {
+							LOGGER.error(new StringBuilder("Exception encountered during receive()").toString(), e);
+						}
 					}
 					break;
 				}
@@ -1983,10 +1943,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements
 		//
 		builder.append("retryNumber", retryNumber);
 		builder.append("retryPauseMills", retryPauseMills);
-		//
-		builder.append("started", started);
-		//
-		// builder.append("contextService", contextService);
 		return builder.toString();
 	}
+
 }

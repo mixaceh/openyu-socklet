@@ -96,25 +96,6 @@ public interface AcceptorService extends BaseService {
 	// ------------------------------------------------
 
 	/**
-	 * 啟動
-	 */
-	void start();
-
-	/**
-	 * 關閉
-	 */
-	void shutdown();
-
-//	/**
-//	 * 是否已啟動
-//	 * 
-//	 * @return
-//	 */
-//	boolean isStarted();
-//
-//	void setStarted(boolean started);
-
-	/**
 	 * 取得sender的connector
 	 * 
 	 * @param sender
