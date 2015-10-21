@@ -1139,7 +1139,14 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	// }
 	// }
 
-	public boolean addMessage(Message message) throws Exception {
+	/**
+	 * 加入訊息到queue
+	 * 
+	 * @param message
+	 * @return
+	 * @throws Exception
+	 */
+	protected boolean addMessage(Message message) throws Exception {
 		boolean result = false;
 		//
 		CategoryType categoryType = message.getCategoryType();
@@ -1169,7 +1176,14 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		return result;
 	}
 
-	public boolean addMessages(List<Message> messages) throws Exception {
+	/**
+	 * 加入訊息到queue
+	 * 
+	 * @param messages
+	 * @return
+	 * @throws Exception
+	 */
+	protected boolean addMessages(List<Message> messages) throws Exception {
 		boolean result = false;
 		for (Message message : messages) {
 			if (message == null) {

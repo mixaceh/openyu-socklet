@@ -70,11 +70,6 @@ public interface ContextService extends BaseService
 	void start();
 
 	void shutdown();
-
-	boolean isStarted();
-
-	void setStarted(boolean started);
-
 }
 
 /*
