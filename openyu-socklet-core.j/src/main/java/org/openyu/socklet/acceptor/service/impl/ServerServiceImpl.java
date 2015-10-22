@@ -55,15 +55,15 @@ import org.apache.commons.lang.builder.ToStringBuilder;
  *
  * write 目前暫時沒用到,以後有用再說吧
  */
-public class ServerServiceImpl extends BaseServiceSupporter implements
-		ServerService {
+public class ServerServiceImpl extends BaseServiceSupporter implements ServerService {
 
 	private static final long serialVersionUID = 5754645204772568156L;
 
-	private static transient final Logger LOGGER = LoggerFactory
-			.getLogger(ServerServiceImpl.class);
+	private static transient final Logger LOGGER = LoggerFactory.getLogger(ServerServiceImpl.class);
 
-	// localhost:3100
+	/**
+	 * localhost:3100
+	 */
 	private String id;
 
 	// localhost
@@ -152,8 +152,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 	// write 目前暫時沒用到,以後有用再說吧
 	// ------------------------------------------------
 
-	public ServerServiceImpl(String id, boolean inernal,
-			AcceptorServiceImpl acceptorService) {
+	public ServerServiceImpl(String id, boolean inernal, AcceptorServiceImpl acceptorService) {
 		this.applicationContext = acceptorService.getApplicationContext();
 		this.threadService = acceptorService.getThreadService();
 		//
@@ -219,8 +218,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 				serverChannel = ServerSocketChannel.open();
 				serverChannel.configureBlocking(false);
 				ServerSocket serverSocket = serverChannel.socket();
-				InetSocketAddress address = NioHelper.createInetSocketAddress(
-						ip, port);
+				InetSocketAddress address = NioHelper.createInetSocketAddress(ip, port);
 				// serverChannel.socket().setReuseAddress(true);
 				// serverChannel.socket().bind(address, DEFAULT_BACKLOG);
 				serverSocket.bind(address, DEFAULT_BACKLOG);
@@ -235,9 +233,8 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 					// + serverKey.readyOps());//16 0
 
 					// 加入已啟動的servers
-					serverServices = (relationServer ? acceptorService
-							.getRelationServerServices() : acceptorService
-							.getClientServerServices());
+					serverServices = (relationServer ? acceptorService.getRelationServerServices()
+							: acceptorService.getClientServerServices());
 					serverServices.put(id, this);
 
 					// listen,selector
@@ -249,14 +246,10 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 					// RelationServer [3110]
 					// ClientServer [4110]
 
-					LOGGER.info(acceptorServer
-							+ (relationServer ? "RelationServer"
-									: "ClientServer") + " [" + port
+					LOGGER.info(acceptorServer + (relationServer ? "RelationServer" : "ClientServer") + " [" + port
 							+ "] Had been started");
 				} else {
-					LOGGER.error(acceptorServer
-							+ (relationServer ? "RelationServer"
-									: "ClientServer") + " [" + port
+					LOGGER.error(acceptorServer + (relationServer ? "RelationServer" : "ClientServer") + " [" + port
 							+ "] Started fail");
 				}
 			}
@@ -271,7 +264,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 	 * 監聽
 	 */
 	protected class ListenRunner extends BaseRunnableSupporter {
-		
+
 		public void execute() {
 			while (true) {
 				try {
@@ -339,25 +332,21 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 				int nowCounter = counter.get();
 				if (nowCounter >= getMaxClient()) {
 					// 127.0.0.1:64237
-					LOGGER.error(acceptorServer + "counter[" + nowCounter
-							+ "] > max[" + getMaxClient() + "], "
-							+ client.socket().getRemoteSocketAddress()
-							+ " Can't connect server");
+					LOGGER.error(acceptorServer + "counter[" + nowCounter + "] > max[" + getMaxClient() + "], "
+							+ client.socket().getRemoteSocketAddress() + " Can't connect server");
 					NioHelper.close(selectionKey);
 				}
 				// ---------------------------------------------
 				// create client and attach
 				// ---------------------------------------------
 				else {
-					SelectionKey clientKey = client.register(selector,
-							SelectionKey.OP_READ);
+					SelectionKey clientKey = client.register(selector, SelectionKey.OP_READ);
 					// System.out.println("selectionKey..."+selectionKey);//都是同一個
 					// System.out.println("clientKey..."+clientKey);//每次都不同
 					// 取mem位址當id,sun.nio.ch.SelectionKeyImpl@19e09a4
 					String clientId = String.valueOf(clientKey);
-					AcceptorConnector acceptorConnector = new AcceptorConnectorImpl(
-							clientId, moduleTypeClass, messageTypeClass,
-							protocolService);
+					AcceptorConnector acceptorConnector = new AcceptorConnectorImpl(clientId, moduleTypeClass,
+							messageTypeClass, protocolService);
 					acceptorConnector.setAcceptor(acceptorId);// slave1
 					acceptorConnector.setServer(id);// localhost:3100
 					// acceptorConnector.setSelectionKey(clientKey);
@@ -366,15 +355,12 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 					// server ip,port
 					// ServerSocket serverSocket = serverChannel.socket();
 					ServerSocket serverSocket = server.socket();
-					acceptorConnector.setServerIp(serverSocket.getInetAddress()
-							.getHostAddress());
-					acceptorConnector
-							.setServerPort(serverSocket.getLocalPort());
+					acceptorConnector.setServerIp(serverSocket.getInetAddress().getHostAddress());
+					acceptorConnector.setServerPort(serverSocket.getLocalPort());
 
 					// client ip,port
 					Socket clientSocket = client.socket();
-					acceptorConnector.setClientIp(clientSocket.getInetAddress()
-							.getHostAddress());
+					acceptorConnector.setClientIp(clientSocket.getInetAddress().getHostAddress());
 					acceptorConnector.setClientPort(clientSocket.getPort());
 					// acceptorConnector.start();
 					//
@@ -411,8 +397,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 		} catch (CancelledKeyException ex) {
 			// ex.printStackTrace();
 			//
-			AcceptorConnector acceptorConnector = (AcceptorConnector) selectionKey
-					.attachment();
+			AcceptorConnector acceptorConnector = (AcceptorConnector) selectionKey.attachment();
 			if (acceptorConnector != null) {
 				close(acceptorConnector);
 			}
@@ -422,8 +407,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 		catch (ClosedChannelException ex) {
 			// ex.printStackTrace();
 			//
-			AcceptorConnector acceptorConnector = (AcceptorConnector) selectionKey
-					.attachment();
+			AcceptorConnector acceptorConnector = (AcceptorConnector) selectionKey.attachment();
 			if (acceptorConnector != null) {
 				close(acceptorConnector);
 			}
@@ -433,8 +417,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 			// System.out.println(ex.getMessage());
 			// ex.printStackTrace();
 			//
-			AcceptorConnector acceptorConnector = (AcceptorConnector) selectionKey
-					.attachment();
+			AcceptorConnector acceptorConnector = (AcceptorConnector) selectionKey.attachment();
 			if (acceptorConnector != null) {
 				close(acceptorConnector);
 			}
@@ -449,7 +432,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 	 * 讀取key佇列
 	 */
 	protected class ReadKeyQueue<E> extends TriggerQueueSupporter<E> {
-		
+
 		public ReadKeyQueue() {
 		}
 
@@ -464,8 +447,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 	 * @param selectionKey
 	 */
 	protected void read(SelectionKey selectionKey) {
-		AcceptorConnector acceptorConnector = (AcceptorConnector) selectionKey
-				.attachment();
+		AcceptorConnector acceptorConnector = (AcceptorConnector) selectionKey.attachment();
 		// SocketChannel clientChannel = acceptorConnector.getSocketChannel();
 		SocketChannel client = (SocketChannel) selectionKey.channel();
 		if (!acceptorConnector.isStarted()) {
@@ -481,8 +463,8 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 		// 當flash第一次連線時,跨網域時,會發送 <policy-file-request/>\0=23
 		// ---------------------------------------------
 		if (!acceptorConnector.isReadFlashPolicy()
-				&& acceptorConnector.getConnectorType() != ConnectorType.FLASH_SOCKLET
-				&& bytes != null && bytes.length == 23) {
+				&& acceptorConnector.getConnectorType() != ConnectorType.FLASH_SOCKLET && bytes != null
+				&& bytes.length == 23) {
 			receiveFlashPolicy(acceptorConnector, bytes);
 
 			// ---------------------------------------------
@@ -506,15 +488,13 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 		// byte[0]=2,java client
 		// @see JavaConnectorImpl.sendAlready, java client用
 		// ---------------------------------------------
-		else if (!acceptorConnector.isReadAlready() && bytes != null
-				&& bytes.length == 1) {
+		else if (!acceptorConnector.isReadAlready() && bytes != null && bytes.length == 1) {
 			receiveAlready(acceptorConnector, bytes[0]);
 
 			// ---------------------------------------------
 			// send authKey
 			// ---------------------------------------------
-			if (acceptorConnector.isReadAlready()
-					&& !acceptorConnector.isSendAuthKey()
+			if (acceptorConnector.isReadAlready() && !acceptorConnector.isSendAuthKey()
 					&& acceptorConnector.getAuthKey() == null) {
 				sendAuthKey(acceptorConnector);
 			}
@@ -523,17 +503,15 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 		// receive handshake, >= 38
 		// !=23 => 當flash第一次連線時,跨網域時,會發送 <policy-file-request/>\0=23
 		// ---------------------------------------------
-		else if (!acceptorConnector.isReadHandshake()
-				&& !acceptorConnector.isHandshake()
-				&& acceptorConnector.getAuthKey() != null && bytes != null
-				&& bytes.length != 23 && bytes.length >= 38) {
+		else if (!acceptorConnector.isReadHandshake() && !acceptorConnector.isHandshake()
+				&& acceptorConnector.getAuthKey() != null && bytes != null && bytes.length != 23
+				&& bytes.length >= 38) {
 			receiveHandshake(acceptorConnector, bytes);
 		}
 		// ---------------------------------------------
 		// receive message
 		// ---------------------------------------------
-		else if (acceptorConnector.getAuthKey() != null
-				&& acceptorConnector.isHandshake() && bytes != null) {
+		else if (acceptorConnector.getAuthKey() != null && acceptorConnector.isHandshake() && bytes != null) {
 			receiveMessage(acceptorConnector, bytes);
 		}
 	}
@@ -543,8 +521,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 	 *
 	 * @param acceptorConnector
 	 */
-	protected void receiveFlashPolicy(AcceptorConnector acceptorConnector,
-			byte[] bytes) {
+	protected void receiveFlashPolicy(AcceptorConnector acceptorConnector, byte[] bytes) {
 		acceptorConnector.setReadFlashPolicy(true);
 		// <policy-file-request/>\0 => <policy-file-request/>
 		byte[] buffs = ByteHelper.getByteArray(bytes, 0, bytes.length - 1);
@@ -564,8 +541,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 	 * @param acceptorConnector
 	 */
 	protected void sendFlashPolicy(AcceptorConnector acceptorConnector) {
-		int write = acceptorConnector
-				.send(GenericConnector.FLASH_OUTPUT_POLICY_BYTES);
+		int write = acceptorConnector.send(GenericConnector.FLASH_OUTPUT_POLICY_BYTES);
 		if (write > 0) {
 			acceptorConnector.setSendFlashPolicy(true);
 		}
@@ -637,8 +613,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 	 * @param acceptorConnector
 	 * @param bytes
 	 */
-	protected void receiveHandshake(AcceptorConnector acceptorConnector,
-			byte[] bytes) {
+	protected void receiveHandshake(AcceptorConnector acceptorConnector, byte[] bytes) {
 		// SelectionKey selectionKey = acceptorConnector.getSelectionKey();
 		//
 		acceptorConnector.setReadHandshake(true);
@@ -663,10 +638,8 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 		if (message != null) {
 			// 檢查認證碼是否與server發出去的相同
 			byte[] clientAuthkey = message.getByteArray(0);
-			if (clientAuthkey == null
-					|| clientAuthkey.length != 32
-					|| !ObjectHelper.equals(clientAuthkey,
-							ByteHelper.toByteArray(authKey.getId()))) {
+			if (clientAuthkey == null || clientAuthkey.length != 32
+					|| !ObjectHelper.equals(clientAuthkey, ByteHelper.toByteArray(authKey.getId()))) {
 				LOGGER.warn(acceptorServer + "Authkey is invalid");
 				return;
 			}
@@ -691,23 +664,20 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 			//
 			AcceptorConnector existClient = acceptorConnectors.get(sender);
 			// 檢查是否重覆連線,同sender,但來自於不同連線
-			if (existClient != null
-					&& !acceptorConnector.getId().equals(existClient.getId())) {
+			if (existClient != null && !acceptorConnector.getId().equals(existClient.getId())) {
 				// 已經存在的client
 				close(existClient);
 				// 剛連上的client
 				closeSelf(acceptorConnector);
 				//
-				LOGGER.warn(acceptorServer + "Already exist client ["
-						+ existClient.getSender() + "]");
+				LOGGER.warn(acceptorServer + "Already exist client [" + existClient.getSender() + "]");
 				return;
 			}
 			// 握手成功
 			else {
 				acceptorConnector.setHandshake(true);
 				acceptorConnector.setSender(sender);
-				acceptorConnectors.put(acceptorConnector.getSender(),
-						acceptorConnector);
+				acceptorConnectors.put(acceptorConnector.getSender(), acceptorConnector);
 
 				// ---------------------------------------------
 				// 握手成功後
@@ -721,17 +691,15 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 				// ---------------------------------------------
 				createSession(acceptorConnector);
 				//
-				LOGGER.info("C[" + counter.get() + "]" + acceptorServer
-						+ "Connected from [" + acceptorConnector.getSender()
-						+ "]");
+				LOGGER.info("C[" + counter.get() + "]" + acceptorServer + "Connected from ["
+						+ acceptorConnector.getSender() + "]");
 			}
 		}
 
 		// ---------------------------------------------
 		// HANDSHAKE_RELATION
 		// ---------------------------------------------
-		else if (CategoryType.HANDSHAKE_RELATION.equals(message
-				.getCategoryType())) {
+		else if (CategoryType.HANDSHAKE_RELATION.equals(message.getCategoryType())) {
 			// slave2:0:localhost:3000
 			String sender = message.getSender();
 			String[] buff = sender.split(":");
@@ -739,36 +707,28 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 				authKeyService.removeAuthKey(acceptorConnector.getId());
 				// slave2 -> slave1
 				String relationId = buff[0]; // slave2
-				GenericRelation passiveRelation = passiveRelations
-						.get(relationId);
+				GenericRelation passiveRelation = passiveRelations.get(relationId);
 				if (passiveRelation == null) {
 					passiveRelation = new GenericRelationImpl(relationId);
-					passiveRelations.put(passiveRelation.getId(),
-							passiveRelation);
+					passiveRelations.put(passiveRelation.getId(), passiveRelation);
 				}
 
 				// 檢查是否重覆連線,同sender,但來自於不同連線
-				GenericConnector existClient = passiveRelation.getClients()
-						.get(sender);
+				GenericConnector existClient = passiveRelation.getClients().get(sender);
 				// 已經存在的client
-				if (existClient != null
-						&& !acceptorConnector.getId().equals(
-								existClient.getId())) {
+				if (existClient != null && !acceptorConnector.getId().equals(existClient.getId())) {
 					close(existClient);
 					// 剛連上的client
 					closeSelf(acceptorConnector);
 					//
-					LOGGER.warn(acceptorServer
-							+ "Already exist relation client ["
-							+ existClient.getSender() + "]");
+					LOGGER.warn(acceptorServer + "Already exist relation client [" + existClient.getSender() + "]");
 					return;
 				}
 				// 握手成功
 				else {
 					acceptorConnector.setHandshake(true);
 					acceptorConnector.setSender(sender);
-					passiveRelation.getClients().put(
-							acceptorConnector.getSender(), acceptorConnector);
+					passiveRelation.getClients().put(acceptorConnector.getSender(), acceptorConnector);
 					// ---------------------------------------------
 					// 握手成功後
 					// ---------------------------------------------
@@ -779,26 +739,22 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 					// #fix isConnected判斷
 					if (!passiveRelation.isConnected()) {
 						// 網路層同步,所有slave都會收到
-						for (AcceptorConnector currentClient : acceptorService
-								.getAcceptorConnectors().values()) {
-							acceptorService
-									.sendSyncClientConnect(currentClient);
+						for (AcceptorConnector currentClient : acceptorService.getAcceptorConnectors().values()) {
+							acceptorService.sendSyncClientConnect(currentClient);
 						}
 
 						// 邏輯層同步,用relationEvent處理
 						contextService.fireRelationConnected(relationId);
 						//
 						passiveRelation.setConnected(true);
-						LOGGER.info(acceptorServer + "Connected from ["
-								+ passiveRelation.getId() + "]");
+						LOGGER.info(acceptorServer + "Connected from [" + passiveRelation.getId() + "]");
 					}
 				}
 			} else {
 				authKeyService.removeAuthKey(acceptorConnector.getId());
 				closeSelf(acceptorConnector);
 				//
-				LOGGER.error(acceptorServer + "Wrong relation [" + sender
-						+ "] format, ex: [slave2:0:localhost:3000]");
+				LOGGER.error(acceptorServer + "Wrong relation [" + sender + "] format, ex: [slave2:0:localhost:3000]");
 			}
 		}
 		// handshake fail
@@ -821,13 +777,11 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 	 * @param acceptorConnector
 	 * @param message
 	 */
-	protected void sendHandshake(AcceptorConnector acceptorConnector,
-			Message message) {
-		if (!acceptorConnector.isSendHandshake()
-				&& acceptorConnector.isHandshake()) {
+	protected void sendHandshake(AcceptorConnector acceptorConnector, Message message) {
+		if (!acceptorConnector.isSendHandshake() && acceptorConnector.isHandshake()) {
 			message.setCategoryType(CategoryType.HANDSHAKE_SERVER);
-			byte[] bytes = protocolService.handshake(message.getCategoryType(),
-					acceptorConnector.getAuthKey(), acceptorService.getId());// sender表server本身
+			byte[] bytes = protocolService.handshake(message.getCategoryType(), acceptorConnector.getAuthKey(),
+					acceptorService.getId());// sender表server本身
 			int write = acceptorConnector.send(bytes);
 			// 握手成功,且已通知client
 			if (write > 0) {
@@ -858,11 +812,9 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 	 * @param bytes
 	 */
 
-	protected void receiveMessage(AcceptorConnector acceptorConnector,
-			byte[] bytes) {
+	protected void receiveMessage(AcceptorConnector acceptorConnector, byte[] bytes) {
 		@SuppressWarnings("unchecked")
-		List<Message> messages = protocolService.disassemble(bytes,
-				moduleTypeClass, messageTypeClass);
+		List<Message> messages = protocolService.disassemble(bytes, moduleTypeClass, messageTypeClass);
 		// System.out.println(acceptorId);
 		// System.out.println("messages: " + messages);
 
@@ -891,8 +843,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 	 */
 	protected void destroySession(GenericConnector genericConnector) {
 		// session.id=sender
-		Session session = contextService.getSessions().remove(
-				genericConnector.getSender());
+		Session session = contextService.getSessions().remove(genericConnector.getSender());
 		contextService.fireSessionDestroyed(session);
 		// System.out.println("destroySession: " +
 		// contextService.getSessions());
@@ -946,17 +897,14 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 					// 銷毀session
 					destroySession(genericConnector);
 					//
-					LOGGER.info("C[" + counter.get() + "]" + acceptorServer
-							+ "Disconnect [" + sender + "]");
+					LOGGER.info("C[" + counter.get() + "]" + acceptorServer + "Disconnect [" + sender + "]");
 				}
 				// passiveRelations
 				else {
 					// 當relation的socket都斷光時,就移除吧
 					List<String> removeRelations = new LinkedList<String>();
-					for (GenericRelation passiveRelation : passiveRelations
-							.values()) {
-						boolean relationContains = passiveRelation.getClients()
-								.containsKey(sender);
+					for (GenericRelation passiveRelation : passiveRelations.values()) {
+						boolean relationContains = passiveRelation.getClients().containsKey(sender);
 						if (relationContains) {
 							genericConnector.shutdown();
 							passiveRelation.getClients().remove(sender);
@@ -967,16 +915,13 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 								// 網路層同步,沒做任何事
 
 								// 邏輯層同步,用relationEvent處理
-								contextService
-										.fireRelationDisconnected(passiveRelation
-												.getId());
+								contextService.fireRelationDisconnected(passiveRelation.getId());
 								//
 								passiveRelation.setConnected(false);
 								removeRelations.add(passiveRelation.getId());
 							}
 							//
-							LOGGER.info("C[" + counter.get() + "]"
-									+ acceptorServer + "Disconnect ["
+							LOGGER.info("C[" + counter.get() + "]" + acceptorServer + "Disconnect ["
 									+ genericConnector.getSender() + "]");
 							break;
 						}
@@ -997,8 +942,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 
 	protected void closeSelf(AcceptorConnector acceptorConnector) {
 		acceptorConnector.shutdown();
-		LOGGER.info("C[" + counter.get() + "]" + acceptorServer + "Disconnect "
-				+ acceptorConnector.getClientIp() + ":"
+		LOGGER.info("C[" + counter.get() + "]" + acceptorServer + "Disconnect " + acceptorConnector.getClientIp() + ":"
 				+ acceptorConnector.getClientPort());
 	}
 

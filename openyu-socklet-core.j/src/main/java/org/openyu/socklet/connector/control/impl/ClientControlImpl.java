@@ -22,13 +22,11 @@ import org.slf4j.LoggerFactory;
 /**
  * 客戶端控制器
  */
-public class ClientControlImpl extends BaseControlSupporter implements
-		ClientControl {
-	
+public class ClientControlImpl extends BaseControlSupporter implements ClientControl {
+
 	private static final long serialVersionUID = -5562471882897009907L;
 
-	private static final transient Logger LOGGER = LoggerFactory
-			.getLogger(ClientControlImpl.class);
+	private static final transient Logger LOGGER = LoggerFactory.getLogger(ClientControlImpl.class);
 
 	/**
 	 * 客戶端服務
@@ -41,16 +39,6 @@ public class ClientControlImpl extends BaseControlSupporter implements
 	private ClientFrame clientFrame;
 
 	public ClientControlImpl() {
-	}
-
-	/**
-	 * 初始化
-	 *
-	 * @throws Exception
-	 */
-	protected void init() throws Exception {
-		super.init();
-		//
 	}
 
 	public ClientService getClientService() {
@@ -79,15 +67,12 @@ public class ClientControlImpl extends BaseControlSupporter implements
 			public void run() {
 				clientFrame = new ClientFrameImpl(id);
 				// commandTextField
-				clientFrame.getCommandTextField().addKeyListener(
-						new CommandTextFieldKeyAdapter(clientFrame));
+				clientFrame.getCommandTextField().addKeyListener(new CommandTextFieldKeyAdapter(clientFrame));
 				// clearButton
-				clientFrame.getClearButton().addActionListener(
-						new ClearButtonActionAdapter(clientFrame));
+				clientFrame.getClearButton().addActionListener(new ClearButtonActionAdapter(clientFrame));
 				// reconnectButton
-				clientFrame.getReconnectButton().addActionListener(
-						new ReconnectButtonActionAdapter(clientFrame,
-								clientService));
+				clientFrame.getReconnectButton()
+						.addActionListener(new ReconnectButtonActionAdapter(clientFrame, clientService));
 				//
 				ClientControlImpl.this.setComponent((Component) clientFrame);
 				//
@@ -100,28 +85,19 @@ public class ClientControlImpl extends BaseControlSupporter implements
 		if (started) {
 			EventQueue.invokeLater(new Runnable() {
 				public void run() {
-					clientFrame.getMessageTextArea().append(
-							"[" + clientService.getId() + "] Connected to "
-									+ "[" + clientService.getIp() + ":"
-									+ clientService.getPort() + "]"
-									+ StringHelper.LF);
+					clientFrame.getMessageTextArea().append("[" + clientService.getId() + "] Connected to " + "["
+							+ clientService.getIp() + ":" + clientService.getPort() + "]" + StringHelper.LF);
 					clientFrame.getMessageTextArea()
-							.setCaretPosition(
-									clientFrame.getMessageTextArea().getText()
-											.length());
+							.setCaretPosition(clientFrame.getMessageTextArea().getText().length());
 				}
 			});
 		} else {
 			EventQueue.invokeLater(new Runnable() {
 				public void run() {
-					clientFrame.getMessageTextArea().append(
-							"Can't connect to [" + clientService.getIp() + ":"
-									+ clientService.getPort() + "]"
-									+ StringHelper.LF);
+					clientFrame.getMessageTextArea().append("Can't connect to [" + clientService.getIp() + ":"
+							+ clientService.getPort() + "]" + StringHelper.LF);
 					clientFrame.getMessageTextArea()
-							.setCaretPosition(
-									clientFrame.getMessageTextArea().getText()
-											.length());
+							.setCaretPosition(clientFrame.getMessageTextArea().getText().length());
 				}
 			});
 		}
@@ -156,10 +132,8 @@ public class ClientControlImpl extends BaseControlSupporter implements
 				//
 				StringBuilder buff = new StringBuilder();
 				buff.append(commandTextField.getText());
-				messageTextArea.append("client > " + buff.toString()
-						+ StringHelper.LF);
-				messageTextArea.setCaretPosition(clientFrame
-						.getMessageTextArea().getText().length());
+				messageTextArea.append("client > " + buff.toString() + StringHelper.LF);
+				messageTextArea.setCaretPosition(clientFrame.getMessageTextArea().getText().length());
 			}
 		}
 
@@ -200,8 +174,7 @@ public class ClientControlImpl extends BaseControlSupporter implements
 	/**
 	 * 重連按鈕, 按下處理
 	 */
-	protected static class ReconnectButtonActionAdapter implements
-			ActionListener {
+	protected static class ReconnectButtonActionAdapter implements ActionListener {
 
 		private ClientFrame clientFrame;
 
@@ -212,8 +185,7 @@ public class ClientControlImpl extends BaseControlSupporter implements
 		 */
 		private JTextArea messageTextArea;
 
-		public ReconnectButtonActionAdapter(ClientFrame clientFrame,
-				ClientService clientService) {
+		public ReconnectButtonActionAdapter(ClientFrame clientFrame, ClientService clientService) {
 			this.clientFrame = clientFrame;
 			this.clientService = clientService;
 			//

@@ -57,18 +57,6 @@ public interface ServerService extends BaseService {
 	// ------------------------------------------------
 
 	/**
-	 * 啟動
-	 */
-	void start();
-
-	/**
-	 * 關閉
-	 */
-	void shutdown();
-
-	// ------------------------------------------------
-
-	/**
 	 * 關閉genericConnector
 	 * 
 	 * @param genericConnector

@@ -33,25 +33,6 @@ public interface ClientService extends BaseService {
 	void service(Message message);
 
 	/**
-	 * 啟動
-	 */
-	void start();
-
-	/**
-	 * 是否已啟動
-	 * 
-	 * @return
-	 */
-	boolean isStarted();
-
-	void setStarted(boolean started);
-
-	/**
-	 * 關閉
-	 */
-	void shutdown();
-
-	/**
 	 * ip
 	 * 
 	 * @return

@@ -711,6 +711,9 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 
 		// context
 		contextService.shutdown();
+		
+		//TODO runner and queue
+		
 	}
 
 	protected void clusterSend(org.jgroups.Message msg) {
@@ -728,7 +731,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	/**
 	 * 提供給內部連線
 	 */
-	protected void startRelationServers() {
+	protected void startRelationServers() throws Exception {
 		// ------------------------------------------------
 		// relationServers, localhost:2000, localhost:2001
 		// ------------------------------------------------
@@ -761,7 +764,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	/**
 	 * 提供給外部連線
 	 */
-	protected void startClientServers() {
+	protected void startClientServers() throws Exception {
 		// ------------------------------------------------
 		// clientServers, localhost:2100
 		// ------------------------------------------------
