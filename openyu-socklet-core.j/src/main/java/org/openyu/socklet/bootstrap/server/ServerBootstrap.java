@@ -80,7 +80,7 @@ public final class ServerBootstrap extends BootstrapSupporter {
 				// 建構acceptorService
 				buildAcceptorServices();
 				// 啟動
-				doInStart();
+				doStart();
 			} catch (Exception ex) {
 				started = false;
 				ex.printStackTrace();
@@ -170,7 +170,7 @@ public final class ServerBootstrap extends BootstrapSupporter {
 			// 建構acceptorService
 			buildAcceptorServices();
 			//
-			doInStart();
+			doStart();
 		} catch (Exception ex) {
 			started = false;
 			ex.printStackTrace();
@@ -189,7 +189,7 @@ public final class ServerBootstrap extends BootstrapSupporter {
 	/**
 	 * 內部啟動
 	 */
-	protected static void doInStart() throws Exception{
+	protected static void doStart() throws Exception{
 		AcceptorService acceptorService = null;
 		for (AcceptorStarter acceptorStarter : acceptorStarters.values()) {
 			// id

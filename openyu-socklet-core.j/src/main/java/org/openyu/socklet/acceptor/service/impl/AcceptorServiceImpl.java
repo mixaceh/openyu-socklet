@@ -113,6 +113,9 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	@Qualifier("authKeyService")
 	protected transient AuthKeyService authKeyService;
 
+	/**
+	 * master/slave1...
+	 */
 	private String id;
 
 	protected ContextServiceImpl contextService;
@@ -618,11 +621,15 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		// ------------------------------------------------
 		// ContextService,須等內部完全啟動後,再繼續
 		// ------------------------------------------------
-		contextService = new ContextServiceImpl(id, this);
+		contextService = new ContextServiceImpl(id);
 		//
 		contextService.setApplicationContext(applicationContext);
 		contextService.setBeanFactory(beanFactory);
 		contextService.setResourceLoader(resourceLoader);
+		//
+		contextService.setInitParameters(initParameters);
+		contextService.setModuleTypeClass(moduleTypeClass);
+		contextService.setModuleTypeClass(moduleTypeClass);
 		//
 		contextService.setThreadService(threadService);
 		contextService.start();

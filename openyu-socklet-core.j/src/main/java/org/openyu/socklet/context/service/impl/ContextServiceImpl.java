@@ -23,7 +23,6 @@ import org.openyu.commons.thread.ThreadService;
 import org.openyu.commons.util.CollectionHelper;
 import org.openyu.socklet.acceptor.service.event.RelationEvent;
 import org.openyu.socklet.acceptor.service.event.RelationListener;
-import org.openyu.socklet.acceptor.service.impl.AcceptorServiceImpl;
 import org.openyu.socklet.config.vo.ListenerConfig;
 import org.openyu.socklet.config.vo.impl.ListenerConfigImpl;
 import org.openyu.socklet.context.service.ContextService;
@@ -55,7 +54,9 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 	@Qualifier("threadService")
 	private transient ThreadService threadService;
 
-	// slave1
+	/**
+	 * master/slave1...
+	 */
 	private String id;
 
 	private Map<String, Object> attributes = new ConcurrentHashMap<String, Object>(10);
@@ -106,12 +107,12 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 	@SuppressWarnings("rawtypes")
 	private Class messageTypeClass;
 
-	public ContextServiceImpl(String id, AcceptorServiceImpl acceptorService) {
+	public ContextServiceImpl(String id) {
 		this.id = id;
-		//
-		setInitParameters(acceptorService.getInitParameters());
-		this.moduleTypeClass = acceptorService.getModuleTypeClass();
-		this.messageTypeClass = acceptorService.getMessageTypeClass();
+	}
+
+	public ContextServiceImpl() {
+		this(null);
 	}
 
 	public void setThreadService(ThreadService threadService) {
@@ -124,6 +125,14 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public void setModuleTypeClass(Class moduleTypeClass) {
+		this.moduleTypeClass = moduleTypeClass;
+	}
+
+	public void setMessageTypeClass(Class messageTypeClass) {
+		this.messageTypeClass = messageTypeClass;
 	}
 
 	public void setAttribute(String name, Object value) {

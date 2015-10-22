@@ -3,119 +3,22 @@
 	xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:p="http://www.springframework.org/schema/p"
 	xsi:schemaLocation="
              http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
-             http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
+             http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+             http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
 
-	<!-- configHelper -->
-	<bean
-		id="configHelper"
-		class="org.openyu.commons.util.ConfigHelper">
-		<property name="configLocation">
-			<value>file:src/test/config/etc/config.xml</value>
-		</property>
-		<!--  
-		<property name="log4jConfigLocation">
-			<value>classpath:log4j.properties</value>
-		</property>
-		-->
-		<property name="jsonDirLocation">
-			<value>file:src/test/config/json</value>
-		</property>
-		<property name="keyDirLocation">
-			<value>file:src/test/config/key</value>
-		</property>
-		<property name="serDirLocation">
-			<value>file:src/test/config/ser</value>
-		</property>
-		<property name="xmlDirLocation">
-			<value>file:src/test/config/xml</value>
-		</property>
-		<property name="excelDirLocation">
-			<value>file:src/test/config/excel</value>
-		</property>
-		<property name="outputDirLocation">
-			<value>file:custom/output</value>
-		</property>
-		<property name="downloadDirLocation">
-			<value>file:custom/download</value>
-		</property>
-		<property name="uploadDirLocation">
-			<value>file:custom/upload</value>
-		</property>
-	</bean>
-
-	<bean
-		id="propertyPlaceholderConfigurer"
-		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property
-			name="order"
-			value="1" />
-		<property
-			name="ignoreUnresolvablePlaceholders"
-			value="true" />
-		<property name="locations">
-			<list>
-				<value>file:src/test/config/etc/database.properties</value>
-				<value>file:src/test/config/etc/database-log.properties</value>
-			</list>
-		</property>
-	</bean>
-
-	<bean
-		id="servicePropertyPlaceholderConfigurer"
-		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-		<property
-			name="order"
-			value="2" />
-		<property
-			name="ignoreUnresolvablePlaceholders"
-			value="true" />
-		<property name="locations">
-			<list>
-				<value>file:src/test/config/etc/authKeyService.properties</value>
-				<value>file:src/test/config/etc/protocolService.properties</value>
-				<!--  
-				<value>file:src/test/config/etc/acceptorService.properties</value>
-				-->
-			</list>
-		</property>
-	</bean>
-
-	<bean
-		id="propertyOverrideConfigurer"
-		class="org.springframework.beans.factory.config.PropertyOverrideConfigurer">
-		<property name="locations">
-			<list>
-			</list>
-		</property>
-	</bean>
-
-	<bean
-		id="velocityConfigurer"
-		class="org.springframework.web.servlet.view.velocity.VelocityConfigurer">
-		<property
-			name="resourceLoaderPath"
-			value="file:custom/template/vm" />
-		<property
-			name="configLocation"
-			value="file:src/test/config/etc/velocity.properties" />
-	</bean>
-
-	<!-- freemarker -->
-	<bean
-		id="freeMarkerConfigurer"
-		class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">
-		<property
-			name="templateLoaderPath"
-			value="file:custom/template/ftl" />
-		<property
-			name="configLocation"
-			value="file:src/test/config/etc/freemarker.properties" />
-	</bean>
-
-	<!-- autowired -->
+	<!-- Enables the @Autowire -->
+	<!--  
 	<bean
 		class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor" />
+	-->
+	<context:annotation-config />
+
+	<!-- service -->
+	<import
+		resource="classpath:org/openyu/commons/service/applicationContext-service.xml" />
 
 </beans>

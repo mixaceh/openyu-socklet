@@ -87,7 +87,7 @@ public final class StandaloneBootstrap extends BootstrapSupporter {
 				// 建構sockletService
 				buildSockletServices();
 				// 啟動
-				doInStart();
+				doStart();
 			} catch (Exception ex) {
 				started = false;
 				ex.printStackTrace();
@@ -183,7 +183,7 @@ public final class StandaloneBootstrap extends BootstrapSupporter {
 			// 建構sockletService
 			buildSockletServices();
 			//
-			doInStart();
+			doStart();
 		} catch (Exception ex) {
 			started = false;
 			ex.printStackTrace();
@@ -203,7 +203,7 @@ public final class StandaloneBootstrap extends BootstrapSupporter {
 	/**
 	 * 內部啟動
 	 */
-	protected static void doInStart() {
+	protected static void doStart() throws Exception{
 		AcceptorService acceptorService = null;
 		for (AcceptorStarter acceptorStarter : acceptorStarters.values()) {
 			// id
@@ -224,7 +224,7 @@ public final class StandaloneBootstrap extends BootstrapSupporter {
 				// 同一個jvm中只啟動一個acceptor服務
 				acceptorService.start();
 				// 啟動
-				started = acceptorService.isStarted();
+				started = true;
 			} else {
 				LOGGER.error("Can't find [" + acceptorStarter.getId()
 						+ "] AcceptorService");
