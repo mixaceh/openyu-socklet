@@ -382,31 +382,27 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 	protected List<String> initContextListener() {
 		List<String> result = new LinkedList<String>();
 		//
-		try {
-			Map<String, ContextListener> listeners = applicationContext.getBeansOfType(ContextListener.class);
-			for (ContextListener contextListener : listeners.values()) {
-				try {
-					// ListenerConfig
-					ListenerConfig listenerConfig = new ListenerConfigImpl(contextListener);
-					listenerConfig.setInitParameters(contextListener.getInitParameters());
-					// contextListener.setListenerConfig(listenerConfig);
+		Map<String, ContextListener> listeners = applicationContext.getBeansOfType(ContextListener.class);
+		for (ContextListener contextListener : listeners.values()) {
+			try {
+				// ListenerConfig
+				ListenerConfig listenerConfig = new ListenerConfigImpl(contextListener);
+				listenerConfig.setInitParameters(contextListener.getInitParameters());
+				// contextListener.setListenerConfig(listenerConfig);
 
-					// System.out.println(contextListener);
-					boolean contained = contextListener.getAcceptors().contains(id);// master,slave1...n
-					if (contained) {
-						// init
-						contextListener.init(listenerConfig);
-						// add listener
-						addContextListener(contextListener);
-						result.add(contextListener.getClass().getSimpleName());
-					}
-				} catch (BeanIsAbstractException ex) {
-				} catch (Exception ex) {
-					ex.printStackTrace();
+				// System.out.println(contextListener);
+				boolean contained = contextListener.getAcceptors().contains(id);// master,slave1...n
+				if (contained) {
+					// init
+					contextListener.init(listenerConfig);
+					// add listener
+					addContextListener(contextListener);
+					result.add(contextListener.getClass().getSimpleName());
 				}
+			} catch (BeanIsAbstractException ex) {
+			} catch (Exception ex) {
+				ex.printStackTrace();
 			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
 		}
 		return result;
 	}
@@ -431,33 +427,29 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 	protected List<String> initContextAttributeListener() {
 		List<String> result = new LinkedList<String>();
 		//
-		try {
-			String[] names = applicationContext.getBeanNamesForType(ContextAttributeListener.class);
-			for (String name : names) {
-				try {
-					ContextAttributeListener contextAttributeListener = (ContextAttributeListener) applicationContext
-							.getBean(name);
-					// ListenerConfig
-					ListenerConfig listenerConfig = new ListenerConfigImpl(contextAttributeListener);
-					listenerConfig.setInitParameters(contextAttributeListener.getInitParameters());
-					// contextListener.setListenerConfig(listenerConfig);
+		String[] names = applicationContext.getBeanNamesForType(ContextAttributeListener.class);
+		for (String name : names) {
+			try {
+				ContextAttributeListener contextAttributeListener = (ContextAttributeListener) applicationContext
+						.getBean(name);
+				// ListenerConfig
+				ListenerConfig listenerConfig = new ListenerConfigImpl(contextAttributeListener);
+				listenerConfig.setInitParameters(contextAttributeListener.getInitParameters());
+				// contextListener.setListenerConfig(listenerConfig);
 
-					// System.out.println(contextListener);
-					boolean contained = contextAttributeListener.getAcceptors().contains(id);// master,slave1...n
-					if (contained) {
-						// init
-						contextAttributeListener.init(listenerConfig);
-						// add listener
-						addContextAttributeListener(contextAttributeListener);
-						result.add(contextAttributeListener.getClass().getSimpleName());
-					}
-				} catch (BeanIsAbstractException ex) {
-				} catch (Exception ex) {
-					ex.printStackTrace();
+				// System.out.println(contextListener);
+				boolean contained = contextAttributeListener.getAcceptors().contains(id);// master,slave1...n
+				if (contained) {
+					// init
+					contextAttributeListener.init(listenerConfig);
+					// add listener
+					addContextAttributeListener(contextAttributeListener);
+					result.add(contextAttributeListener.getClass().getSimpleName());
 				}
+			} catch (BeanIsAbstractException ex) {
+			} catch (Exception ex) {
+				ex.printStackTrace();
 			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
 		}
 		return result;
 	}
@@ -481,33 +473,28 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 	 */
 	protected List<String> initSessionListener() {
 		List<String> result = new LinkedList<String>();
-		//
-		try {
-			String[] names = applicationContext.getBeanNamesForType(SessionListener.class);
-			for (String name : names) {
-				try {
-					SessionListener sessionListener = (SessionListener) applicationContext.getBean(name);
-					// ListenerConfig
-					ListenerConfig listenerConfig = new ListenerConfigImpl(sessionListener);
-					listenerConfig.setInitParameters(sessionListener.getInitParameters());
-					// contextListener.setListenerConfig(listenerConfig);
+		String[] names = applicationContext.getBeanNamesForType(SessionListener.class);
+		for (String name : names) {
+			try {
+				SessionListener sessionListener = (SessionListener) applicationContext.getBean(name);
+				// ListenerConfig
+				ListenerConfig listenerConfig = new ListenerConfigImpl(sessionListener);
+				listenerConfig.setInitParameters(sessionListener.getInitParameters());
+				// contextListener.setListenerConfig(listenerConfig);
 
-					// System.out.println(contextListener);
-					boolean contained = sessionListener.getAcceptors().contains(id);// master,slave1...n
-					if (contained) {
-						// init
-						sessionListener.init(listenerConfig);
-						// add listener
-						addSessionListener(sessionListener);
-						result.add(sessionListener.getClass().getSimpleName());
-					}
-				} catch (BeanIsAbstractException ex) {
-				} catch (Exception ex) {
-					ex.printStackTrace();
+				// System.out.println(contextListener);
+				boolean contained = sessionListener.getAcceptors().contains(id);// master,slave1...n
+				if (contained) {
+					// init
+					sessionListener.init(listenerConfig);
+					// add listener
+					addSessionListener(sessionListener);
+					result.add(sessionListener.getClass().getSimpleName());
 				}
+			} catch (BeanIsAbstractException ex) {
+			} catch (Exception ex) {
+				ex.printStackTrace();
 			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
 		}
 		return result;
 	}
@@ -531,27 +518,22 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 	 */
 	protected List<String> initRelationListener() {
 		List<String> result = new LinkedList<String>();
-		//
-		try {
-			String[] names = applicationContext.getBeanNamesForType(RelationListener.class);
-			for (String name : names) {
-				try {
-					RelationListener relationListener = (RelationListener) applicationContext.getBean(name);
+		String[] names = applicationContext.getBeanNamesForType(RelationListener.class);
+		for (String name : names) {
+			try {
+				RelationListener relationListener = (RelationListener) applicationContext.getBean(name);
 
-					// System.out.println(relationListener);
-					boolean contained = relationListener.getAcceptors().contains(id);// master,slave1...n
-					if (contained) {
-						// add listener
-						addRelationListener(relationListener);
-						result.add(relationListener.getClass().getSimpleName());
-					}
-				} catch (BeanIsAbstractException ex) {
-				} catch (Exception ex) {
-					ex.printStackTrace();
+				// System.out.println(relationListener);
+				boolean contained = relationListener.getAcceptors().contains(id);// master,slave1...n
+				if (contained) {
+					// add listener
+					addRelationListener(relationListener);
+					result.add(relationListener.getClass().getSimpleName());
 				}
+			} catch (BeanIsAbstractException ex) {
+			} catch (Exception ex) {
+				ex.printStackTrace();
 			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
 		}
 		return result;
 	}
@@ -575,40 +557,35 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 	 */
 	protected List<String> initSockletService() {
 		List<String> result = new LinkedList<String>();
-		//
-		try {
-			String[] names = applicationContext.getBeanNamesForType(SockletService.class);
-			for (String name : names) {
-				try {
-					SockletService sockletService = (SockletService) applicationContext.getBean(name);
-					// SockletConfig
-					SockletConfig sockletConfig = new SockletConfigImpl(sockletService);
+		String[] names = applicationContext.getBeanNamesForType(SockletService.class);
+		for (String name : names) {
+			try {
+				SockletService sockletService = (SockletService) applicationContext.getBean(name);
+				// SockletConfig
+				SockletConfig sockletConfig = new SockletConfigImpl(sockletService);
 
-					// 模組類別,id=模組
-					@SuppressWarnings("unchecked")
-					ModuleType moduleType = (ModuleType) EnumHelper.nameOf(moduleTypeClass, sockletService.getId());
-					if (moduleType != null) {
-						// 在此acceptor的sockletService
-						boolean contained = sockletService.getAcceptors().contains(id);// master,slave1...n
-						if (contained) {
-							sockletServices.put(moduleType, sockletService);
-							result.add(sockletService.getId());
-						}
-						// 在其它relation的sockletService
-						else {
-							sockletService.setSockletConfig(sockletConfig);
-							relationServices.put(moduleType, sockletService);
-						}
-					} else {
-						LOGGER.error(sockletService.getId() + " Can't been found in moduleTypeClass");
+				// 模組類別,id=模組
+				@SuppressWarnings("unchecked")
+				ModuleType moduleType = (ModuleType) EnumHelper.nameOf(moduleTypeClass, sockletService.getId());
+				if (moduleType != null) {
+					// 在此acceptor的sockletService
+					boolean contained = sockletService.getAcceptors().contains(id);// master,slave1...n
+					if (contained) {
+						sockletServices.put(moduleType, sockletService);
+						result.add(sockletService.getId());
 					}
-				} catch (BeanIsAbstractException ex) {
-				} catch (Exception ex) {
-					ex.printStackTrace();
+					// 在其它relation的sockletService
+					else {
+						sockletService.setSockletConfig(sockletConfig);
+						relationServices.put(moduleType, sockletService);
+					}
+				} else {
+					LOGGER.error(sockletService.getId() + " Can't been found in moduleTypeClass");
 				}
+			} catch (BeanIsAbstractException ex) {
+			} catch (Exception ex) {
+				ex.printStackTrace();
 			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
 		}
 		return result;
 	}
