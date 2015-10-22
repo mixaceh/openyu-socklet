@@ -271,6 +271,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 	 * 監聽
 	 */
 	protected class ListenRunner extends BaseRunnableSupporter {
+		
 		public void execute() {
 			while (true) {
 				try {
@@ -448,6 +449,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements
 	 * 讀取key佇列
 	 */
 	protected class ReadKeyQueue<E> extends TriggerQueueSupporter<E> {
+		
 		public ReadKeyQueue() {
 		}
 

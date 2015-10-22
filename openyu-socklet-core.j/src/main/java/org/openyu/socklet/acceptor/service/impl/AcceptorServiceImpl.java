@@ -356,6 +356,22 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	public AcceptorServiceImpl() {
 	}
 
+	public void setThreadService(ThreadService threadService) {
+		this.threadService = threadService;
+	}
+
+	public void setMessageService(MessageService messageService) {
+		this.messageService = messageService;
+	}
+
+	public void setProtocolService(ProtocolService protocolService) {
+		this.protocolService = protocolService;
+	}
+
+	public void setAuthKeyService(AuthKeyService authKeyService) {
+		this.authKeyService = authKeyService;
+	}
+
 	/**
 	 * 模組類別名稱
 	 * 
@@ -603,6 +619,12 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		// ContextService,須等內部完全啟動後,再繼續
 		// ------------------------------------------------
 		contextService = new ContextServiceImpl(id, this);
+		//
+		contextService.setApplicationContext(applicationContext);
+		contextService.setBeanFactory(beanFactory);
+		contextService.setResourceLoader(resourceLoader);
+		//
+		contextService.setThreadService(threadService);
 		contextService.start();
 
 		// cluster
@@ -951,7 +973,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	/**
 	 * 監聽主動端連線
 	 */
-	protected void listenInitiative() throws Exception {
+	protected void listenInitiative() {
 		int relationsSize = initiativeRelations.size();
 		for (GenericRelation initiativeRelation : initiativeRelations.values()) {
 			boolean clientStarted = false;
@@ -1144,9 +1166,8 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	 * 
 	 * @param message
 	 * @return
-	 * @throws Exception
 	 */
-	protected boolean addMessage(Message message) throws Exception {
+	protected boolean addMessage(Message message) {
 		boolean result = false;
 		//
 		CategoryType categoryType = message.getCategoryType();
@@ -1181,9 +1202,8 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	 * 
 	 * @param messages
 	 * @return
-	 * @throws Exception
 	 */
-	protected boolean addMessages(List<Message> messages) throws Exception {
+	protected boolean addMessages(List<Message> messages) {
 		boolean result = false;
 		for (Message message : messages) {
 			if (message == null) {
@@ -1213,7 +1233,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	 * 
 	 * srcModule=FOUR_SYMBOL, destModule= CLIENT
 	 */
-	protected void sendClient(Message message) throws Exception {
+	protected void sendClient(Message message) {
 		// slave1...n
 		// MESSAGE_SERVER
 		if (CategoryType.MESSAGE_SERVER.equals(message.getCategoryType())) {
@@ -1327,7 +1347,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	 * 
 	 * @param message
 	 */
-	protected void dispatch(Message message) throws Exception {
+	protected void dispatch(Message message) {
 		@SuppressWarnings("unchecked")
 		Enum<?> destModule = EnumHelper.valueOf(moduleTypeClass, message.getDestModule().getValue());
 		// System.out.println("destModule: " + destModule);
@@ -1577,7 +1597,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	 * 
 	 * @param acceptorConnector
 	 */
-	protected void sendSyncClientConnect(AcceptorConnector acceptorConnector) throws Exception {
+	protected void sendSyncClientConnect(AcceptorConnector acceptorConnector) {
 		Message message = createAcceptor(AcceptorMessageType.ACCEPTOR_SYNC_CLIENT_CONNECT_REQUEST);
 		//
 		message.addString(acceptorConnector.getSender());// client sender
@@ -1628,7 +1648,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	 * 
 	 * @param acceptorConnector
 	 */
-	protected void sendSyncClientDisconnect(GenericConnector genericConnector) throws Exception {
+	protected void sendSyncClientDisconnect(GenericConnector genericConnector) {
 		Message message = createAcceptor(AcceptorMessageType.ACCEPTOR_SYNC_CLIENT_DISCONNECT_REQUEST);
 		//
 		message.addString(genericConnector.getSender());// client sender

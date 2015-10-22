@@ -66,10 +66,6 @@ public interface ContextService extends BaseService
 	Map<String, Session> getSessions();
 
 	void setSessions(Map<String, Session> sessions);
-
-	void start();
-
-	void shutdown();
 }
 
 /*

@@ -14,9 +14,12 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanIsAbstractException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.openyu.commons.enumz.EnumHelper;
 import org.openyu.commons.lang.event.EventCaster;
 import org.openyu.commons.service.supporter.BaseServiceSupporter;
+import org.openyu.commons.thread.ThreadService;
 import org.openyu.commons.util.CollectionHelper;
 import org.openyu.socklet.acceptor.service.event.RelationEvent;
 import org.openyu.socklet.acceptor.service.event.RelationListener;
@@ -44,6 +47,13 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 	private static final long serialVersionUID = 8260056540916926080L;
 
 	private static transient final Logger LOGGER = LoggerFactory.getLogger(ContextServiceImpl.class);
+
+	/**
+	 * 線程服務
+	 */
+	@Autowired
+	@Qualifier("threadService")
+	private transient ThreadService threadService;
 
 	// slave1
 	private String id;
@@ -97,14 +107,15 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 	private Class messageTypeClass;
 
 	public ContextServiceImpl(String id, AcceptorServiceImpl acceptorService) {
-		this.applicationContext = acceptorService.getApplicationContext();
-		this.threadService = acceptorService.getThreadService();
-		//
 		this.id = id;
 		//
 		setInitParameters(acceptorService.getInitParameters());
 		this.moduleTypeClass = acceptorService.getModuleTypeClass();
 		this.messageTypeClass = acceptorService.getMessageTypeClass();
+	}
+
+	public void setThreadService(ThreadService threadService) {
+		this.threadService = threadService;
 	}
 
 	public String getId() {
@@ -216,108 +227,138 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 
 	@Override
 	protected void doStart() throws Exception {
-		// TODO Auto-generated method stub
+		this.acceptorContext = "[" + id + "] ";
+		// ----------------------------------------------
+		// ContextListener
+		// ----------------------------------------------
+		try {
+			@SuppressWarnings("unchecked")
+			Future<List<String>> future = (Future<List<String>>) threadService.submit(new InitContextListenerCaller());
+			List<String> result = future.get();
+			if (result.size() > 0) {
+				LOGGER.info(acceptorContext + "ContextListener [" + result.size() + "], " + result
+						+ " Had been initialized");
+			}
+		} catch (Exception e) {
+			LOGGER.error(new StringBuilder("Exception encountered during InitContextListenerCaller").toString(), e);
+		}
+		// ----------------------------------------------
+		// ContextAttributeListener
+		// ----------------------------------------------
+		try {
+			@SuppressWarnings("unchecked")
+			Future<List<String>> future = (Future<List<String>>) threadService
+					.submit(new InitContextAttributeListenerCaller());
+			List<String> result = future.get();
+			if (result.size() > 0) {
+				LOGGER.info(acceptorContext + "ContextAttributeListener [" + result.size() + "], " + result
+						+ " Had been initialized");
+			}
+		} catch (Exception e) {
+			LOGGER.error(
+					new StringBuilder("Exception encountered during InitContextAttributeListenerCaller").toString(), e);
+		}
 
+		// ----------------------------------------------
+		// SessionListener
+		// ----------------------------------------------
+		try {
+			@SuppressWarnings("unchecked")
+			Future<List<String>> future = (Future<List<String>>) threadService.submit(new InitSessionListenerCaller());
+			List<String> result = future.get();
+			if (result.size() > 0) {
+				LOGGER.info(acceptorContext + "SessionListener [" + result.size() + "], " + result
+						+ " Had been initialized");
+			}
+		} catch (Exception e) {
+			LOGGER.error(new StringBuilder("Exception encountered during InitSessionListenerCaller").toString(), e);
+		}
+		// ----------------------------------------------
+		// RelationListener
+		// ----------------------------------------------
+		try {
+			@SuppressWarnings("unchecked")
+			Future<List<String>> future = (Future<List<String>>) threadService.submit(new InitRelationListenerCaller());
+			List<String> result = future.get();
+			if (result.size() > 0) {
+				LOGGER.info(acceptorContext + "RelationListener [" + result.size() + "], " + result
+						+ " Had been initialized");
+			}
+		} catch (Exception e) {
+			LOGGER.error(new StringBuilder("Exception encountered during InitRelationListenerCaller").toString(), e);
+		}
+
+		// ----------------------------------------------
+		// SockletService
+		// ----------------------------------------------
+		try {
+			@SuppressWarnings("unchecked")
+			Future<List<String>> future = (Future<List<String>>) threadService.submit(new InitSockletServiceCaller());
+			List<String> result = future.get();
+			if (result.size() > 0) {
+				LOGGER.info(acceptorContext + "SockletService [" + result.size() + "], " + result
+						+ " Had been initialized");
+			}
+		} catch (Exception e) {
+			LOGGER.error(new StringBuilder("Exception encountered during InitSockletServiceCaller").toString(), e);
+		}
+		//
+		fireContextInitialized(id);
 	}
 
 	@Override
 	protected void doShutdown() throws Exception {
-		// TODO Auto-generated method stub
 
-	}
-
-	public void start() {
-		if (!started) {
-			acceptorContext = "[" + id + "] ";
-			try {
-				// ----------------------------------------------
-				// ContextListener
-				// ----------------------------------------------
-				try {
-					@SuppressWarnings("unchecked")
-					Future<List<String>> future = (Future<List<String>>) threadService
-							.submit(new InitContextListenerCaller());
-					List<String> result = future.get();
-					if (result.size() > 0) {
-						LOGGER.info(acceptorContext + "ContextListener [" + result.size() + "], " + result
-								+ " Had been initialized");
-					}
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-				// ----------------------------------------------
-				// ContextAttributeListener
-				// ----------------------------------------------
-				try {
-					@SuppressWarnings("unchecked")
-					Future<List<String>> future = (Future<List<String>>) threadService
-							.submit(new InitContextAttributeListenerCaller());
-					List<String> result = future.get();
-					if (result.size() > 0) {
-						LOGGER.info(acceptorContext + "ContextAttributeListener [" + result.size() + "], " + result
-								+ " Had been initialized");
-					}
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-
-				// ----------------------------------------------
-				// SessionListener
-				// ----------------------------------------------
-				try {
-					@SuppressWarnings("unchecked")
-					Future<List<String>> future = (Future<List<String>>) threadService
-							.submit(new InitSessionListenerCaller());
-					List<String> result = future.get();
-					if (result.size() > 0) {
-						LOGGER.info(acceptorContext + "SessionListener [" + result.size() + "], " + result
-								+ " Had been initialized");
-					}
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-				// ----------------------------------------------
-				// RelationListener
-				// ----------------------------------------------
-				try {
-					@SuppressWarnings("unchecked")
-					Future<List<String>> future = (Future<List<String>>) threadService
-							.submit(new InitRelationListenerCaller());
-					List<String> result = future.get();
-					if (result.size() > 0) {
-						LOGGER.info(acceptorContext + "RelationListener [" + result.size() + "], " + result
-								+ " Had been initialized");
-					}
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-
-				// ----------------------------------------------
-				// SockletService
-				// ----------------------------------------------
-				try {
-					@SuppressWarnings("unchecked")
-					Future<List<String>> future = (Future<List<String>>) threadService
-							.submit(new InitSockletServiceCaller());
-					List<String> result = future.get();
-					if (result.size() > 0) {
-						LOGGER.info(acceptorContext + "SockletService [" + result.size() + "], " + result
-								+ " Had been initialized");
-					}
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-				//
-				fireContextInitialized(id);
-
-				// ----------------------------------------------
-				started = true;
-				// ----------------------------------------------
-				LOGGER.info(acceptorContext + "ContextService Had been started");
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				LOGGER.error(acceptorContext + "ContextService Started fail");
+		try {
+			int size = 0;
+			if (contextListeners != null && (size = contextListeners.size()) > 0) {
+				fireContextDestroyed(id);
+				contextListeners.clear();
+				LOGGER.info(acceptorContext + "ContextListener [" + size + "] Had been removed");
 			}
+		} catch (Exception e) {
+			LOGGER.error(new StringBuilder("Exception encountered during remove ContextListener").toString(), e);
+		}
+		//
+		try {
+			int size = 0;
+			if (attributeListeners != null && (size = attributeListeners.size()) > 0) {
+				attributeListeners.clear();
+				LOGGER.info(acceptorContext + "ContextAttributeListener [" + size + "] Had been removed.");
+			}
+		} catch (Exception e) {
+			LOGGER.error(new StringBuilder("Exception encountered during remove ContextAttributeListener").toString(),
+					e);
+		}
+		//
+		try {
+			int size = 0;
+			if (sessionListeners != null && (size = sessionListeners.size()) > 0) {
+				sessionListeners.clear();
+				LOGGER.info(acceptorContext + "SessionListener [" + size + "] Had been removed");
+			}
+		} catch (Exception e) {
+			LOGGER.error(new StringBuilder("Exception encountered during remove SessionListener").toString(), e);
+		}
+		//
+		try {
+			int size = 0;
+			if (relationListeners != null && (size = relationListeners.size()) > 0) {
+				relationListeners.clear();
+				LOGGER.info(acceptorContext + "RelationListener [" + size + "] Had been removed");
+			}
+		} catch (Exception e) {
+			LOGGER.error(new StringBuilder("Exception encountered during remove RelationListener").toString(), e);
+		}
+		//
+		try {
+			if (CollectionHelper.notEmpty(sockletServices)) {
+				int size = sockletServices.size();
+				sockletServices.clear();
+				LOGGER.info(acceptorContext + "SockletService [" + size + "] Had been removed");
+			}
+		} catch (Exception e) {
+			LOGGER.error(new StringBuilder("Exception encountered during remove SockletService").toString(), e);
 		}
 	}
 
@@ -342,10 +383,9 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 		List<String> result = new LinkedList<String>();
 		//
 		try {
-			String[] names = applicationContext.getBeanNamesForType(ContextListener.class);
-			for (String name : names) {
+			Map<String, ContextListener> listeners = applicationContext.getBeansOfType(ContextListener.class);
+			for (ContextListener contextListener : listeners.values()) {
 				try {
-					ContextListener contextListener = (ContextListener) applicationContext.getBean(name);
 					// ListenerConfig
 					ListenerConfig listenerConfig = new ListenerConfigImpl(contextListener);
 					listenerConfig.setInitParameters(contextListener.getInitParameters());
@@ -571,73 +611,6 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 			ex.printStackTrace();
 		}
 		return result;
-	}
-
-	// ------------------------------------------------
-	public void shutdown() {
-		if (started) {
-
-			try {
-				if (contextListeners != null && contextListeners.size() > 0) {
-					try {
-						fireContextDestroyed(id);
-						int size = contextListeners.size();
-						contextListeners.clear();
-						LOGGER.info(acceptorContext + "ContextListener [" + size + "] Had been removed");
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-				//
-				if (attributeListeners != null && attributeListeners.size() > 0) {
-					try {
-						int size = attributeListeners.size();
-						attributeListeners.clear();
-						LOGGER.info(acceptorContext + "ContextAttributeListener [" + size + "] Had been removed.");
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-				//
-				if (sessionListeners != null && sessionListeners.size() > 0) {
-					try {
-						int size = sessionListeners.size();
-						sessionListeners.clear();
-						LOGGER.info(acceptorContext + "SessionListener [" + size + "] Had been removed");
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-				//
-				if (relationListeners != null && relationListeners.size() > 0) {
-					try {
-						int size = relationListeners.size();
-						relationListeners.clear();
-						LOGGER.info(acceptorContext + "RelationListener [" + size + "] Had been removed");
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-				//
-
-				if (CollectionHelper.notEmpty(sockletServices)) {
-					try {
-						int size = sockletServices.size();
-						sockletServices.clear();
-						LOGGER.info(acceptorContext + "SockletService [" + size + "] Had been removed");
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-				// ----------------------------------------------
-				started = false;
-				// ----------------------------------------------
-				LOGGER.info(acceptorContext + "Had been shutdown");
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				LOGGER.error(acceptorContext + "Shutdown fail");
-			}
-		}
 	}
 
 	// -------------------------------------------------

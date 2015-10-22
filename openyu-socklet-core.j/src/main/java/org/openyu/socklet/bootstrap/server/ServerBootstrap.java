@@ -24,8 +24,7 @@ import org.openyu.socklet.acceptor.vo.AcceptorStarter;
  * Acceptor啟動器
  */
 public final class ServerBootstrap extends BootstrapSupporter {
-	private static transient final Logger LOGGER = LoggerFactory
-			.getLogger(ServerBootstrap.class);
+	private static transient final Logger LOGGER = LoggerFactory.getLogger(ServerBootstrap.class);
 
 	/**
 	 * acceptor id
@@ -95,8 +94,8 @@ public final class ServerBootstrap extends BootstrapSupporter {
 			durUsedMemory = ByteUnit.BYTE.toMB(durUsedMemory);
 			//
 			String msgPattern = "[{0}] ({1}) start in {2} ms, memory used {3} MB";
-			StringBuilder msg = new StringBuilder(MessageFormat.format(
-					msgPattern, id, instanceId, durTime, durUsedMemory));
+			StringBuilder msg = new StringBuilder(
+					MessageFormat.format(msgPattern, id, instanceId, durTime, durUsedMemory));
 			//
 			if (started) {
 				LOGGER.info(msg.toString());
@@ -128,12 +127,10 @@ public final class ServerBootstrap extends BootstrapSupporter {
 		}
 		//
 		applicationContext = new ClassPathXmlApplicationContext(
-				(String[]) configLocations.toArray(new String[configLocations
-						.size()]));
+				(String[]) configLocations.toArray(new String[configLocations.size()]));
 		//
 		if (applicationContext == null) {
-			throw new IllegalArgumentException(
-					"The ApplicationContext must not be null");
+			throw new IllegalArgumentException("The ApplicationContext must not be null");
 		}
 	}
 
@@ -141,12 +138,10 @@ public final class ServerBootstrap extends BootstrapSupporter {
 	 * 建構acceptor啟動器
 	 */
 	protected static void buildAcceptorStarters() {
-		acceptorStarters = applicationContext
-				.getBeansOfType(AcceptorStarter.class);
+		acceptorStarters = applicationContext.getBeansOfType(AcceptorStarter.class);
 		//
 		if (CollectionHelper.isEmpty(acceptorStarters)) {
-			throw new IllegalArgumentException(
-					"The AcceptorStarters must not be null or empty");
+			throw new IllegalArgumentException("The AcceptorStarters must not be null or empty");
 		}
 	}
 
@@ -154,12 +149,10 @@ public final class ServerBootstrap extends BootstrapSupporter {
 	 * 建構acceptorService
 	 */
 	protected static void buildAcceptorServices() {
-		acceptorServices = applicationContext
-				.getBeansOfType(AcceptorService.class);
+		acceptorServices = applicationContext.getBeansOfType(AcceptorService.class);
 		//
 		if (CollectionHelper.isEmpty(acceptorStarters)) {
-			throw new IllegalArgumentException(
-					"The AcceptorServices must not be null or empty");
+			throw new IllegalArgumentException("The AcceptorServices must not be null or empty");
 		}
 	}
 
@@ -187,8 +180,7 @@ public final class ServerBootstrap extends BootstrapSupporter {
 		dur = TimeUnit.NANOSECONDS.toMillis(dur);
 		//
 		if (started) {
-			LOGGER.info("[" + id + "] (" + instanceId + ") start in " + dur
-					+ " ms");
+			LOGGER.info("[" + id + "] (" + instanceId + ") start in " + dur + " ms");
 		} else {
 			LOGGER.error("[" + id + "] (" + instanceId + ") started fail");
 		}
@@ -197,7 +189,7 @@ public final class ServerBootstrap extends BootstrapSupporter {
 	/**
 	 * 內部啟動
 	 */
-	protected static void doInStart() {
+	protected static void doInStart() throws Exception{
 		AcceptorService acceptorService = null;
 		for (AcceptorStarter acceptorStarter : acceptorStarters.values()) {
 			// id
@@ -211,10 +203,9 @@ public final class ServerBootstrap extends BootstrapSupporter {
 				// 同一個jvm中只啟動一個acceptor服務
 				acceptorService.start();
 				// 啟動
-				started = acceptorService.isStarted();
+				started = true;
 			} else {
-				LOGGER.error("Can't find [" + acceptorStarter.getId()
-						+ "] AcceptorService");
+				LOGGER.error("Can't find [" + acceptorStarter.getId() + "] AcceptorService");
 			}
 			break;
 		}
@@ -237,14 +228,11 @@ public final class ServerBootstrap extends BootstrapSupporter {
 	 * @param acceptorStarter
 	 * @return
 	 */
-	protected static AcceptorService getAcceptorService(
-			AcceptorStarter acceptorStarter) {
+	protected static AcceptorService getAcceptorService(AcceptorStarter acceptorStarter) {
 		AcceptorService result = null;
 		if (acceptorStarter != null) {
 			for (AcceptorService acceptorService : acceptorServices.values()) {
-				if (acceptorStarter.getId() != null
-						&& acceptorStarter.getId().equals(
-								acceptorService.getId())) {
+				if (acceptorStarter.getId() != null && acceptorStarter.getId().equals(acceptorService.getId())) {
 					result = acceptorService;
 					break;
 				}
