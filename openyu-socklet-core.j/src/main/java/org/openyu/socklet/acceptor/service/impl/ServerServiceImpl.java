@@ -8,6 +8,7 @@ import org.openyu.commons.security.AuthKey;
 import org.openyu.commons.security.AuthKeyService;
 import org.openyu.commons.service.supporter.BaseServiceSupporter;
 import org.openyu.commons.thread.ThreadHelper;
+import org.openyu.commons.thread.ThreadService;
 import org.openyu.commons.thread.supporter.BaseRunnableSupporter;
 import org.openyu.commons.thread.supporter.TriggerQueueSupporter;
 import org.openyu.socklet.acceptor.service.ServerService;
@@ -18,6 +19,7 @@ import org.openyu.socklet.connector.vo.GenericRelation;
 import org.openyu.socklet.connector.vo.impl.AcceptorConnectorImpl;
 import org.openyu.socklet.connector.vo.impl.GenericRelationImpl;
 import org.openyu.socklet.context.service.impl.ContextServiceImpl;
+import org.openyu.socklet.message.service.MessageService;
 import org.openyu.socklet.message.service.ProtocolService;
 import org.openyu.socklet.message.vo.CategoryType;
 import org.openyu.socklet.message.vo.Message;
@@ -25,6 +27,8 @@ import org.openyu.socklet.session.vo.Session;
 import org.openyu.socklet.session.vo.impl.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -62,6 +66,34 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 	private static transient final Logger LOGGER = LoggerFactory.getLogger(ServerServiceImpl.class);
 
 	/**
+	 * 線程服務
+	 */
+	@Autowired
+	@Qualifier("threadService")
+	protected transient ThreadService threadService;
+
+	/**
+	 * 訊息服務
+	 */
+	@Autowired
+	@Qualifier("messageService")
+	protected transient MessageService messageService;
+
+	/**
+	 * 協定服務
+	 */
+	@Autowired
+	@Qualifier("protocolService")
+	protected transient ProtocolService protocolService;
+
+	/**
+	 * 認證碼服務
+	 */
+	@Autowired
+	@Qualifier("authKeyService")
+	protected transient AuthKeyService authKeyService;
+
+	/**
 	 * localhost:3100
 	 */
 	private String id;
@@ -88,10 +120,6 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 
 	private ContextServiceImpl contextService;
 
-	private ProtocolService protocolService;
-
-	private AuthKeyService authKeyService;
-
 	/**
 	 * 模組類別
 	 */
@@ -103,11 +131,6 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 	 */
 	@SuppressWarnings("rawtypes")
 	private Class messageTypeClass;
-
-	/**
-	 * 是否已啟動
-	 */
-	private boolean started;
 
 	private ServerSocketChannel serverChannel;
 
@@ -140,33 +163,45 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 	 */
 	private static final long LISTEN_MILLS = 1L;
 
+	private ListenRunner listenRunner;
+
 	// ------------------------------------------------
 	// read
 	// ------------------------------------------------
 	/**
 	 * 讀取key佇列
 	 */
-	private ReadKeyQueue<SelectionKey> readKeyQueue = new ReadKeyQueue<SelectionKey>();
+	private ReadKeyQueue<SelectionKey> readKeyQueue;
 
 	// ------------------------------------------------
 	// write 目前暫時沒用到,以後有用再說吧
 	// ------------------------------------------------
 
 	public ServerServiceImpl(String id, boolean inernal, AcceptorServiceImpl acceptorService) {
-		this.applicationContext = acceptorService.getApplicationContext();
-		this.threadService = acceptorService.getThreadService();
 		//
 		this.id = id;
 		this.relationServer = inernal;
 		this.acceptorService = acceptorService;
 		this.contextService = acceptorService.contextService;
-		this.protocolService = acceptorService.protocolService;
-		this.authKeyService = acceptorService.authKeyService;
-		this.moduleTypeClass = acceptorService.moduleTypeClass;
-		this.messageTypeClass = acceptorService.messageTypeClass;
 		this.acceptorId = acceptorService.getId();
 		this.acceptorConnectors = acceptorService.getAcceptorConnectors();
 		this.passiveRelations = acceptorService.getPassiveRelations();
+	}
+
+	public void setThreadService(ThreadService threadService) {
+		this.threadService = threadService;
+	}
+
+	public void setMessageService(MessageService messageService) {
+		this.messageService = messageService;
+	}
+
+	public void setProtocolService(ProtocolService protocolService) {
+		this.protocolService = protocolService;
+	}
+
+	public void setAuthKeyService(AuthKeyService authKeyService) {
+		this.authKeyService = authKeyService;
 	}
 
 	public String getId() {
@@ -205,59 +240,69 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 		return counter.get();
 	}
 
-	public void start() {
-		try {
-			if (!started) {
-				// [slave1][3000]
-				// acceptorServer = "[" + acceptorId + "][" + port + "] ";
-				// [slave1]
-				acceptorServer = "[" + acceptorId + "] ";
-				/*
-				 * OP_READ: 1 OP_WRITE: 4 OP_CONNECT: 8 OP_ACCEPT: 16
-				 */
-				serverChannel = ServerSocketChannel.open();
-				serverChannel.configureBlocking(false);
-				ServerSocket serverSocket = serverChannel.socket();
-				InetSocketAddress address = NioHelper.createInetSocketAddress(ip, port);
-				// serverChannel.socket().setReuseAddress(true);
-				// serverChannel.socket().bind(address, DEFAULT_BACKLOG);
-				serverSocket.bind(address, DEFAULT_BACKLOG);
-				selector = Selector.open();
-				serverChannel.register(selector, SelectionKey.OP_ACCEPT);
-				// ----------------------------------------------
-				started = true;
-				// ----------------------------------------------
-				if (started) {
-					// System.out.println("serverKey accept:" +
-					// serverKey.interestOps() + " "
-					// + serverKey.readyOps());//16 0
+	public void setModuleTypeClass(Class moduleTypeClass) {
+		this.moduleTypeClass = moduleTypeClass;
+	}
 
-					// 加入已啟動的servers
-					serverServices = (relationServer ? acceptorService.getRelationServerServices()
-							: acceptorService.getClientServerServices());
-					serverServices.put(id, this);
+	public void setMessageTypeClass(Class messageTypeClass) {
+		this.messageTypeClass = messageTypeClass;
+	}
 
-					// listen,selector
-					threadService.submit(new ListenRunner());
+	@Override
+	protected void doStart() throws Exception {
+		// [slave1][3000]
+		// acceptorServer = "[" + acceptorId + "][" + port + "] ";
+		// [slave1]
+		acceptorServer = "[" + acceptorId + "] ";
+		/*
+		 * OP_READ: 1 OP_WRITE: 4 OP_CONNECT: 8 OP_ACCEPT: 16
+		 */
+		serverChannel = ServerSocketChannel.open();
+		serverChannel.configureBlocking(false);
+		ServerSocket serverSocket = serverChannel.socket();
+		InetSocketAddress address = NioHelper.createInetSocketAddress(ip, port);
+		// serverChannel.socket().setReuseAddress(true);
+		// serverChannel.socket().bind(address, DEFAULT_BACKLOG);
+		serverSocket.bind(address, DEFAULT_BACKLOG);
+		selector = Selector.open();
+		serverChannel.register(selector, SelectionKey.OP_ACCEPT);
+		// System.out.println("serverKey accept:" +
+		// serverKey.interestOps() + " "
+		// + serverKey.readyOps());//16 0
 
-					// read,selectionKey
-					threadService.submit(readKeyQueue);
+		// 加入已啟動的servers
+		serverServices = (relationServer ? acceptorService.getRelationServerServices()
+				: acceptorService.getClientServerServices());
+		serverServices.put(id, this);
 
-					// RelationServer [3110]
-					// ClientServer [4110]
+		// listen,selector
+		listenRunner = new ListenRunner(threadService);
+		listenRunner.start();
 
-					LOGGER.info(acceptorServer + (relationServer ? "RelationServer" : "ClientServer") + " [" + port
-							+ "] Had been started");
-				} else {
-					LOGGER.error(acceptorServer + (relationServer ? "RelationServer" : "ClientServer") + " [" + port
-							+ "] Started fail");
-				}
-			}
-		} catch (Exception ex) {
-			// ex.printStackTrace();
-			started = false;
-			LOGGER.error("[" + acceptorServer + "] Started fail", ex);
-		}
+		// read,selectionKey
+		readKeyQueue = new ReadKeyQueue<SelectionKey>(threadService);
+		readKeyQueue.start();
+
+		// RelationServer [3110]
+		// ClientServer [4110]
+
+		LOGGER.info(acceptorServer + (relationServer ? "RelationServer" : "ClientServer") + " [" + port
+				+ "] Had been started");
+	}
+
+	@Override
+	protected void doShutdown() throws Exception {
+		NioHelper.close(selector);
+		NioHelper.close(serverChannel);
+		//
+		counter.set(0);
+		// 從已啟動的servers移除
+		serverServices.remove(id);
+		//
+		listenRunner.shutdown();
+		readKeyQueue.shutdown();
+		//
+		LOGGER.info(acceptorServer + "Had been shutdown");
 	}
 
 	/**
@@ -265,10 +310,15 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 	 */
 	protected class ListenRunner extends BaseRunnableSupporter {
 
-		public void execute() {
+		public ListenRunner(ThreadService threadService) {
+			super(threadService);
+		}
+
+		@Override
+		protected void doRun() throws Exception {
 			while (true) {
 				try {
-					if (!started) {
+					if (isShutdown()) {
 						break;
 					}
 					listen();
@@ -277,8 +327,6 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 					// ex.printStackTrace();
 				}
 			}
-			//
-			LOGGER.info("Break of " + getClass().getSimpleName());
 		}
 	}
 
@@ -431,13 +479,15 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 	/**
 	 * 讀取key佇列
 	 */
-	protected class ReadKeyQueue<E> extends TriggerQueueSupporter<E> {
+	protected class ReadKeyQueue<E> extends TriggerQueueSupporter<SelectionKey> {
 
-		public ReadKeyQueue() {
+		public ReadKeyQueue(ThreadService threadService) {
+			super(threadService);
 		}
 
-		public void process(E e) {
-			read((SelectionKey) e);
+		@Override
+		public void doExecute(SelectionKey e) throws Exception {
+			read(e);
 		}
 	}
 
@@ -849,30 +899,6 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 		// contextService.getSessions());
 	}
 
-	// TODO 須調整
-	public void shutdown() {
-		try {
-			if (started) {
-				NioHelper.close(selector);
-				NioHelper.close(serverChannel);
-				//
-				counter.set(0);
-				// 從已啟動的servers移除
-				serverServices.remove(id);
-				//
-				readKeyQueue.setCancel(true);
-				//
-				started = false;
-				LOGGER.info(acceptorServer + "Had been shutdown");
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			started = false;
-			LOGGER.error(acceptorServer + "Shutdown fail");
-		}
-
-	}
-
 	/**
 	 * 關閉key
 	 */
@@ -952,10 +978,8 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 		builder.append("ip", ip);
 		builder.append("port", port);
 		builder.append("maxClient", maxClient);
-		builder.append("started", started);
 		return builder.toString();
 	}
-
 }
 
 //

@@ -6,20 +6,16 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Future;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanIsAbstractException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.openyu.commons.enumz.EnumHelper;
 import org.openyu.commons.lang.event.EventCaster;
 import org.openyu.commons.service.supporter.BaseServiceSupporter;
-import org.openyu.commons.thread.ThreadService;
+import org.openyu.commons.util.AssertHelper;
 import org.openyu.commons.util.CollectionHelper;
 import org.openyu.socklet.acceptor.service.event.RelationEvent;
 import org.openyu.socklet.acceptor.service.event.RelationListener;
@@ -46,13 +42,6 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 	private static final long serialVersionUID = 8260056540916926080L;
 
 	private static transient final Logger LOGGER = LoggerFactory.getLogger(ContextServiceImpl.class);
-
-	/**
-	 * 線程服務
-	 */
-	@Autowired
-	@Qualifier("threadService")
-	private transient ThreadService threadService;
 
 	/**
 	 * master/slave1...
@@ -113,10 +102,6 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 
 	public ContextServiceImpl() {
 		this(null);
-	}
-
-	public void setThreadService(ThreadService threadService) {
-		this.threadService = threadService;
 	}
 
 	public String getId() {
@@ -240,84 +225,46 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 		// ----------------------------------------------
 		// ContextListener
 		// ----------------------------------------------
-		try {
-			@SuppressWarnings("unchecked")
-			Future<List<String>> future = (Future<List<String>>) threadService.submit(new InitContextListenerCaller());
-			List<String> result = future.get();
-			if (result.size() > 0) {
-				LOGGER.info(acceptorContext + "ContextListener [" + result.size() + "], " + result
-						+ " Had been initialized");
-			}
-		} catch (Exception e) {
-			LOGGER.error(new StringBuilder("Exception encountered during InitContextListenerCaller").toString(), e);
-		}
+		// Future<List<String>> future = threadService.submit(new
+		// InitContextListenerCaller());
+		// List<String> result = future.get();
+		initContextListener();
 		// ----------------------------------------------
 		// ContextAttributeListener
 		// ----------------------------------------------
-		try {
-			@SuppressWarnings("unchecked")
-			Future<List<String>> future = (Future<List<String>>) threadService
-					.submit(new InitContextAttributeListenerCaller());
-			List<String> result = future.get();
-			if (result.size() > 0) {
-				LOGGER.info(acceptorContext + "ContextAttributeListener [" + result.size() + "], " + result
-						+ " Had been initialized");
-			}
-		} catch (Exception e) {
-			LOGGER.error(
-					new StringBuilder("Exception encountered during InitContextAttributeListenerCaller").toString(), e);
-		}
-
+		// Future<List<String>> future = threadService.submit(new
+		// InitContextAttributeListenerCaller());
+		// List<String> result = future.get();
+		initContextAttributeListener();
 		// ----------------------------------------------
 		// SessionListener
 		// ----------------------------------------------
-		try {
-			@SuppressWarnings("unchecked")
-			Future<List<String>> future = (Future<List<String>>) threadService.submit(new InitSessionListenerCaller());
-			List<String> result = future.get();
-			if (result.size() > 0) {
-				LOGGER.info(acceptorContext + "SessionListener [" + result.size() + "], " + result
-						+ " Had been initialized");
-			}
-		} catch (Exception e) {
-			LOGGER.error(new StringBuilder("Exception encountered during InitSessionListenerCaller").toString(), e);
-		}
+		// Future<List<String>> future = threadService.submit(new
+		// InitSessionListenerCaller());
+		// List<String> result = future.get();
+		initSessionListener();
+
 		// ----------------------------------------------
 		// RelationListener
 		// ----------------------------------------------
-		try {
-			@SuppressWarnings("unchecked")
-			Future<List<String>> future = (Future<List<String>>) threadService.submit(new InitRelationListenerCaller());
-			List<String> result = future.get();
-			if (result.size() > 0) {
-				LOGGER.info(acceptorContext + "RelationListener [" + result.size() + "], " + result
-						+ " Had been initialized");
-			}
-		} catch (Exception e) {
-			LOGGER.error(new StringBuilder("Exception encountered during InitRelationListenerCaller").toString(), e);
-		}
+		// Future<List<String>> future = threadService.submit(new
+		// InitRelationListenerCaller());
+		// List<String> result = future.get();
+		initRelationListener();
 
 		// ----------------------------------------------
 		// SockletService
 		// ----------------------------------------------
-		try {
-			@SuppressWarnings("unchecked")
-			Future<List<String>> future = (Future<List<String>>) threadService.submit(new InitSockletServiceCaller());
-			List<String> result = future.get();
-			if (result.size() > 0) {
-				LOGGER.info(acceptorContext + "SockletService [" + result.size() + "], " + result
-						+ " Had been initialized");
-			}
-		} catch (Exception e) {
-			LOGGER.error(new StringBuilder("Exception encountered during InitSockletServiceCaller").toString(), e);
-		}
+		// Future<List<String>> future = threadService.submit(new
+		// InitSockletServiceCaller());
+		// List<String> result = future.get();
+		initSockletService();
 		//
 		fireContextInitialized(id);
 	}
 
 	@Override
 	protected void doShutdown() throws Exception {
-
 		try {
 			int size = 0;
 			if (contextListeners != null && (size = contextListeners.size()) > 0) {
@@ -327,6 +274,7 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 			}
 		} catch (Exception e) {
 			LOGGER.error(new StringBuilder("Exception encountered during remove ContextListener").toString(), e);
+			throw e;
 		}
 		//
 		try {
@@ -338,6 +286,7 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 		} catch (Exception e) {
 			LOGGER.error(new StringBuilder("Exception encountered during remove ContextAttributeListener").toString(),
 					e);
+			throw e;
 		}
 		//
 		try {
@@ -348,6 +297,7 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 			}
 		} catch (Exception e) {
 			LOGGER.error(new StringBuilder("Exception encountered during remove SessionListener").toString(), e);
+			throw e;
 		}
 		//
 		try {
@@ -358,27 +308,35 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 			}
 		} catch (Exception e) {
 			LOGGER.error(new StringBuilder("Exception encountered during remove RelationListener").toString(), e);
+			throw e;
 		}
 		//
 		try {
 			if (CollectionHelper.notEmpty(sockletServices)) {
+				for (SockletService sockletService : sockletServices.values()) {
+					sockletService.shutdown();
+				}
+				//
 				int size = sockletServices.size();
 				sockletServices.clear();
 				LOGGER.info(acceptorContext + "SockletService [" + size + "] Had been removed");
 			}
 		} catch (Exception e) {
 			LOGGER.error(new StringBuilder("Exception encountered during remove SockletService").toString(), e);
+			throw e;
 		}
 	}
 
-	// ------------------------------------------------
-	// can't hotfix
-	// ------------------------------------------------
-	protected class InitContextListenerCaller implements Callable<List<String>> {
-		public List<String> call() throws Exception {
-			return initContextListener();
-		}
-	}
+	// // ------------------------------------------------
+	// // can't hotfix
+	// // ------------------------------------------------
+	// protected class InitContextListenerCaller implements
+	// Callable<List<String>> {
+	//
+	// public List<String> call() throws Exception {
+	// return initContextListener();
+	// }
+	// }
 
 	// ------------------------------------------------
 	// ya!!! we can hotfix
@@ -388,16 +346,15 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 	 * 
 	 * @return
 	 */
-	protected List<String> initContextListener() {
+	protected List<String> initContextListener() throws Exception {
 		List<String> result = new LinkedList<String>();
 		//
-		Map<String, ContextListener> listeners = applicationContext.getBeansOfType(ContextListener.class);
-		for (ContextListener contextListener : listeners.values()) {
+		Map<String, ContextListener> beans = applicationContext.getBeansOfType(ContextListener.class);
+		for (ContextListener contextListener : beans.values()) {
 			try {
 				// ListenerConfig
 				ListenerConfig listenerConfig = new ListenerConfigImpl(contextListener);
 				listenerConfig.setInitParameters(contextListener.getInitParameters());
-				// contextListener.setListenerConfig(listenerConfig);
 
 				// System.out.println(contextListener);
 				boolean contained = contextListener.getAcceptors().contains(id);// master,slave1...n
@@ -408,22 +365,29 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 					addContextListener(contextListener);
 					result.add(contextListener.getClass().getSimpleName());
 				}
-			} catch (BeanIsAbstractException ex) {
-			} catch (Exception ex) {
-				ex.printStackTrace();
+			} catch (BeanIsAbstractException e) {
+			} catch (Exception e) {
+				LOGGER.error(new StringBuilder("Exception encountered during initContextListener()").toString(), e);
+				throw e;
 			}
+		}
+		//
+		if (CollectionHelper.notEmpty(result)) {
+			LOGGER.info(
+					acceptorContext + "ContextListener [" + result.size() + "], " + result + " Had been initialized");
 		}
 		return result;
 	}
 
-	// ------------------------------------------------
-	// can't hotfix
-	// ------------------------------------------------
-	protected class InitContextAttributeListenerCaller implements Callable<List<String>> {
-		public List<String> call() throws Exception {
-			return initContextAttributeListener();
-		}
-	}
+	// // ------------------------------------------------
+	// // can't hotfix
+	// // ------------------------------------------------
+	// protected class InitContextAttributeListenerCaller implements
+	// Callable<List<String>> {
+	// public List<String> call() throws Exception {
+	// return initContextAttributeListener();
+	// }
+	// }
 
 	// ------------------------------------------------
 	// ya!!! we can hotfix
@@ -433,20 +397,17 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 	 * 
 	 * @return
 	 */
-	protected List<String> initContextAttributeListener() {
+	protected List<String> initContextAttributeListener() throws Exception {
 		List<String> result = new LinkedList<String>();
 		//
-		String[] names = applicationContext.getBeanNamesForType(ContextAttributeListener.class);
-		for (String name : names) {
+		Map<String, ContextAttributeListener> beans = applicationContext.getBeansOfType(ContextAttributeListener.class);
+		for (ContextAttributeListener contextAttributeListener : beans.values()) {
 			try {
-				ContextAttributeListener contextAttributeListener = (ContextAttributeListener) applicationContext
-						.getBean(name);
 				// ListenerConfig
 				ListenerConfig listenerConfig = new ListenerConfigImpl(contextAttributeListener);
 				listenerConfig.setInitParameters(contextAttributeListener.getInitParameters());
-				// contextListener.setListenerConfig(listenerConfig);
 
-				// System.out.println(contextListener);
+				// System.out.println(contextAttributeListener);
 				boolean contained = contextAttributeListener.getAcceptors().contains(id);// master,slave1...n
 				if (contained) {
 					// init
@@ -455,10 +416,17 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 					addContextAttributeListener(contextAttributeListener);
 					result.add(contextAttributeListener.getClass().getSimpleName());
 				}
-			} catch (BeanIsAbstractException ex) {
-			} catch (Exception ex) {
-				ex.printStackTrace();
+			} catch (BeanIsAbstractException e) {
+			} catch (Exception e) {
+				LOGGER.error(
+						new StringBuilder("Exception encountered during initContextAttributeListener()").toString(), e);
+				throw e;
 			}
+		}
+		//
+		if (CollectionHelper.notEmpty(result)) {
+			LOGGER.info(acceptorContext + "ContextAttributeListener [" + result.size() + "], " + result
+					+ " Had been initialized");
 		}
 		return result;
 	}
@@ -466,11 +434,12 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 	// ------------------------------------------------
 	// can't hotfix
 	// ------------------------------------------------
-	protected class InitSessionListenerCaller implements Callable<List<String>> {
-		public List<String> call() throws Exception {
-			return initSessionListener();
-		}
-	}
+	// protected class InitSessionListenerCaller implements
+	// Callable<List<String>> {
+	// public List<String> call() throws Exception {
+	// return initSessionListener();
+	// }
+	// }
 
 	// ------------------------------------------------
 	// ya!!! we can hotfix
@@ -480,18 +449,17 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 	 * 
 	 * @return
 	 */
-	protected List<String> initSessionListener() {
+	protected List<String> initSessionListener() throws Exception {
 		List<String> result = new LinkedList<String>();
-		String[] names = applicationContext.getBeanNamesForType(SessionListener.class);
-		for (String name : names) {
+		//
+		Map<String, SessionListener> beans = applicationContext.getBeansOfType(SessionListener.class);
+		for (SessionListener sessionListener : beans.values()) {
 			try {
-				SessionListener sessionListener = (SessionListener) applicationContext.getBean(name);
 				// ListenerConfig
 				ListenerConfig listenerConfig = new ListenerConfigImpl(sessionListener);
 				listenerConfig.setInitParameters(sessionListener.getInitParameters());
-				// contextListener.setListenerConfig(listenerConfig);
 
-				// System.out.println(contextListener);
+				// System.out.println(sessionListener);
 				boolean contained = sessionListener.getAcceptors().contains(id);// master,slave1...n
 				if (contained) {
 					// init
@@ -500,22 +468,29 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 					addSessionListener(sessionListener);
 					result.add(sessionListener.getClass().getSimpleName());
 				}
-			} catch (BeanIsAbstractException ex) {
-			} catch (Exception ex) {
-				ex.printStackTrace();
+			} catch (BeanIsAbstractException e) {
+			} catch (Exception e) {
+				LOGGER.error(new StringBuilder("Exception encountered during initSessionListener()").toString(), e);
+				throw e;
 			}
+		}
+		//
+		if (CollectionHelper.notEmpty(result)) {
+			LOGGER.info(
+					acceptorContext + "SessionListener [" + result.size() + "], " + result + " Had been initialized");
 		}
 		return result;
 	}
 
-	// ------------------------------------------------
-	// can't hotfix
-	// ------------------------------------------------
-	protected class InitRelationListenerCaller implements Callable<List<String>> {
-		public List<String> call() throws Exception {
-			return initRelationListener();
-		}
-	}
+	// // ------------------------------------------------
+	// // can't hotfix
+	// // ------------------------------------------------
+	// protected class InitRelationListenerCaller implements
+	// Callable<List<String>> {
+	// public List<String> call() throws Exception {
+	// return initRelationListener();
+	// }
+	// }
 
 	// ------------------------------------------------
 	// ya!!! we can hotfix
@@ -525,36 +500,41 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 	 * 
 	 * @return
 	 */
-	protected List<String> initRelationListener() {
+	protected List<String> initRelationListener() throws Exception {
 		List<String> result = new LinkedList<String>();
-		String[] names = applicationContext.getBeanNamesForType(RelationListener.class);
-		for (String name : names) {
+		//
+		Map<String, RelationListener> beans = applicationContext.getBeansOfType(RelationListener.class);
+		for (RelationListener relationListener : beans.values()) {
 			try {
-				RelationListener relationListener = (RelationListener) applicationContext.getBean(name);
-
-				// System.out.println(relationListener);
 				boolean contained = relationListener.getAcceptors().contains(id);// master,slave1...n
 				if (contained) {
 					// add listener
 					addRelationListener(relationListener);
 					result.add(relationListener.getClass().getSimpleName());
 				}
-			} catch (BeanIsAbstractException ex) {
-			} catch (Exception ex) {
-				ex.printStackTrace();
+			} catch (BeanIsAbstractException e) {
+			} catch (Exception e) {
+				LOGGER.error(new StringBuilder("Exception encountered during initRelationListener()").toString(), e);
+				throw e;
 			}
+		}
+		//
+		if (CollectionHelper.notEmpty(result)) {
+			LOGGER.info(
+					acceptorContext + "RelationListener [" + result.size() + "], " + result + " Had been initialized");
 		}
 		return result;
 	}
 
-	// ------------------------------------------------
-	// can't hotfix
-	// ------------------------------------------------
-	protected class InitSockletServiceCaller implements Callable<List<String>> {
-		public List<String> call() throws Exception {
-			return initSockletService();
-		}
-	}
+	// // ------------------------------------------------
+	// // can't hotfix
+	// // ------------------------------------------------
+	// protected class InitSockletServiceCaller implements
+	// Callable<List<String>> {
+	// public List<String> call() throws Exception {
+	// return initSockletService();
+	// }
+	// }
 
 	// ------------------------------------------------
 	// ya!!! we can hotfix
@@ -564,37 +544,42 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 	 * 
 	 * @return
 	 */
-	protected List<String> initSockletService() {
+	protected List<String> initSockletService() throws Exception {
 		List<String> result = new LinkedList<String>();
-		String[] names = applicationContext.getBeanNamesForType(SockletService.class);
-		for (String name : names) {
+		//
+		Map<String, SockletService> beans = applicationContext.getBeansOfType(SockletService.class);
+		for (SockletService sockletService : beans.values()) {
 			try {
-				SockletService sockletService = (SockletService) applicationContext.getBean(name);
 				// SockletConfig
 				SockletConfig sockletConfig = new SockletConfigImpl(sockletService);
 
 				// 模組類別,id=模組
 				@SuppressWarnings("unchecked")
 				ModuleType moduleType = (ModuleType) EnumHelper.nameOf(moduleTypeClass, sockletService.getId());
-				if (moduleType != null) {
-					// 在此acceptor的sockletService
-					boolean contained = sockletService.getAcceptors().contains(id);// master,slave1...n
-					if (contained) {
-						sockletServices.put(moduleType, sockletService);
-						result.add(sockletService.getId());
-					}
-					// 在其它relation的sockletService
-					else {
-						sockletService.setSockletConfig(sockletConfig);
-						relationServices.put(moduleType, sockletService);
-					}
-				} else {
-					LOGGER.error(sockletService.getId() + " Can't been found in moduleTypeClass");
+				AssertHelper.notNull(moduleType,
+						new StringBuilder().append("The ModuleType must not be null").toString());
+
+				// 在此acceptor的sockletService
+				boolean contained = sockletService.getAcceptors().contains(id);// master,slave1...n
+				if (contained) {
+					sockletServices.put(moduleType, sockletService);
+					result.add(sockletService.getId());
 				}
-			} catch (BeanIsAbstractException ex) {
-			} catch (Exception ex) {
-				ex.printStackTrace();
+				// 在其它relation的sockletService
+				else {
+					sockletService.setSockletConfig(sockletConfig);
+					relationServices.put(moduleType, sockletService);
+				}
+			} catch (BeanIsAbstractException e) {
+			} catch (Exception e) {
+				LOGGER.error(new StringBuilder("Exception encountered during initSockletService()").toString(), e);
+				throw e;
 			}
+		}
+		//
+		if (CollectionHelper.notEmpty(result)) {
+			LOGGER.info(
+					acceptorContext + "SockletService [" + result.size() + "], " + result + " Had been initialized");
 		}
 		return result;
 	}

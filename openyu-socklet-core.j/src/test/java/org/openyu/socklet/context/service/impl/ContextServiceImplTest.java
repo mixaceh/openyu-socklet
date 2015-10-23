@@ -23,7 +23,7 @@ public class ContextServiceImplTest extends BaseTestSupporter {
 	public static void setUpBeforeClass() throws Exception {
 		applicationContext = new ClassPathXmlApplicationContext(new String[] { //
 				"applicationContext-init.xml", //
-				"applicationContext-bean.xml", //
+				"testContext-thread.xml", //
 				"org/openyu/socklet/context/service/impl/testContext-context.xml",//
 		});
 

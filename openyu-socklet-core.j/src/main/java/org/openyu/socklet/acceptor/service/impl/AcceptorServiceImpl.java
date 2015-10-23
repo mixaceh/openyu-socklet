@@ -94,6 +94,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	private static final long serialVersionUID = 3758237740118194791L;
 
 	private static transient final Logger LOGGER = LoggerFactory.getLogger(AcceptorServiceImpl.class);
+
 	/**
 	 * 線程服務
 	 */
@@ -101,14 +102,23 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	@Qualifier("threadService")
 	protected transient ThreadService threadService;
 
+	/**
+	 * 訊息服務
+	 */
 	@Autowired
 	@Qualifier("messageService")
 	protected transient MessageService messageService;
 
+	/**
+	 * 協定服務
+	 */
 	@Autowired
 	@Qualifier("protocolService")
 	protected transient ProtocolService protocolService;
 
+	/**
+	 * 認證碼服務
+	 */
 	@Autowired
 	@Qualifier("authKeyService")
 	protected transient AuthKeyService authKeyService;
@@ -631,7 +641,6 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		contextService.setModuleTypeClass(moduleTypeClass);
 		contextService.setModuleTypeClass(moduleTypeClass);
 		//
-		contextService.setThreadService(threadService);
 		contextService.start();
 
 		// cluster
@@ -711,9 +720,10 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 
 		// context
 		contextService.shutdown();
+
+		// TODO runner and queue
 		
-		//TODO runner and queue
-		
+
 	}
 
 	protected void clusterSend(org.jgroups.Message msg) {
