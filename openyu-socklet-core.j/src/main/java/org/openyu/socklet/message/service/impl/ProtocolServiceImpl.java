@@ -42,13 +42,11 @@ import org.slf4j.LoggerFactory;
  * 
  * 組成/反組byte[]
  */
-public class ProtocolServiceImpl extends BaseServiceSupporter implements
-		ProtocolService {
+public class ProtocolServiceImpl extends BaseServiceSupporter implements ProtocolService {
 
 	private static final long serialVersionUID = 7562819271771546706L;
 
-	private static transient final Logger LOGGER = LoggerFactory
-			.getLogger(ProtocolServiceImpl.class);
+	private static transient final Logger LOGGER = LoggerFactory.getLogger(ProtocolServiceImpl.class);
 
 	/** 檢查碼 */
 	private ChecksumProcessor checksumProcessor = new ChecksumProcessorImpl();
@@ -166,6 +164,16 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 		compressProcessor.setCompressType(compressType);
 	}
 
+	@Override
+	protected void doStart() throws Exception {
+
+	}
+
+	@Override
+	protected void doShutdown() throws Exception {
+
+	}
+
 	/**
 	 * 握手協定,組成byte[]
 	 * 
@@ -174,17 +182,14 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 	 * @param sender
 	 * @return
 	 */
-	public byte[] handshake(CategoryType categoryType, byte[] authKey,
-			String sender) {
+	public byte[] handshake(CategoryType categoryType, byte[] authKey, String sender) {
 		byte[] result = new byte[0];
 		//
 		AssertHelper.notNull(categoryType, "The CategoryType must not be null");
 		AssertHelper.notNull(authKey, "The AuthKey must not be null");
-		AssertHelper.isTrue((authKey.length == 32),
-				"The AuthKey length is invalid");
+		AssertHelper.isTrue((authKey.length == 32), "The AuthKey length is invalid");
 		AssertHelper.notBlank(sender, "The Sender must not be blank");
-		AssertHelper.isTrue((sender.length() <= 32),
-				"The Sender length is invalid");
+		AssertHelper.isTrue((sender.length() <= 32), "The Sender length is invalid");
 
 		// ByteArrayOutputStream out = null;
 		// ByteArrayOutputStream headOut = null;
@@ -226,7 +231,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 
 			// head長度
 			int headLengh = (1)// (byte)totalLength
-			+ (2);// (short)magic
+					+ (2);// (short)magic
 
 			// data長度
 			int dataLength = 0//
@@ -262,8 +267,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			pos += 1;
 
 			// info: sender.length(byte)
-			byte[] senderLengthBytes = ByteHelper.toByteByteArray(sender
-					.length());
+			byte[] senderLengthBytes = ByteHelper.toByteByteArray(sender.length());
 			// dataOut.write(senderLengthBytes);
 			// dataOut.put(senderLengthBytes);
 			UnsafeHelper.putByteArray(dataOut, pos, senderLengthBytes);
@@ -353,8 +357,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			UnsafeHelper.putByteArray(out, pos, totalLengthBytes);
 			pos += 1;
 
-			UnsafeHelper.putByteArray(out, pos,
-					MagicType.HANKSHAKE.toByteArray());
+			UnsafeHelper.putByteArray(out, pos, MagicType.HANKSHAKE.toByteArray());
 			pos += 2;
 
 			// data
@@ -397,8 +400,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 		AssertHelper.notNull(values, "The Values must not be null");
 		//
 		Packet<?> packet = decode(values);
-		AssertHelper.isTrue((HeadType.HANDSHAKE == packet.getHeadType()),
-				"The HeadType must be HANDSHAKE");
+		AssertHelper.isTrue((HeadType.HANDSHAKE == packet.getHeadType()), "The HeadType must be HANDSHAKE");
 		byte[] buff = (byte[]) packet.getBody();
 		//
 		ByteArrayOutputStream dataIn = null;
@@ -409,19 +411,16 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			// ------------------------------------------
 			int pos = 0;
 			// 資料總長度
-			int totalLength = ByteHelper.fromByteInt(ByteHelper.getByteArray(
-					buff, pos, 1));// 0
+			int totalLength = ByteHelper.fromByteInt(ByteHelper.getByteArray(buff, pos, 1));// 0
 			pos += 1;
 			// System.out.println("totalLength: " + totalLength);
 
 			// 實際收的資料長度
-			AssertHelper.isTrue(buff.length >= 38, "Data length ["
-					+ buff.length + "] is invalid");
+			AssertHelper.isTrue(buff.length >= 38, "Data length [" + buff.length + "] is invalid");
 
 			// 實際收的資料長度 <資料總長度
-			AssertHelper.isTrue(buff.length >= totalLength, "Data length ["
-					+ buff.length + "] < expected length [" + totalLength
-					+ "] bytes");
+			AssertHelper.isTrue(buff.length >= totalLength,
+					"Data length [" + buff.length + "] < expected length [" + totalLength + "] bytes");
 
 			//
 			byte[] magicTypeBytes = ByteHelper.getByteArray(buff, pos, 2);
@@ -437,8 +436,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			// data
 			// ------------------------------------------
 			int headLengh = pos;// 4
-			byte[] data = ByteHelper.getByteArray(buff, pos, totalLength
-					- headLengh);
+			byte[] data = ByteHelper.getByteArray(buff, pos, totalLength - headLengh);
 
 			// 1.解壓
 			if (isCompress()) {
@@ -452,16 +450,14 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			pos = 0;
 			// info: categoryType
 			byte[] categoryTypeBytes = ByteHelper.getByteArray(data, pos, 1);
-			CategoryType categoryType = EnumHelper.valueOf(CategoryType.class,
-					ByteHelper.toByte(categoryTypeBytes));
+			CategoryType categoryType = EnumHelper.valueOf(CategoryType.class, ByteHelper.toByte(categoryTypeBytes));
 			// System.out.println("categoryType: " + categoryType);
 			dataIn.write(categoryTypeBytes);
 			pos += 1;
 
 			// info: priorityType
 			byte[] priorityTypeBytes = ByteHelper.getByteArray(data, pos, 1);
-			PriorityType priorityType = EnumHelper.valueOf(PriorityType.class,
-					ByteHelper.toByte(priorityTypeBytes));
+			PriorityType priorityType = EnumHelper.valueOf(PriorityType.class, ByteHelper.toByte(priorityTypeBytes));
 			// System.out.println("priorityType: " + priorityType);
 			dataIn.write(priorityTypeBytes);
 			pos += 1;
@@ -471,22 +467,18 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			// ------------------------------------------
 			// 是否為handshake類型
 			boolean handshakeType = CategoryType.HANDSHAKE_CLIENT == categoryType
-					|| CategoryType.HANDSHAKE_RELATION == categoryType
-					|| CategoryType.HANDSHAKE_SERVER == categoryType;
+					|| CategoryType.HANDSHAKE_RELATION == categoryType || CategoryType.HANDSHAKE_SERVER == categoryType;
 			if (handshakeType) {
 				// info: sender.length
-				byte[] senderLengthBytes = ByteHelper
-						.getByteArray(data, pos, 1);
+				byte[] senderLengthBytes = ByteHelper.getByteArray(data, pos, 1);
 				int senderLength = ByteHelper.fromByteInt(senderLengthBytes);
 				// System.out.println("senderLength: " + senderLength);
 				dataIn.write(senderLengthBytes);
 				pos += 1;
 
 				// info: sender
-				byte[] senderBytes = ByteHelper.getByteArray(data, pos,
-						senderLength);
-				StringBuilder sender = new StringBuilder(
-						ByteHelper.toString(senderBytes));
+				byte[] senderBytes = ByteHelper.getByteArray(data, pos, senderLength);
+				StringBuilder sender = new StringBuilder(ByteHelper.toString(senderBytes));
 				// System.out.println("sender: " + sender);
 				dataIn.write(senderBytes);
 				pos += senderLength;
@@ -499,24 +491,20 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 				// 3.檢查碼
 				if (isChecksum()) {
 					// 從遠端收到的checksum
-					byte[] checksumBytes = ByteHelper
-							.getByteArray(data, pos, 8);
+					byte[] checksumBytes = ByteHelper.getByteArray(data, pos, 8);
 					pos += 8;
-					AssertHelper.notNull(checksumBytes,
-							"The Checksum must not be null");
+					AssertHelper.notNull(checksumBytes, "The Checksum must not be null");
 					//
 					long checksum = ByteHelper.toLong(checksumBytes);
 					// System.out.println("checksum: " + checksum);
 
 					// 本地算出來的checksum
-					long realChecksum = checksumProcessor.checksum(dataIn
-							.toByteArray());
+					long realChecksum = checksumProcessor.checksum(dataIn.toByteArray());
 					// System.out.println("realChecksum: " +
 					// realChecksum);
 
-					AssertHelper.isTrue(realChecksum == checksum, "Checksum ["
-							+ realChecksum + "] not equal expected ["
-							+ checksum + "]");
+					AssertHelper.isTrue(realChecksum == checksum,
+							"Checksum [" + realChecksum + "] not equal expected [" + checksum + "]");
 				}
 
 				// message
@@ -524,8 +512,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 				result.setSender(sender.toString());
 				result.addByteArray(authkey);// 0, String
 			} else {
-				AssertHelper.unsupported("Unsupported categoryType ["
-						+ categoryType + "]");
+				AssertHelper.unsupported("Unsupported categoryType [" + categoryType + "]");
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -541,7 +528,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 	 * @param message
 	 * @return
 	 * 
-	 *         CategoryType.MESSAGE_CLIENT
+	 * 		CategoryType.MESSAGE_CLIENT
 	 * 
 	 *         messageType,sender
 	 * 
@@ -581,8 +568,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			// content
 			List<byte[]> contents = buff.getContents();
 			for (byte[] content : contents) {
-				byte[] contentLengthBytes = ByteHelper
-						.toShortByteArray(content.length);
+				byte[] contentLengthBytes = ByteHelper.toShortByteArray(content.length);
 				contentsLengthOut.write(contentLengthBytes);
 				contentsOut.write(content);
 			}
@@ -624,7 +610,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 
 			// head長度
 			int headLengh = 4// totalLength
-			+ 2;// magic
+					+ 2;// magic
 
 			// data長度
 			int dataLength = 0//
@@ -635,19 +621,18 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 					+ (2)// senderLength
 					+ sender.length() // sender
 
-					// content
+			// content
 					+ (2)// contentsSize
 					+ contentsLengthOut.size()// contentsLength
 					+ contentsOut.size()// contents
-			;
+					;
 			// ------------------------------------------
 			// MESSAGE_RELATION
 			// MESSAGE_SERVER
 			// MESSAGE_SYNC
 			// ------------------------------------------
 			// 是否為server類型
-			boolean serverType = CategoryType.MESSAGE_RELATION == buff
-					.getCategoryType()
+			boolean serverType = CategoryType.MESSAGE_RELATION == buff.getCategoryType()
 					|| CategoryType.MESSAGE_SERVER == buff.getCategoryType()
 					|| CategoryType.MESSAGE_SYNC == buff.getCategoryType();
 			if (serverType) {
@@ -666,40 +651,36 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 						+ (2)// senderLength
 						+ sender.length() // sender
 
-						// by server
+				// by server
 						+ (4)// srcModuleLength
 						+ (4)// destModuleLength
 						+ (2)// receiverLength
 						+ (receiversLength)// receivers
 
-						// content
-						// by server & client
+				// content
+				// by server & client
 						+ (2)// contentsSize
 						+ contentsLengthOut.size()// contentsLength
 						+ contentsOut.size()// contents
-				;
+						;
 			}
 
 			// ------------------------------------------
 			// data
 			// ------------------------------------------
 			// info: categoryType
-			byte[] categoryTypeBytes = ByteHelper.toByteArray(buff
-					.getCategoryType().getValue());
+			byte[] categoryTypeBytes = ByteHelper.toByteArray(buff.getCategoryType().getValue());
 			dataOut.write(categoryTypeBytes);
 			// info: priorityType
-			byte[] priorityTypeBytes = ByteHelper.toByteArray(buff
-					.getPriorityType().getValue());
+			byte[] priorityTypeBytes = ByteHelper.toByteArray(buff.getPriorityType().getValue());
 			dataOut.write(priorityTypeBytes);
 
 			// info: messageType
-			byte[] messageTypeBytes = ByteHelper.toByteArray(buff
-					.getMessageType().getValue());
+			byte[] messageTypeBytes = ByteHelper.toByteArray(buff.getMessageType().getValue());
 			dataOut.write(messageTypeBytes);
 
 			// info: sender.length
-			byte[] senderLengthBytes = ByteHelper.toShortByteArray(sender
-					.length());
+			byte[] senderLengthBytes = ByteHelper.toShortByteArray(sender.length());
 			dataOut.write(senderLengthBytes);
 
 			// info: sender
@@ -710,24 +691,20 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			// System.out.println("serverType: "+serverType);
 			if (serverType) {
 				// info: srcModule 來源模組
-				byte[] srcModuleTypeBytes = ByteHelper.toByteArray(buff
-						.getSrcModule().getValue());
+				byte[] srcModuleTypeBytes = ByteHelper.toByteArray(buff.getSrcModule().getValue());
 				dataOut.write(srcModuleTypeBytes);
 
 				// info: destModule 目的模組
-				byte[] destModuleTypeBytes = ByteHelper.toByteArray(buff
-						.getDestModule().getValue());
+				byte[] destModuleTypeBytes = ByteHelper.toByteArray(buff.getDestModule().getValue());
 				dataOut.write(destModuleTypeBytes);
 
 				// info: receiversSize
 				int receiversSize = buff.getReceivers().size();
-				byte[] receiversSizeBytes = ByteHelper
-						.toShortByteArray(receiversSize);
+				byte[] receiversSizeBytes = ByteHelper.toShortByteArray(receiversSize);
 				dataOut.write(receiversSizeBytes);
 				// info: receivers
 				for (String receiver : buff.getReceivers()) {
-					byte[] receiverLengthBytes = ByteHelper
-							.toShortByteArray(receiver.length());
+					byte[] receiverLengthBytes = ByteHelper.toShortByteArray(receiver.length());
 					dataOut.write(receiverLengthBytes);
 
 					byte[] receiverBytes = ByteHelper.toByteArray(receiver);
@@ -737,8 +714,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 
 			// content: contentsSize
 			int contentsSize = contents.size();
-			byte[] contentsSizeBytes = ByteHelper
-					.toShortByteArray(contentsSize);
+			byte[] contentsSizeBytes = ByteHelper.toShortByteArray(contentsSize);
 			dataOut.write(contentsSizeBytes);
 
 			// content: contentsLengthOut
@@ -749,8 +725,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 
 			// 1.檢查碼
 			if (isChecksum()) {
-				long checksum = checksumProcessor.checksum(dataOut
-						.toByteArray());
+				long checksum = checksumProcessor.checksum(dataOut.toByteArray());
 				// System.out.println("checksum: " + checksum);
 				byte[] checksumBytes = ByteHelper.toByteArray(checksum);
 				dataOut.write(checksumBytes);
@@ -816,23 +791,20 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 	 * @param messageEnumType
 	 * @return
 	 */
-	public <T extends Enum<T>, U extends Enum<U>> List<Message> disassemble(
-			byte[] values, Class<T> moduleEnumType, Class<U> messageEnumType) {
+	public <T extends Enum<T>, U extends Enum<U>> List<Message> disassemble(byte[] values, Class<T> moduleEnumType,
+			Class<U> messageEnumType) {
 		List<Message> result = new LinkedList<Message>();
 		AssertHelper.notNull(values, "The Values must not be null");
 		//
 		Packet<?> packet = decode(values);
-		AssertHelper.isTrue((HeadType.MESSAGE == packet.getHeadType()),
-				"The HeadType must be MESSAGE");
+		AssertHelper.isTrue((HeadType.MESSAGE == packet.getHeadType()), "The HeadType must be MESSAGE");
 		byte[] buff = (byte[]) packet.getBody();
 		try {
 			int pos = 0;
 			int dataLength = 0;
 			while (pos < buff.length
-					&& (dataLength = ByteHelper.toInt(ByteHelper.getByteArray(
-							buff, pos, 4))) < buff.length - pos + 1) {
-				Message message = disassemble(pos, buff, moduleEnumType,
-						messageEnumType);
+					&& (dataLength = ByteHelper.toInt(ByteHelper.getByteArray(buff, pos, 4))) < buff.length - pos + 1) {
+				Message message = disassemble(pos, buff, moduleEnumType, messageEnumType);
 				if (message == null) {
 					break;
 				}
@@ -856,9 +828,8 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 	 * @param messageEnumType
 	 * @return
 	 */
-	protected <T extends Enum<T>, U extends Enum<U>> Message disassemble(
-			int pos, byte[] values, Class<T> moduleEnumType,
-			Class<U> messageEnumType) {
+	protected <T extends Enum<T>, U extends Enum<U>> Message disassemble(int pos, byte[] values,
+			Class<T> moduleEnumType, Class<U> messageEnumType) {
 		Message result = null;
 		//
 		AssertHelper.notNull(values, "The Values must not be null");
@@ -871,8 +842,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			// ------------------------------------------
 			// int pos = 0;
 			// 資料總長度
-			int totalLength = ByteHelper.toInt(ByteHelper.getByteArray(values,
-					pos, 4));
+			int totalLength = ByteHelper.toInt(ByteHelper.getByteArray(values, pos, 4));
 			pos += 4;
 			// System.out.println("totalLength: " + totalLength);
 
@@ -883,13 +853,11 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			}
 			// 實際收的資料長度 < 資料總長度
 			else if (values.length < totalLength) {
-				LOGGER.error("Data[" + values.length + "] < [" + totalLength
-						+ "] bytes");
+				LOGGER.error("Data[" + values.length + "] < [" + totalLength + "] bytes");
 				return result;
 			}
 			//
-			int magicTypeValue = ByteHelper.fromShortInt(ByteHelper
-					.getByteArray(values, pos, 2));// 4-5
+			int magicTypeValue = ByteHelper.fromShortInt(ByteHelper.getByteArray(values, pos, 2));// 4-5
 			pos += 2;
 			// System.out.println("magicTypeValue: " + magicTypeValue);
 			if (MagicType.MESSAGE.getValue() != magicTypeValue) {
@@ -901,8 +869,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			// data
 			// ------------------------------------------
 			int headLengh = 6;
-			byte[] data = ByteHelper.getByteArray(values, pos, totalLength
-					- headLengh);
+			byte[] data = ByteHelper.getByteArray(values, pos, totalLength - headLengh);
 
 			// 1.解壓
 			if (isCompress()) {
@@ -916,16 +883,14 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			pos = 0;
 			// info: categoryType
 			byte[] categoryTypeBytes = ByteHelper.getByteArray(data, pos, 1);
-			CategoryType categoryType = EnumHelper.valueOf(CategoryType.class,
-					ByteHelper.toByte(categoryTypeBytes));
+			CategoryType categoryType = EnumHelper.valueOf(CategoryType.class, ByteHelper.toByte(categoryTypeBytes));
 			// System.out.println("categoryType: " + categoryType);
 			dataOut.write(categoryTypeBytes);
 			pos += 1;
 
 			// info: priorityType
 			byte[] priorityTypeBytes = ByteHelper.getByteArray(data, pos, 1);
-			PriorityType priorityType = EnumHelper.valueOf(PriorityType.class,
-					ByteHelper.toByte(priorityTypeBytes));
+			PriorityType priorityType = EnumHelper.valueOf(PriorityType.class, ByteHelper.toByte(priorityTypeBytes));
 			// System.out.println("priorityType: " + priorityType);
 			dataOut.write(priorityTypeBytes);
 			pos += 1;
@@ -933,8 +898,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			// info: messageType
 			byte[] messageTypeBytes = ByteHelper.getByteArray(data, pos, 4);
 			int messageTypeValue = ByteHelper.toInt(messageTypeBytes);
-			MessageType messageType = (MessageType) EnumHelper.valueOf(
-					messageEnumType, messageTypeValue);
+			MessageType messageType = (MessageType) EnumHelper.valueOf(messageEnumType, messageTypeValue);
 			// System.out.println("messageType: " + messageType);
 			dataOut.write(messageTypeBytes);
 			pos += 4;
@@ -947,10 +911,8 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			pos += 2;
 
 			// info: sender
-			byte[] senderBytes = ByteHelper.getByteArray(data, pos,
-					senderLength);
-			StringBuilder sender = new StringBuilder(
-					ByteHelper.toString(senderBytes));
+			byte[] senderBytes = ByteHelper.getByteArray(data, pos, senderLength);
+			StringBuilder sender = new StringBuilder(ByteHelper.toString(senderBytes));
 			// System.out.println("sender: " + sender);
 			dataOut.write(senderBytes);
 			pos += senderLength;
@@ -965,49 +927,39 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			// ------------------------------------------
 			// 是否為server類型
 			boolean serverType = CategoryType.MESSAGE_RELATION == categoryType
-					|| CategoryType.MESSAGE_SERVER == categoryType
-					|| CategoryType.MESSAGE_SYNC == categoryType;
+					|| CategoryType.MESSAGE_SERVER == categoryType || CategoryType.MESSAGE_SYNC == categoryType;
 			// System.out.println("serverType: "+serverType);
 			if (serverType) {
 				// info: srcModule 來源模組
-				byte[] srcModuleTypeBytes = ByteHelper.getByteArray(data, pos,
-						4);
-				srcModuleType = (ModuleType) EnumHelper.valueOf(moduleEnumType,
-						ByteHelper.toInt(srcModuleTypeBytes));
+				byte[] srcModuleTypeBytes = ByteHelper.getByteArray(data, pos, 4);
+				srcModuleType = (ModuleType) EnumHelper.valueOf(moduleEnumType, ByteHelper.toInt(srcModuleTypeBytes));
 				// System.out.println("srcModuleType: " + srcModuleType);
 				dataOut.write(srcModuleTypeBytes);
 				pos += 4;
 
 				// info: destModule 目的模組
-				byte[] destModuleTypeBytes = ByteHelper.getByteArray(data, pos,
-						4);
-				destModuleType = (ModuleType) EnumHelper.valueOf(
-						moduleEnumType, ByteHelper.toInt(destModuleTypeBytes));
+				byte[] destModuleTypeBytes = ByteHelper.getByteArray(data, pos, 4);
+				destModuleType = (ModuleType) EnumHelper.valueOf(moduleEnumType, ByteHelper.toInt(destModuleTypeBytes));
 				// System.out.println("destModuleType: " + destModuleType);
 				dataOut.write(destModuleTypeBytes);
 				pos += 4;
 
 				// info: receiversSize
-				byte[] receiversSizeBytes = ByteHelper.getByteArray(data, pos,
-						2);
+				byte[] receiversSizeBytes = ByteHelper.getByteArray(data, pos, 2);
 				int receiversSize = ByteHelper.fromShortInt(receiversSizeBytes);
 				// System.out.println("receiversSize: " + receiversSize);
 				dataOut.write(receiversSizeBytes);
 				pos += 2;
 				// info: receivers
 				for (int i = 0; i < receiversSize; i++) {
-					byte[] receiverLengthBytes = ByteHelper.getByteArray(data,
-							pos, 2);
-					int receiverLength = ByteHelper
-							.fromShortInt(receiverLengthBytes);
+					byte[] receiverLengthBytes = ByteHelper.getByteArray(data, pos, 2);
+					int receiverLength = ByteHelper.fromShortInt(receiverLengthBytes);
 					dataOut.write(receiverLengthBytes);
 					pos += 2;
 					// System.out.println("receiverLength: " + receiverLength);
 					//
-					byte[] receiverBytes = ByteHelper.getByteArray(data, pos,
-							receiverLength);
-					StringBuilder receiver = new StringBuilder(
-							ByteHelper.toString(receiverBytes));
+					byte[] receiverBytes = ByteHelper.getByteArray(data, pos, receiverLength);
+					StringBuilder receiver = new StringBuilder(ByteHelper.toString(receiverBytes));
 					dataOut.write(receiverBytes);
 					pos += receiverLength;
 					// System.out.println("receiver: " + receiver);
@@ -1025,8 +977,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			// content: contentsLength
 			int[] contentsLength = new int[contentsSize];
 			for (int i = 0; i < contentsSize; i++) {
-				byte[] contentLengthBytes = ByteHelper.getByteArray(data, pos,
-						2);
+				byte[] contentLengthBytes = ByteHelper.getByteArray(data, pos, 2);
 				contentsLength[i] = ByteHelper.fromShortInt(contentLengthBytes);
 				dataOut.write(contentLengthBytes);
 				pos += 2;
@@ -1036,8 +987,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			// content: contents
 			List<byte[]> contents = new LinkedList<byte[]>();
 			for (int i = 0; i < contentsSize; i++) {
-				byte[] content = ByteHelper.getByteArray(data, pos,
-						contentsLength[i]);
+				byte[] content = ByteHelper.getByteArray(data, pos, contentsLength[i]);
 				dataOut.write(content);
 				pos += contentsLength[i];
 				contents.add(content);
@@ -1057,13 +1007,11 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 				// System.out.println("checksum: " + checksum);
 
 				// 本地算出來的checksum
-				long realChecksum = checksumProcessor.checksum(dataOut
-						.toByteArray());
+				long realChecksum = checksumProcessor.checksum(dataOut.toByteArray());
 				// System.out.println("realChecksum: " + realChecksum);
 
 				if (realChecksum != checksum) {
-					LOGGER.error("Checksum [" + realChecksum
-							+ "] not equal expected [" + checksum + "]");
+					LOGGER.error("Checksum [" + realChecksum + "] not equal expected [" + checksum + "]");
 					return result;
 				}
 			}
@@ -1074,21 +1022,17 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			// MESSAGE_CLIENT
 			if (clientType) {
 				// ------------------------------------------
-				result = new MessageImpl(categoryType, priorityType,
-						sender.toString(), messageType);
+				result = new MessageImpl(categoryType, priorityType, sender.toString(), messageType);
 
 				// destModule,編號來自於messageIntValue,前3碼+"00",如:150001->150000
 				String pattern = "##0";
-				StringBuilder sb = new StringBuilder(NumberHelper.toString(
-						messageTypeValue, pattern));
+				StringBuilder sb = new StringBuilder(NumberHelper.toString(messageTypeValue, pattern));
 				String destModule = sb.substring(0, 3) + "000";
-				int destModuleTypeValue = NumberHelper.toInt(destModule, 0,
-						pattern);
+				int destModuleTypeValue = NumberHelper.toInt(destModule, 0, pattern);
 
 				// System.out.println("destModuleTypeValue: "
 				// + destModuleTypeValue);
-				destModuleType = (ModuleType) EnumHelper.valueOf(
-						moduleEnumType, destModuleTypeValue);
+				destModuleType = (ModuleType) EnumHelper.valueOf(moduleEnumType, destModuleTypeValue);
 				// System.out.println("destModuleType: " + destModuleType);
 				result.setDestModule(destModuleType);
 
@@ -1101,8 +1045,8 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			// MESSAGE_SERVER
 			// MESSAGE_SYNC
 			else if (serverType) {
-				result = new MessageImpl(categoryType, priorityType,
-						srcModuleType, destModuleType, messageType, receivers);
+				result = new MessageImpl(categoryType, priorityType, srcModuleType, destModuleType, messageType,
+						receivers);
 				result.setSender(sender.toString());
 
 				// content
@@ -1113,8 +1057,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			// MESSAGE_ACCEPTOR
 			else if (accptorType) {
 				// ------------------------------------------
-				result = new MessageImpl(categoryType, priorityType,
-						sender.toString(), messageType);
+				result = new MessageImpl(categoryType, priorityType, sender.toString(), messageType);
 				// ------------------------------------------
 
 				// contents
@@ -1345,10 +1288,8 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			// result = ArrayHelper.add(result, bodyBytes);
 			//
 			result = headBytes;
-			result = UnsafeHelper.putByteArray(result, result.length,
-					lengthBytes);
-			result = UnsafeHelper
-					.putByteArray(result, result.length, bodyBytes);
+			result = UnsafeHelper.putByteArray(result, result.length, lengthBytes);
+			result = UnsafeHelper.putByteArray(result, result.length, bodyBytes);
 			//
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -1372,10 +1313,8 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			// result = ArrayHelper.add(result, bodyBytes);
 			//
 			result = headBytes;
-			result = UnsafeHelper.putByteArray(result, result.length,
-					lengthBytes);
-			result = UnsafeHelper
-					.putByteArray(result, result.length, bodyBytes);
+			result = UnsafeHelper.putByteArray(result, result.length, lengthBytes);
+			result = UnsafeHelper.putByteArray(result, result.length, bodyBytes);
 			//
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -1396,35 +1335,29 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 			byte[] lengthBytes = ByteHelper.getByteArray(values, pos, 4);
 			pos += 4;
 			//
-			byte[] bodyBytes = ByteHelper.getByteArray(values, pos,
-					values.length - pos);
+			byte[] bodyBytes = ByteHelper.getByteArray(values, pos, values.length - pos);
 			// SystemUtil.println(headBytes);
 			//
 			int headTypeValue = ByteHelper.toInt(headBytes);
-			HeadType headType = EnumHelper.valueOf(HeadType.class,
-					headTypeValue);
+			HeadType headType = EnumHelper.valueOf(HeadType.class, headTypeValue);
 			int length = ByteHelper.toInt(lengthBytes);
 			// System.out.println(headType);
 
 			switch (headType) {
 			case HANDSHAKE: {
-				result = new PacketImpl<byte[]>(values, headType, length,
-						bodyBytes);
+				result = new PacketImpl<byte[]>(values, headType, length, bodyBytes);
 				break;
 			}
 			case MESSAGE: {
-				result = new PacketImpl<byte[]>(values, headType, length,
-						bodyBytes);
+				result = new PacketImpl<byte[]>(values, headType, length, bodyBytes);
 				break;
 			}
 			case KEEP_ALIVE: {
-				result = new PacketImpl<byte[]>(values, headType, length,
-						bodyBytes);
+				result = new PacketImpl<byte[]>(values, headType, length, bodyBytes);
 				break;
 			}
 			case FILE: {
-				result = new PacketImpl<byte[]>(values, headType, length,
-						bodyBytes);
+				result = new PacketImpl<byte[]>(values, headType, length, bodyBytes);
 				break;
 			}
 			default: {
@@ -1438,7 +1371,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 		return result;
 	}
 
-	protected enum MagicType implements IntEnum, Magicer {
+	protected enum MagicType implements IntEnum,Magicer {
 
 		/**
 		 * 握手用
@@ -1486,4 +1419,5 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements
 		public abstract byte[] toByteArray();
 
 	}
+
 }

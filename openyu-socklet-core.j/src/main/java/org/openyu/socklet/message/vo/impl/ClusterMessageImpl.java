@@ -36,7 +36,7 @@ public class ClusterMessageImpl extends BaseModelSupporter implements
 		this.body = body;
 		//
 		this.id = UUID.randomUUID().toString();
-		this.timeStamp = System.nanoTime();
+		this.timeStamp = System.currentTimeMillis();
 	}
 
 	public String getId() {

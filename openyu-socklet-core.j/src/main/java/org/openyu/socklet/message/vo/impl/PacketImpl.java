@@ -29,7 +29,7 @@ public class PacketImpl<V> extends BaseModelSupporter implements Packet<V> {
 	}
 
 	public PacketImpl(byte[] byteArray, HeadType headType, int length, V body) {
-		this.timeStamp = System.nanoTime();
+		this.timeStamp = System.currentTimeMillis();
 		this.byteArray = byteArray;
 		this.headType = headType;
 		this.length = length;

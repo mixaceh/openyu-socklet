@@ -145,7 +145,7 @@ public interface ProtocolService extends BaseService {
 
 	byte[] encode(HeadType headType, String body);
 
-	public byte[] encode(HeadType headType, String body, String charsetName);
+	byte[] encode(HeadType headType, String body, String charsetName);
 
 	byte[] encode(HeadType headType, byte body);
 

@@ -20,22 +20,21 @@ import org.slf4j.LoggerFactory;
 /**
  * 訊息服務,處理send message
  */
-public class MessageServiceImpl extends BaseServiceSupporter implements
-		MessageService
+public class MessageServiceImpl extends BaseServiceSupporter implements MessageService
 
 {
 	private static final long serialVersionUID = 7704523919913561474L;
 
 	/** The Constant LOGGER. */
-	private static transient final Logger LOGGER = LoggerFactory
-			.getLogger(MessageServiceImpl.class);
+	private static transient final Logger LOGGER = LoggerFactory.getLogger(MessageServiceImpl.class);
 
 	/**
 	 * tcp, server->client, MESSAGE_SERVER,MESSAGE_RELATION
 	 * 
 	 * srcModule=FOUR_SYMBOL, destModule= CLIENT
 	 * 
-	 * @see org.openyu.socklet.acceptor.service.impl.acceptorServiceImpl.sendClientQueue
+	 * @see org.openyu.socklet.acceptor.service.impl.acceptorServiceImpl.
+	 *      sendClientQueue
 	 */
 	private TriggerQueue<Message> clientQueue;
 
@@ -48,7 +47,8 @@ public class MessageServiceImpl extends BaseServiceSupporter implements
 	 * 
 	 * srcModule=CLIENT, destModule= CORE
 	 * 
-	 * @see org.openyu.socklet.acceptor.service.impl.acceptorServiceImpl.sendServerQueue
+	 * @see org.openyu.socklet.acceptor.service.impl.acceptorServiceImpl.
+	 *      sendServerQueue
 	 */
 	private TriggerQueue<Message> serverQueue;
 
@@ -60,7 +60,8 @@ public class MessageServiceImpl extends BaseServiceSupporter implements
 	 * 
 	 * srcModule=ROLE, destModule= ROLE
 	 * 
-	 * @see org.openyu.socklet.acceptor.service.impl.acceptorServiceImpl.sendSyncQueue
+	 * @see org.openyu.socklet.acceptor.service.impl.acceptorServiceImpl.
+	 *      sendSyncQueue
 	 */
 	private TriggerQueue<Message> syncQueue;
 
@@ -84,6 +85,16 @@ public class MessageServiceImpl extends BaseServiceSupporter implements
 		this.syncQueue = syncQueue;
 	}
 
+	@Override
+	protected void doStart() throws Exception {
+
+	}
+
+	@Override
+	protected void doShutdown() throws Exception {
+
+	}
+
 	/**
 	 * * 建構訊息, MESSAGE_CLIENT, 模擬client side用
 	 * 
@@ -92,8 +103,7 @@ public class MessageServiceImpl extends BaseServiceSupporter implements
 	 * @return
 	 */
 	public Message createClient(String sender, MessageType messageType) {
-		Message result = new MessageImpl(CategoryType.MESSAGE_CLIENT,
-				PriorityType.MEDIUM, sender, messageType);
+		Message result = new MessageImpl(CategoryType.MESSAGE_CLIENT, PriorityType.MEDIUM, sender, messageType);
 		return result;
 	}
 
@@ -105,8 +115,7 @@ public class MessageServiceImpl extends BaseServiceSupporter implements
 	 * @param messageType
 	 * @return
 	 */
-	public Message createMessage(ModuleType srcModule, ModuleType destModule,
-			MessageType messageType) {
+	public Message createMessage(ModuleType srcModule, ModuleType destModule, MessageType messageType) {
 		return createMessage(srcModule, destModule, messageType, (String) null);
 	}
 
@@ -119,8 +128,8 @@ public class MessageServiceImpl extends BaseServiceSupporter implements
 	 * @param receiver
 	 * @return
 	 */
-	public Message createMessage(ModuleType srcModule, ModuleType destModule,
-			MessageType messageType, String receiver) {
+	public Message createMessage(ModuleType srcModule, ModuleType destModule, MessageType messageType,
+			String receiver) {
 		List<String> receivers = new LinkedList<String>();
 		if (StringHelper.notBlank(receiver)) {
 			receivers.add(receiver);
@@ -137,12 +146,11 @@ public class MessageServiceImpl extends BaseServiceSupporter implements
 	 * @param receivers
 	 * @return
 	 */
-	public Message createMessage(ModuleType srcModule, ModuleType destModule,
-			MessageType messageType, List<String> receivers) {
+	public Message createMessage(ModuleType srcModule, ModuleType destModule, MessageType messageType,
+			List<String> receivers) {
 		List<String> safeReceivers = CollectionHelper.safeGet(receivers);
-		Message result = new MessageImpl(CategoryType.MESSAGE_SERVER,
-				PriorityType.MEDIUM, srcModule, destModule, messageType,
-				safeReceivers);
+		Message result = new MessageImpl(CategoryType.MESSAGE_SERVER, PriorityType.MEDIUM, srcModule, destModule,
+				messageType, safeReceivers);
 		return result;
 	}
 
@@ -154,10 +162,9 @@ public class MessageServiceImpl extends BaseServiceSupporter implements
 	 * @param messageType
 	 * @return
 	 */
-	public Message createSync(ModuleType srcModule, ModuleType destModule,
-			MessageType messageType) {
-		Message result = new MessageImpl(CategoryType.MESSAGE_SYNC,
-				PriorityType.MEDIUM, srcModule, destModule, messageType);
+	public Message createSync(ModuleType srcModule, ModuleType destModule, MessageType messageType) {
+		Message result = new MessageImpl(CategoryType.MESSAGE_SYNC, PriorityType.MEDIUM, srcModule, destModule,
+				messageType);
 		return result;
 	}
 
@@ -184,6 +191,7 @@ public class MessageServiceImpl extends BaseServiceSupporter implements
 			if (serverQueue == null) {
 				// TODO debug用
 				System.out.println(message);
+				result = true;
 			} else {
 				result = serverQueue.offer(message);
 			}
@@ -202,6 +210,7 @@ public class MessageServiceImpl extends BaseServiceSupporter implements
 			if (syncQueue == null) {
 				// TODO debug用
 				System.out.println(message);
+				result = true;
 			} else {
 				result = syncQueue.offer(message);
 			}
@@ -216,12 +225,12 @@ public class MessageServiceImpl extends BaseServiceSupporter implements
 			if (clientQueue == null) {
 				// TODO debug用
 				System.out.println(message);
+				result = true;
 			} else {
 				result = clientQueue.offer(message);
 			}
 		} else {
-			LOGGER.error("Undefined: " + message.getCategoryType() + ", "
-					+ message);
+			LOGGER.error("Undefined: " + message.getCategoryType() + ", " + message);
 		}
 		return result;
 	}
@@ -242,68 +251,4 @@ public class MessageServiceImpl extends BaseServiceSupporter implements
 		}
 		return result;
 	}
-
-	// /**
-	// * 移除訊息
-	// *
-	// * @param message
-	// * @return
-	// */
-	// public boolean removeMessage(CategoryType categoryType, Message message)
-	// {
-	// boolean result = false;
-	// Queue<Message> messages = getMessages(categoryType);
-	// if (messages != null)
-	// {
-	// List<Message> removeMessages = new LinkedList<Message>();
-	// for (Message entry : messages)
-	// {
-	// if (entry.getMessageType().equals(message.getMessageType()))
-	// {
-	// removeMessages.add(entry);
-	// }
-	// }
-	// //移除訊息編號
-	// for (Message removeEntry : removeMessages)
-	// {
-	// result |= messages.remove(removeEntry);
-	// }
-	// }
-	// return result;
-	// }
-
-	// /**
-	// * 依類別取得訊息
-	// *
-	// * @param categoryType
-	// * @return
-	// */
-	// public Queue<Message> getMessages(CategoryType categoryType)
-	// {
-	// Queue<Message> result = new ConcurrentLinkedQueue<Message>();
-	// switch (categoryType)
-	// {
-	// case MESSAGE_SERVER:
-	// {
-	// result = sendServers;
-	// break;
-	// }
-	// case MESSAGE_SYNC:
-	// {
-	// result = sendSyncs;
-	// break;
-	// }
-	// case MESSAGE_CLIENT:
-	// {
-	// result = sendClients;
-	// break;
-	// }
-	// default:
-	// {
-	// log.warn("undefined: " + categoryType);
-	// break;
-	// }
-	// }
-	// return result;
-	// }
 }

@@ -67,7 +67,7 @@ public class MessageImpl extends BaseModelSupporter implements Message {
 		this.priorityType = priorityType;
 		//
 		this.id = UUID.randomUUID().toString();
-		this.timeStamp = System.nanoTime();
+		this.timeStamp = System.currentTimeMillis();
 	}
 
 	/**

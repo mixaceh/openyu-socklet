@@ -3,198 +3,154 @@ package org.openyu.socklet.message.service.impl;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
-
-import org.openyu.socklet.core.CoreTestSupporter;
+import org.openyu.commons.junit.supporter.BaseTestSupporter;
 import org.openyu.socklet.core.net.socklet.CoreMessageType;
 import org.openyu.socklet.core.net.socklet.CoreModuleType;
 import org.openyu.socklet.message.vo.Message;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-public class MessageServiceImplTest extends CoreTestSupporter
-{
+import com.carrotsearch.junitbenchmarks.BenchmarkOptions;
+import com.carrotsearch.junitbenchmarks.BenchmarkRule;
+
+public class MessageServiceImplTest extends BaseTestSupporter {
+
+	@Rule
+	public BenchmarkRule benchmarkRule = new BenchmarkRule();
+
+	private static MessageServiceImpl messageServiceImpl;
+
+	@BeforeClass
+	public static void setUpBeforeClass() throws Exception {
+		applicationContext = new ClassPathXmlApplicationContext(new String[] { //
+				"applicationContext-init.xml", //
+				"org/openyu/socklet/message/testContext-message.xml",//
+		});
+
+		messageServiceImpl = (MessageServiceImpl) applicationContext.getBean("messageService");
+	}
 
 	@Test
-	//client->server
-	public void createClient()
-	{
+	@BenchmarkOptions(benchmarkRounds = 2, warmupRounds = 0, concurrency = 1)
+	public void messageServiceImpl() {
+		System.out.println(messageServiceImpl);
+		assertNotNull(messageServiceImpl);
+	}
+
+	@Test
+	@BenchmarkOptions(benchmarkRounds = 1, warmupRounds = 0, concurrency = 1)
+	public void close() {
+		System.out.println(messageServiceImpl);
+		assertNotNull(messageServiceImpl);
+		applicationContext.close();
+		// 多次,不會丟出ex
+		applicationContext.close();
+	}
+
+	@Test
+	@BenchmarkOptions(benchmarkRounds = 1, warmupRounds = 0, concurrency = 1)
+	public void refresh() {
+		System.out.println(messageServiceImpl);
+		assertNotNull(messageServiceImpl);
+		applicationContext.refresh();
+		// 多次,不會丟出ex
+		applicationContext.refresh();
+	}
+
+	@Test
+	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
+	// client->server
+	public void createClient() {
 		final String ROLE_CODE = "TEST_ROLE";
 		Message result = null;
 		//
-		int count = 1000000;
-		long beg = System.currentTimeMillis();
-		for (int i = 0; i < count; i++)
-		{
-			//from [TEST_ROLE] MESSAGE_CLIENT, (21003) FOUR_SYMBOL_PLAY_REQUEST to []
-			//1
-			result = messageService.createClient(ROLE_CODE,
-				CoreMessageType.FOUR_SYMBOL_PLAY_REQUEST);
-			result.addInt(1);
-
-		}
-		long end = System.currentTimeMillis();
-		System.out.println(count + " times: " + (end - beg) + " mills. ");
+		// from [TEST_ROLE] MESSAGE_CLIENT, (21003) FOUR_SYMBOL_PLAY_REQUEST
+		// to []
+		// 1
+		result = messageServiceImpl.createClient(ROLE_CODE, CoreMessageType.FOUR_SYMBOL_PLAY_REQUEST);
+		result.addInt(1);
 		//
 		System.out.println(result);
 		assertNotNull(result);
 	}
 
-	//	@Test
-	//	//server->relation
-	//	public void createRelation()
-	//	{
-	//		final String ROLE_CODE = "TEST_ROLE";
-	//		Message result = null;
-	//		//
-	//		int count = 1000000;
-	//		long beg = System.currentTimeMillis();
-	//		for (int i = 0; i < count; i++)
-	//		{
-	//			//from [slave2] MESSAGE_RELATION, (11453) CHAT_SAY_REPONSE, (11400) CHAT => (19900) CLIENT to [TEST_ROLE]
-	//			//1, Hello world, <hr/>
-	//			result = messageService.createRelation("slave2", CoreModuleType.CHAT,
-	//				CoreModuleType.CLIENT, CoreMessageType.CHAT_SAY_REPONSE, ROLE_CODE);
-	//			result.addInt(1);// 頻道類型
-	//			result.addString("Hello world");// 聊天內容
-	//			result.addString("<hr/>");// html
-	//		}
-	//		long end = System.currentTimeMillis();
-	//		System.out.println(count + " times: " + (end - beg) + " mills. ");
-	//		//
-	//		System.out.println(result);
-	//		assertNotNull(result);
-	//	}
-
 	@Test
-	//server->client
-	public void createMessage2Client()
-	{
+	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
+	// server->client
+	public void createMessageToClient() {
 		final String ROLE_CODE = "TEST_ROLE";
 		Message result = null;
 		//
-		int count = 1000000;
-		long beg = System.currentTimeMillis();
-		for (int i = 0; i < count; i++)
-		{
-			//此時還沒有sender, 在acceptorServer上才會設定
-			//from [null] MESSAGE_SERVER, (11251) ACCOUNT_COIN_REPONSE, (11200) ACCOUNT => (19900) CLIENT to [TEST_ROLE]
-			//1000
-			result = messageService.createMessage(CoreModuleType.ACCOUNT, CoreModuleType.CLIENT,
+		// 此時還沒有sender, 在acceptorServer上才會設定
+		// from [null] MESSAGE_SERVER, (11251) ACCOUNT_COIN_REPONSE, (11200)
+		// ACCOUNT => (19900) CLIENT to [TEST_ROLE]
+		// 1000
+		result = messageServiceImpl.createMessage(CoreModuleType.ACCOUNT, CoreModuleType.CLIENT,
 				CoreMessageType.ACCOUNT_COIN_REPONSE, ROLE_CODE);
-			result.addInt(1000);
-		}
-
-		long end = System.currentTimeMillis();
-		System.out.println(count + " times: " + (end - beg) + " mills. ");
+		result.addInt(1000);
 		//
 		System.out.println(result);
 		assertNotNull(result);
 	}
 
 	@Test
-	//server->server
-	public void createMessage2Server()
-	{
+	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
+	// server->server
+	public void createMessageToServer() {
 		final String ROLE_CODE = "TEST_ROLE";
 		Message result = null;
 		//
-		int count = 1000000;
-		long beg = System.currentTimeMillis();
-		for (int i = 0; i < count; i++)
-		{
-			//仿client發訊息,其實是從server的 CLIENT 模組,發給 CORE 模組
-			//此時還沒有sender, 在acceptorServer上才會設定
-			//from [null] MESSAGE_SERVER, (11001) CORE_ROLE_CONNECT_REQUEST, (19900) CLIENT => (11000) CORE to []
-			//TEST_ROLE
-			result = messageService.createMessage(CoreModuleType.CLIENT, CoreModuleType.CORE,
+		// 仿client發訊息,其實是從server的 CLIENT 模組,發給 CORE 模組
+		// 此時還沒有sender, 在acceptorServer上才會設定
+		// from [null] MESSAGE_SERVER, (11001) CORE_ROLE_CONNECT_REQUEST,
+		// (19900) CLIENT => (11000) CORE to []
+		// TEST_ROLE
+		result = messageServiceImpl.createMessage(CoreModuleType.CLIENT, CoreModuleType.CORE,
 				CoreMessageType.CORE_CONNECT_REQUEST, (String) null);
-			result.addString(ROLE_CODE);
-		}
-
-		long end = System.currentTimeMillis();
-		System.out.println(count + " times: " + (end - beg) + " mills. ");
+		result.addString(ROLE_CODE);
 		//
 		System.out.println(result);
 		assertNotNull(result);
 	}
 
 	@Test
-	//server->client
-	public void addMessage2Client()
-	{
+	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
+	// server->client
+	public void addMessageToClient() {
 		final String ROLE_CODE = "TEST_ROLE";
 		boolean result = false;
 		//
-		int count = 10;
-		long beg = System.currentTimeMillis();
-		for (int i = 0; i < count; i++)
-		{
-			//from [null] MESSAGE_SERVER, (21053) FOUR_SYMBOL_PLAY_RESPONSE, (21000) FOUR_SYMBOL => (19900) CLIENT to [TEST_ROLE]
-			//0
-			Message message = messageService.createMessage(CoreModuleType.FOUR_SYMBOL,
-				CoreModuleType.CLIENT, CoreMessageType.FOUR_SYMBOL_PLAY_RESPONSE, ROLE_CODE);
-			message.addInt(0);
-			result = messageService.addMessage(message);
-		}
-		long end = System.currentTimeMillis();
-		System.out.println(count + " times: " + (end - beg) + " mills. ");
-
+		// from [null] MESSAGE_SERVER, (21053) FOUR_SYMBOL_PLAY_RESPONSE,
+		// (21000) FOUR_SYMBOL => (19900) CLIENT to [TEST_ROLE]
+		// 0
+		Message message = messageServiceImpl.createMessage(CoreModuleType.FOUR_SYMBOL, CoreModuleType.CLIENT,
+				CoreMessageType.FOUR_SYMBOL_PLAY_RESPONSE, ROLE_CODE);
+		message.addInt(0);
+		result = messageServiceImpl.addMessage(message);
+		//
 		System.out.println(result);
 		assertTrue(result);
 	}
-
-	//	@Test
-	//	public void addMessage2Relation()
-	//	{
-	//		final String ROLE_CODE = "TEST_ROLE";
-	//		boolean result = false;
-	//		//
-	//		int count = 10;
-	//		long beg = System.currentTimeMillis();
-	//		for (int i = 0; i < count; i++)
-	//		{
-	//			//from [slave2] MESSAGE_RELATION, (11453) CHAT_SAY_REPONSE, (11400) CHAT => (19900) CLIENT to [TEST_ROLE]
-	//			//1, Hello world, <hr/>
-	//			Message message = messageService.createRelation("slave2", CoreModuleType.CHAT,
-	//				CoreModuleType.CLIENT, CoreMessageType.CHAT_SAY_REPONSE, ROLE_CODE);
-	//			message.addInt(1);// 頻道類型
-	//			message.addString("Hello world");// 聊天內容
-	//			message.addString("<hr/>");// html
-	//			result = messageService.addMessage(message);
-	//		}
-	//		long end = System.currentTimeMillis();
-	//		System.out.println(count + " times: " + (end - beg) + " mills. ");
-	//
-	//		System.out.println(result);
-	//		assertTrue(result);
-	//		//
-	//		assertEquals(count, messageService.getSendClients().size());
-	//	}
 
 	@Test
+	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
 	// server->server
-	public void addMessage2Server()
-	{
+	public void addMessageToServer() {
 		final String ROLE_CODE = "TEST_ROLE";
 		boolean result = false;
 		//
-		int count = 10;
-		long beg = System.currentTimeMillis();
-		for (int i = 0; i < count; i++)
-		{
-			//仿client發訊息,其實是從CLIENT模組,發給CORE模組
-			//from [null] MESSAGE_SERVER, (11001) CORE_ROLE_CONNECT_REQUEST, (19900) CLIENT => (11000) CORE to []
-			//TEST_ROLE
-			Message message = messageService.createMessage(CoreModuleType.CLIENT,
-				CoreModuleType.CORE, CoreMessageType.CORE_CONNECT_REQUEST, (String) null);
-			message.addString(ROLE_CODE);
-			result = messageService.addMessage(message);
-
-		}
-		long end = System.currentTimeMillis();
-		System.out.println(count + " times: " + (end - beg) + " mills. ");
-
+		// 仿client發訊息,其實是從CLIENT模組,發給CORE模組
+		// from [null] MESSAGE_SERVER, (11001) CORE_ROLE_CONNECT_REQUEST,
+		// (19900) CLIENT => (11000) CORE to []
+		// TEST_ROLE
+		Message message = messageServiceImpl.createMessage(CoreModuleType.CLIENT, CoreModuleType.CORE,
+				CoreMessageType.CORE_CONNECT_REQUEST, (String) null);
+		message.addString(ROLE_CODE);
+		result = messageServiceImpl.addMessage(message);
+		//
 		System.out.println(result);
 		assertTrue(result);
 	}
-
 }

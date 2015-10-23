@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="
+             http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+             http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
+
+	<bean
+		id="testConfigurer"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property
+			name="order"
+			value="1" />
+		<property
+			name="ignoreUnresolvablePlaceholders"
+			value="true" />
+		<property name="locations">
+			<list>
+				<value>file:src/test/config/etc/ProtocolService.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean
+		id="messageService"
+		class="org.openyu.socklet.message.service.impl.MessageServiceImpl"
+		parent="baseServiceSupporter" />
+
+	<bean
+		id="protocolService"
+		class="org.openyu.socklet.message.service.impl.ProtocolServiceImpl"
+		parent="baseServiceSupporter"
+		p:checksum="true"
+		p:checksumType="ADLER32"
+		p:checksumKey="LongLongAgo"
+		p:security="true"
+		p:securityType="DES_ECB_PKCS5Padding"
+		p:securityKey="NotFarAway"
+		p:compress="true"
+		p:compressType="LZ4" />
+				
+	<!-- factory
+
+	<bean
+		id="blankServiceFactoryBean"
+		class="org.openyu.commons.blank.BlankServiceFactoryBean"
+		parent="baseServiceFactorySupporter">
+		<property
+			name="configLocation"
+			value="file:src/test/config/etc/BlankService.properties" />
+		<property name="properties">
+			<props>
+				<prop key="aliveMills">180000</prop>
+			</props>
+		</property>
+	</bean>
+	 -->
+
+</beans>

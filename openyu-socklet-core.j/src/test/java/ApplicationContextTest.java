@@ -24,8 +24,8 @@ public class ApplicationContextTest extends BaseTestSupporter {
 	}
 
 	@Test
-	public void showBeans() {
-		printBeans();
+	public void showBean() {
+		printBean();
 	}
 
 }
