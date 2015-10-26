@@ -42,21 +42,16 @@
 		p:compress="true"
 		p:compressType="LZ4" />
 				
-	<!-- factory
+	<!-- factory -->
 
 	<bean
-		id="blankServiceFactoryBean"
-		class="org.openyu.commons.blank.BlankServiceFactoryBean"
+		id="protocolServiceFactoryBean"
+		class="org.openyu.socklet.message.service.impl.ProtocolServiceFactoryBean"
 		parent="baseServiceFactorySupporter">
 		<property
 			name="configLocation"
-			value="file:src/test/config/etc/BlankService.properties" />
-		<property name="properties">
-			<props>
-				<prop key="aliveMills">180000</prop>
-			</props>
-		</property>
+			value="file:src/test/config/etc/ProtocolService.properties" />
 	</bean>
-	 -->
+
 
 </beans>
