@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 public final class ProtocolServiceFactoryBean<T extends ProtocolService>
 		extends BaseServiceFactorySupporter<ProtocolService> {
 
-	private static final long serialVersionUID = -1401366707657809071L;
+	private static final long serialVersionUID = -549481762947318694L;
 
 	private static final transient Logger LOGGER = LoggerFactory.getLogger(ProtocolServiceFactoryBean.class);
 

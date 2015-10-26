@@ -28,13 +28,11 @@ import org.slf4j.LoggerFactory;
 /**
  * socket連線客戶端
  */
-public abstract class SocketConnectorSupporter extends
-		GenericConnectorSupporter implements SocketConnector {
+public abstract class SocketConnectorSupporter extends GenericConnectorSupporter implements SocketConnector {
 
 	private static final long serialVersionUID = 4044263207033989263L;
 
-	private static transient final Logger LOGGER = LoggerFactory
-			.getLogger(SocketConnectorSupporter.class);
+	private static transient final Logger LOGGER = LoggerFactory.getLogger(SocketConnectorSupporter.class);
 
 	protected String ip;
 
@@ -62,24 +60,24 @@ public abstract class SocketConnectorSupporter extends
 	 */
 	protected static final long LISTEN_MILLS = 1L;
 
+	private ListenRunner listenRunner;
 	// ------------------------------------------------
 	// read
 	// ------------------------------------------------
 	/**
 	 * 讀取key佇列
 	 */
-	private ReadKeyQueue<SelectionKey> readKeyQueue = new ReadKeyQueue<SelectionKey>();
+	private ReadKeyQueue<SelectionKey> readKeyQueue;
 
 	// ------------------------------------------------------------
 	@SuppressWarnings("rawtypes")
-	public SocketConnectorSupporter(String id, Class moduleTypeClass,
-			Class messageTypeClass, ProtocolService protocolService) {
+	public SocketConnectorSupporter(String id, Class moduleTypeClass, Class messageTypeClass,
+			ProtocolService protocolService) {
 		super(id, moduleTypeClass, messageTypeClass, protocolService);
 	}
 
 	@SuppressWarnings("rawtypes")
-	public SocketConnectorSupporter(Class moduleTypeClass,
-			Class messageTypeClass, ProtocolService protocolService) {
+	public SocketConnectorSupporter(Class moduleTypeClass, Class messageTypeClass, ProtocolService protocolService) {
 		this(null, moduleTypeClass, messageTypeClass, protocolService);
 	}
 
@@ -146,8 +144,7 @@ public abstract class SocketConnectorSupporter extends
 				selector = Selector.open();
 				socketChannel = SocketChannel.open();
 				socketChannel.configureBlocking(false);
-				InetSocketAddress address = NioHelper.createInetSocketAddress(
-						ip, port);
+				InetSocketAddress address = NioHelper.createInetSocketAddress(ip, port);
 				socketChannel.connect(address);
 				socketChannel.register(selector, SelectionKey.OP_CONNECT);
 				//
@@ -206,21 +203,17 @@ public abstract class SocketConnectorSupporter extends
 						// 連線重試
 						addTries();
 						// [1/3] time(s) Failed to get the session
-						LOGGER.warn("[" + tries + "/"
-								+ (retryNumber != 0 ? retryNumber : "INFINITE")
+						LOGGER.warn("[" + tries + "/" + (retryNumber != 0 ? retryNumber : "INFINITE")
 								+ "] time(s) Failed to get the connection");
 						// 0=無限
 						if (retryNumber != 0 && tries >= retryNumber) {
 							break;
 						}
 						// 重試暫停毫秒
-						long pauseMills = NioHelper.retryPause(tries,
-								retryPauseMills);
+						long pauseMills = NioHelper.retryPause(tries, retryPauseMills);
 						ThreadHelper.sleep(pauseMills);
-						LOGGER.info("Retrying connect to [" + ip + ":" + port
-								+ "]. Already tried [" + (tries + 1) + "/"
-								+ (retryNumber != 0 ? retryNumber : "INFINITE")
-								+ "] time(s)");
+						LOGGER.info("Retrying connect to [" + ip + ":" + port + "]. Already tried [" + (tries + 1) + "/"
+								+ (retryNumber != 0 ? retryNumber : "INFINITE") + "] time(s)");
 					}
 				}
 				//
@@ -229,16 +222,16 @@ public abstract class SocketConnectorSupporter extends
 					throw new ConnectException("Connection refused");
 				} else {
 					// listen
-					// getThreadService().submit(new ListenRunner());
-					new Thread(new ListenRunner()).start();
+					listenRunner = new ListenRunner();
+					listenRunner.start();
 
 					// read,selectionKey
-					// getThreadService().submit(readKeyQueue);
-					new Thread(readKeyQueue).start();
+					readKeyQueue = new ReadKeyQueue<SelectionKey>();
+					readKeyQueue.start();
 
 					// keepAlive
-					// getThreadService().submit(new KeepAliveRunner());
-					new Thread(new KeepAliveRunner()).start();
+					keepAliveRunner = new KeepAliveRunner();
+					keepAliveRunner.start();
 					//
 					connectable(selectionKey);
 					socketChannel.register(selector, SelectionKey.OP_READ);
@@ -252,10 +245,14 @@ public abstract class SocketConnectorSupporter extends
 	 */
 	protected class ListenRunner extends BaseRunnableSupporter {
 
-		public void execute() {
+		public ListenRunner() {
+		}
+
+		@Override
+		protected void doRun() throws Exception {
 			while (true) {
 				try {
-					if (!started) {
+					if (isShutdown()) {
 						break;
 					}
 					listen();
@@ -269,11 +266,6 @@ public abstract class SocketConnectorSupporter extends
 					started = false;
 				}
 			}
-			//
-			if (!started) {
-				readKeyQueue.setCancel(true);
-			}
-			LOGGER.info("Break off " + getClass().getSimpleName());
 		}
 	}
 
@@ -332,35 +324,34 @@ public abstract class SocketConnectorSupporter extends
 	 * 讀取key佇列
 	 */
 	protected class ReadKeyQueue<E> extends TriggerQueueSupporter<E> {
+
 		public ReadKeyQueue() {
 		}
 
-		public void process(E e) {
+		@Override
+		protected void doExecute(E e) throws Exception {
 			try {
 				readable((SelectionKey) e);
 			} catch (ClosedChannelException ex) {
 				started = false;
-				readKeyQueue.setCancel(true);
+				readKeyQueue.shutdown();
 			} catch (CancelledKeyException ex) {
 				started = false;
-				readKeyQueue.setCancel(true);
+				readKeyQueue.shutdown();
 			} catch (Exception ex) {
 				// ex.printStackTrace();
 				started = false;
-				readKeyQueue.setCancel(true);
+				readKeyQueue.shutdown();
 			}
 		}
 	}
 
 	// ---------------------------------------------
-	protected abstract void connectable(SelectionKey selectionKey)
-			throws Exception;
+	protected abstract void connectable(SelectionKey selectionKey) throws Exception;
 
-	protected abstract void readable(SelectionKey selectionKey)
-			throws Exception;
+	protected abstract void readable(SelectionKey selectionKey) throws Exception;
 
-	protected abstract void writable(SelectionKey selectionKey)
-			throws Exception;
+	protected abstract void writable(SelectionKey selectionKey) throws Exception;
 
 	// ---------------------------------------------
 
@@ -379,8 +370,7 @@ public abstract class SocketConnectorSupporter extends
 		if (message != null) {
 			// 檢查認證碼是否與client發出去的相同
 			byte[] serverAuthkey = message.getByteArray(0);
-			if (serverAuthkey == null || serverAuthkey.length != 32
-					|| !ObjectHelper.equals(serverAuthkey, authKey)) {
+			if (serverAuthkey == null || serverAuthkey.length != 32 || !ObjectHelper.equals(serverAuthkey, authKey)) {
 				LOGGER.warn("Authkey is invalid");
 				return;
 			}
@@ -403,8 +393,7 @@ public abstract class SocketConnectorSupporter extends
 		}
 		//
 		@SuppressWarnings("unchecked")
-		List<Message> messages = protocolService.disassemble(bytes,
-				moduleTypeClass, messageTypeClass);
+		List<Message> messages = protocolService.disassemble(bytes, moduleTypeClass, messageTypeClass);
 		//
 		for (Message message : messages) {
 			if (message == null) {
@@ -426,7 +415,9 @@ public abstract class SocketConnectorSupporter extends
 				sendHandshake = false;
 				handshake = false;
 				readHandshake = false;
-				readKeyQueue.setCancel(true);
+				//
+				listenRunner.shutdown();
+				readKeyQueue.shutdown();
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();

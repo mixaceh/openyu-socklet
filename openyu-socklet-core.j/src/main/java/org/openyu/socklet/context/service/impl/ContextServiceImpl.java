@@ -112,15 +112,17 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 		this.id = id;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public void setModuleTypeClass(Class moduleTypeClass) {
 		this.moduleTypeClass = moduleTypeClass;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public void setMessageTypeClass(Class messageTypeClass) {
 		this.messageTypeClass = messageTypeClass;
 	}
 
-	public void setAttribute(String name, Object value) {
+	public synchronized void setAttribute(String name, Object value) {
 		if (value != null) {
 			Object oldValue = null;
 			oldValue = attributes.put(name, value);
@@ -134,13 +136,11 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 		}
 	}
 
-	public Object getAttribute(String name) {
-		synchronized (attributes) {
-			return attributes.get(name);
-		}
+	public synchronized Object getAttribute(String name) {
+		return attributes.get(name);
 	}
 
-	public void removeAttribute(String name) {
+	public synchronized void removeAttribute(String name) {
 		Object oldValue = null;
 		oldValue = attributes.remove(name);
 		if (oldValue != null) {
@@ -148,11 +148,11 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 		}
 	}
 
-	public String getInitParameter(String name) {
+	public synchronized String getInitParameter(String name) {
 		return (String) initParameters.get(name);
 	}
 
-	public Enumeration<String> getInitParameterNames() {
+	public synchronized Enumeration<String> getInitParameterNames() {
 		return Collections.enumeration(initParameters.keySet());
 	}
 
@@ -164,36 +164,27 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 		LOGGER.info(msg);
 	}
 
-	public Map<String, String> getInitParameters() {
+	public synchronized Map<String, String> getInitParameters() {
 		return initParameters;
 	}
 
-	public void setInitParameters(Map<String, String> initParameters) {
+	public synchronized void setInitParameters(Map<String, String> initParameters) {
 		this.initParameters = initParameters;
 	}
 
-	public Map<String, Object> getAttributes() {
+	public synchronized Map<String, Object> getAttributes() {
 		return attributes;
 	}
 
-	public void setAttributes(Map<String, Object> attributes) {
+	public synchronized void setAttributes(Map<String, Object> attributes) {
 		this.attributes = attributes;
 	}
 
-	public void clearAttributes() {
+	public synchronized void clearAttributes() {
 		Map<String, Object> oldValue = new LinkedHashMap<String, Object>(attributes);
 		attributes.clear();
 		fireAttributeRemoved("all", oldValue.values());
 	}
-
-	// public Map<ModuleType, SockletConfig> getSockletConfigs() {
-	// return sockletConfigs;
-	// }
-	//
-	// public void setSockletConfigs(Map<ModuleType, SockletConfig>
-	// sockletConfigs) {
-	// this.sockletConfigs = sockletConfigs;
-	// }
 
 	public Map<ModuleType, SockletService> getSockletServices() {
 		return sockletServices;
@@ -311,20 +302,12 @@ public class ContextServiceImpl extends BaseServiceSupporter implements ContextS
 			throw e;
 		}
 		//
-		try {
-			if (CollectionHelper.notEmpty(sockletServices)) {
-				for (SockletService sockletService : sockletServices.values()) {
-					sockletService.shutdown();
-				}
-				//
-				int size = sockletServices.size();
-				sockletServices.clear();
-				LOGGER.info(acceptorContext + "SockletService [" + size + "] Had been removed");
-			}
-		} catch (Exception e) {
-			LOGGER.error(new StringBuilder("Exception encountered during remove SockletService").toString(), e);
-			throw e;
-		}
+		clearAttributes();
+		initParameters.clear();
+		//
+		sockletServices.clear();
+		relationServices.clear();
+		sessions.clear();
 	}
 
 	// // ------------------------------------------------

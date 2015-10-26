@@ -27,8 +27,6 @@ import org.openyu.socklet.session.vo.Session;
 import org.openyu.socklet.session.vo.impl.SessionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -65,33 +63,13 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 
 	private static transient final Logger LOGGER = LoggerFactory.getLogger(ServerServiceImpl.class);
 
-	/**
-	 * 線程服務
-	 */
-	@Autowired
-	@Qualifier("threadService")
-	protected transient ThreadService threadService;
+	private transient ThreadService threadService;
 
-	/**
-	 * 訊息服務
-	 */
-	@Autowired
-	@Qualifier("messageService")
-	protected transient MessageService messageService;
+	private transient MessageService messageService;
 
-	/**
-	 * 協定服務
-	 */
-	@Autowired
-	@Qualifier("protocolService")
-	protected transient ProtocolService protocolService;
+	private transient ProtocolService protocolService;
 
-	/**
-	 * 認證碼服務
-	 */
-	@Autowired
-	@Qualifier("authKeyService")
-	protected transient AuthKeyService authKeyService;
+	private transient AuthKeyService authKeyService;
 
 	/**
 	 * localhost:3100
@@ -116,9 +94,9 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 	private boolean relationServer;
 
 	// 取acceptorService實作,因會用到acceptor上的內部方法
-	private AcceptorServiceImpl acceptorService;
+	private transient AcceptorServiceImpl acceptorService;
 
-	private ContextServiceImpl contextService;
+	private transient ContextServiceImpl contextService;
 
 	/**
 	 * 模組類別
@@ -132,7 +110,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 	@SuppressWarnings("rawtypes")
 	private Class messageTypeClass;
 
-	private ServerSocketChannel serverChannel;
+	private transient ServerSocketChannel serverChannel;
 
 	private AtomicInteger counter = new AtomicInteger(0);
 
@@ -163,6 +141,9 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 	 */
 	private static final long LISTEN_MILLS = 1L;
 
+	/**
+	 * 監聽 selector
+	 */
 	private ListenRunner listenRunner;
 
 	// ------------------------------------------------
@@ -177,15 +158,9 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 	// write 目前暫時沒用到,以後有用再說吧
 	// ------------------------------------------------
 
-	public ServerServiceImpl(String id, boolean inernal, AcceptorServiceImpl acceptorService) {
-		//
+	public ServerServiceImpl(String id, boolean inernal) {
 		this.id = id;
 		this.relationServer = inernal;
-		this.acceptorService = acceptorService;
-		this.contextService = acceptorService.contextService;
-		this.acceptorId = acceptorService.getId();
-		this.acceptorConnectors = acceptorService.getAcceptorConnectors();
-		this.passiveRelations = acceptorService.getPassiveRelations();
 	}
 
 	public void setThreadService(ThreadService threadService) {
@@ -202,6 +177,17 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 
 	public void setAuthKeyService(AuthKeyService authKeyService) {
 		this.authKeyService = authKeyService;
+	}
+
+	public void setAcceptorService(AcceptorServiceImpl acceptorService) {
+		this.acceptorService = acceptorService;
+		this.acceptorId = acceptorService.getId();
+		this.acceptorConnectors = acceptorService.getAcceptorConnectors();
+		this.passiveRelations = acceptorService.getPassiveRelations();
+	}
+
+	public void setContextService(ContextServiceImpl contextService) {
+		this.contextService = contextService;
 	}
 
 	public String getId() {
@@ -240,10 +226,12 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 		return counter.get();
 	}
 
+	@SuppressWarnings("rawtypes")
 	public void setModuleTypeClass(Class moduleTypeClass) {
 		this.moduleTypeClass = moduleTypeClass;
 	}
 
+	@SuppressWarnings("rawtypes")
 	public void setMessageTypeClass(Class messageTypeClass) {
 		this.messageTypeClass = messageTypeClass;
 	}
@@ -292,21 +280,20 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 
 	@Override
 	protected void doShutdown() throws Exception {
+		listenRunner.shutdown();
+		readKeyQueue.shutdown();
+		//
 		NioHelper.close(selector);
 		NioHelper.close(serverChannel);
 		//
 		counter.set(0);
 		// 從已啟動的servers移除
 		serverServices.remove(id);
-		//
-		listenRunner.shutdown();
-		readKeyQueue.shutdown();
-		//
 		LOGGER.info(acceptorServer + "Had been shutdown");
 	}
 
 	/**
-	 * 監聽
+	 * 監聽 selector
 	 */
 	protected class ListenRunner extends BaseRunnableSupporter {
 

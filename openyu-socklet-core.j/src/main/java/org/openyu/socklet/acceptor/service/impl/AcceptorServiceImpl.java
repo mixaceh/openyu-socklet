@@ -639,8 +639,8 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		//
 		contextService.setInitParameters(initParameters);
 		contextService.setModuleTypeClass(moduleTypeClass);
-		contextService.setModuleTypeClass(moduleTypeClass);
-		//
+		contextService.setMessageTypeClass(messageTypeClass);
+		// 啟動
 		contextService.start();
 
 		// cluster
@@ -722,7 +722,6 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		contextService.shutdown();
 
 		// TODO runner and queue
-		
 
 	}
 
@@ -755,7 +754,18 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 			// [0]=ip
 			// [1]=port
 			if (buff.length == 2) {
-				ServerService serverService = new ServerServiceImpl(ipPort, true, this);
+				ServerServiceImpl serverService = new ServerServiceImpl(ipPort, true);
+				//
+				serverService.setApplicationContext(applicationContext);
+				serverService.setBeanFactory(beanFactory);
+				serverService.setResourceLoader(resourceLoader);
+				//
+				serverService.setThreadService(threadService);
+				serverService.setMessageService(messageService);
+				serverService.setProtocolService(protocolService);
+				serverService.setAuthKeyService(authKeyService);
+				serverService.setAcceptorService(this);
+				serverService.setContextService(contextService);
 				//
 				serverService.setIp(buff[0]);
 				int port = NumberHelper.toInt(buff[1]);
@@ -763,6 +773,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 				//
 				int maxCounter = (int) NumberHelper.divide(maxClient, relationServers.size());
 				serverService.setMaxClient(maxCounter);
+				//
 				serverService.start();
 			} else {
 				LOGGER.error(
@@ -796,7 +807,18 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 			// [0]=ip
 			// [1]=port
 			if (buff.length == 2) {
-				ServerService serverService = new ServerServiceImpl(ipPort, false, this);
+				ServerServiceImpl serverService = new ServerServiceImpl(ipPort, false);
+				//
+				serverService.setApplicationContext(applicationContext);
+				serverService.setBeanFactory(beanFactory);
+				serverService.setResourceLoader(resourceLoader);
+				//
+				serverService.setThreadService(threadService);
+				serverService.setMessageService(messageService);
+				serverService.setProtocolService(protocolService);
+				serverService.setAuthKeyService(authKeyService);
+				serverService.setAcceptorService(this);
+				serverService.setContextService(contextService);
 				//
 				serverService.setIp(buff[0]);
 				int port = NumberHelper.toInt(buff[1]);
@@ -804,6 +826,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 				//
 				int maxCounter = (int) NumberHelper.divide(maxClient, relationServers.size());
 				serverService.setMaxClient(maxCounter);
+				//
 				serverService.start();
 			} else {
 				LOGGER.error(
@@ -1241,7 +1264,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		}
 
 		@Override
-		public void doExecute(Message e) throws Exception {
+		protected void doExecute(Message e) throws Exception {
 			sendClient(e);
 		}
 	}
@@ -1327,7 +1350,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		}
 
 		@Override
-		public void doExecute(Message e) throws Exception {
+		protected void doExecute(Message e) throws Exception {
 			dispatch(e);
 		}
 	}
@@ -1437,7 +1460,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		}
 
 		@Override
-		public void doExecute(Message e) throws Exception {
+		protected void doExecute(Message e) throws Exception {
 			dispatch(e);
 		}
 	}
@@ -1455,7 +1478,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		}
 
 		@Override
-		public void doExecute(RelationMessage e) throws Exception {
+		protected void doExecute(RelationMessage e) throws Exception {
 			sendRelation(e);
 		}
 	}
@@ -1517,7 +1540,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		}
 
 		@Override
-		public void doExecute(Message e) throws Exception {
+		protected void doExecute(Message e) throws Exception {
 			dispatch(e);
 		}
 	}
@@ -1532,7 +1555,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		}
 
 		@Override
-		public void doExecute(Message e) throws Exception {
+		protected void doExecute(Message e) throws Exception {
 			sendAcceptor(e);
 		}
 	}
@@ -1569,7 +1592,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		}
 
 		@Override
-		public void doExecute(Message e) throws Exception {
+		protected void doExecute(Message e) throws Exception {
 			receiveAcceptor(e);
 		}
 	}
@@ -1707,7 +1730,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		}
 
 		@Override
-		public void doExecute(Message e) throws Exception {
+		protected void doExecute(Message e) throws Exception {
 			sendSync(e);
 		}
 	}
@@ -1754,7 +1777,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		}
 
 		@Override
-		public void doExecute(Message e) throws Exception {
+		protected void doExecute(Message e) throws Exception {
 			receiveSync(e);
 		}
 	}

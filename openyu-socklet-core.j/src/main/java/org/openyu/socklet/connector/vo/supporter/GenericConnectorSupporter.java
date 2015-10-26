@@ -17,6 +17,7 @@ import org.openyu.commons.thread.supporter.BaseRunnableSupporter;
 import org.openyu.socklet.connector.vo.ConnectorType;
 import org.openyu.socklet.connector.vo.GenericConnector;
 import org.openyu.socklet.connector.vo.GenericReceiver;
+import org.openyu.socklet.connector.vo.supporter.GenericConnectorSupporter.KeepAliveRunner;
 import org.openyu.socklet.message.service.ProtocolService;
 import org.openyu.socklet.message.vo.Message;
 import org.slf4j.Logger;
@@ -40,13 +41,11 @@ import org.slf4j.LoggerFactory;
  * +-RelationConnector (slave2->slave1),server間連線用的客戶端
  * 
  */
-public abstract class GenericConnectorSupporter extends BaseModelSupporter
-		implements GenericConnector {
+public abstract class GenericConnectorSupporter extends BaseModelSupporter implements GenericConnector {
 
 	private static final long serialVersionUID = -394102890225520895L;
 
-	private static transient final Logger LOGGER = LoggerFactory
-			.getLogger(GenericConnectorSupporter.class);
+	private static transient final Logger LOGGER = LoggerFactory.getLogger(GenericConnectorSupporter.class);
 	/**
 	 * id
 	 * 
@@ -93,24 +92,21 @@ public abstract class GenericConnectorSupporter extends BaseModelSupporter
 	/**
 	 * 讀取buffer
 	 */
-	protected transient ByteBuffer receiveBuffer = ByteBuffer
-			.allocateDirect(receiveBufferSize);
+	protected transient ByteBuffer receiveBuffer = ByteBuffer.allocateDirect(receiveBufferSize);
 
 	protected transient Lock receiveLock = new ReentrantLock();
 
 	/**
 	 * 寫入buffer
 	 */
-	protected transient ByteBuffer sendBuffer = ByteBuffer
-			.allocateDirect(sendBufferSize);
+	protected transient ByteBuffer sendBuffer = ByteBuffer.allocateDirect(sendBufferSize);
 
 	protected transient Lock sendLock = new ReentrantLock();
 
 	/**
 	 * keep alive buff
 	 */
-	protected transient ByteBuffer keepAliveBuffer = ByteBuffer
-			.allocateDirect(1);
+	protected transient ByteBuffer keepAliveBuffer = ByteBuffer.allocateDirect(1);
 
 	protected transient Lock keepAliveLock = new ReentrantLock();
 
@@ -143,8 +139,10 @@ public abstract class GenericConnectorSupporter extends BaseModelSupporter
 	 */
 	protected int tries;
 
-	public GenericConnectorSupporter(String id, Class<?> moduleTypeClass,
-			Class<?> messageTypeClass, ProtocolService protocolService) {
+	protected KeepAliveRunner keepAliveRunner;
+
+	public GenericConnectorSupporter(String id, Class<?> moduleTypeClass, Class<?> messageTypeClass,
+			ProtocolService protocolService) {
 		this.id = id;
 		this.moduleTypeClass = moduleTypeClass;
 		this.messageTypeClass = messageTypeClass;
@@ -311,6 +309,8 @@ public abstract class GenericConnectorSupporter extends BaseModelSupporter
 				NioHelper.close(selector);
 				NioHelper.close(socketChannel);
 				//
+				keepAliveRunner.shutdown();
+				//
 				started = false;
 			} catch (Exception ex) {
 				// ex.printStackTrace();
@@ -323,8 +323,7 @@ public abstract class GenericConnectorSupporter extends BaseModelSupporter
 		}
 		//
 		if (!started) {
-			LOGGER.info("[" + this.sender + "] Disconnected to [" + acceptor
-					+ "]");
+			LOGGER.info("[" + this.sender + "] Disconnected to [" + acceptor + "]");
 		}
 	}
 
@@ -422,10 +421,15 @@ public abstract class GenericConnectorSupporter extends BaseModelSupporter
 	}
 
 	protected class KeepAliveRunner extends BaseRunnableSupporter {
-		public void execute() {
+
+		public KeepAliveRunner() {
+		}
+
+		@Override
+		protected void doRun() throws Exception {
 			while (true) {
 				try {
-					if (!started) {
+					if (isShutdown()) {
 						break;
 					}
 					keepAlive();
@@ -434,8 +438,6 @@ public abstract class GenericConnectorSupporter extends BaseModelSupporter
 					// ex.printStackTrace();
 				}
 			}
-			//
-			LOGGER.info("Break off " + getClass().getSimpleName());
 		}
 	}
 

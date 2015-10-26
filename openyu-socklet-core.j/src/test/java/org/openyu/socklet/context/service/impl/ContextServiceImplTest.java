@@ -24,7 +24,7 @@ public class ContextServiceImplTest extends BaseTestSupporter {
 		applicationContext = new ClassPathXmlApplicationContext(new String[] { //
 				"applicationContext-init.xml", //
 				"testContext-thread.xml", //
-				"org/openyu/socklet/context/service/impl/testContext-context.xml",//
+				"org/openyu/socklet/context/testContext-context.xml",//
 		});
 
 		contextServiceImpl = (ContextServiceImpl) applicationContext.getBean("contextService");
