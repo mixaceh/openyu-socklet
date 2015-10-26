@@ -163,5 +163,5 @@ public interface ProtocolService extends BaseService {
 
 	byte[] encode(HeadType headType, Serializable body);
 
-	Packet<?> decode(byte[] values);
+	Packet<byte[]> decode(byte[] values);
 }

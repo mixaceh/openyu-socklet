@@ -399,9 +399,9 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 		//
 		AssertHelper.notNull(values, "The Values must not be null");
 		//
-		Packet<?> packet = decode(values);
+		Packet<byte[]> packet = decode(values);
 		AssertHelper.isTrue((HeadType.HANDSHAKE == packet.getHeadType()), "The HeadType must be HANDSHAKE");
-		byte[] buff = (byte[]) packet.getBody();
+		byte[] buff = packet.getBody();
 		//
 		ByteArrayOutputStream dataIn = null;
 		try {
@@ -796,9 +796,9 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 		List<Message> result = new LinkedList<Message>();
 		AssertHelper.notNull(values, "The Values must not be null");
 		//
-		Packet<?> packet = decode(values);
+		Packet<byte[]> packet = decode(values);
 		AssertHelper.isTrue((HeadType.MESSAGE == packet.getHeadType()), "The HeadType must be MESSAGE");
-		byte[] buff = (byte[]) packet.getBody();
+		byte[] buff = packet.getBody();
 		try {
 			int pos = 0;
 			int dataLength = 0;
@@ -1323,8 +1323,8 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 		return result;
 	}
 
-	public Packet<?> decode(byte[] values) {
-		Packet<?> result = null;
+	public Packet<byte[]> decode(byte[] values) {
+		Packet<byte[]> result = null;
 		AssertHelper.notNull(values, "The Values must not be null");
 		//
 		try {

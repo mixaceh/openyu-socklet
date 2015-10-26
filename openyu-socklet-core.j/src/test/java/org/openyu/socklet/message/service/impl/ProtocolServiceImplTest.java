@@ -27,6 +27,7 @@ import org.openyu.socklet.core.net.socklet.CoreModuleType;
 import org.openyu.socklet.message.vo.CategoryType;
 import org.openyu.socklet.message.vo.HeadType;
 import org.openyu.socklet.message.vo.Message;
+import org.openyu.socklet.message.vo.Packet;
 import org.openyu.socklet.message.vo.PriorityType;
 import org.openyu.socklet.message.vo.impl.MessageImpl;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -274,35 +275,34 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 		byte[] value = protocolServiceImpl.handshake(CategoryType.HANDSHAKE_SERVER, AUTH_KEY.getBytes(), SENDER);
 		Message result = null;
 		//
-		final int COUNT = 1000;
-		for (int i = 0; i < COUNT; i++) {
-			result = protocolServiceImpl.dehandshake(value);
-		}
-		System.out.println(result);
+		result = protocolServiceImpl.dehandshake(value);
 		System.out.println(result.getSender());// slave1
-
 		assertEquals(SENDER, result.getSender());
 		assertEquals(AUTH_KEY, result.getString(0));
 	}
 
 	@Test
-	@BenchmarkOptions(benchmarkRounds = 2, warmupRounds = 1, concurrency = 1)
+	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
 	// round: 0.09
 	public void handshakeRelation() {
 		String authKey = "aacc8964324738c27c07746e3ea81aff";
 		String sender = "slave2";
 		byte[] result = null;
 		//
-		final int COUNT = 1000;
-		for (int i = 0; i < COUNT; i++) {
-			result = protocolServiceImpl.handshake(CategoryType.HANDSHAKE_RELATION, authKey.getBytes(), sender);
-		}
+		result = protocolServiceImpl.handshake(CategoryType.HANDSHAKE_RELATION, authKey.getBytes(), sender);
 		System.out.println("length: " + result.length);
 		SystemHelper.println(result);
+
+		byte[] expecteds = new byte[] { 0, 0, 0, 1, 0, 0, 0, 73, 65, 20, -68, 0, 0, 0, 56, -16, 41, 48, 69, -28, 43,
+				-90, -56, -14, 109, 43, 19, -99, 4, -53, 24, -87, 40, -51, -83, 93, -78, 119, -101, -23, 63, 122, -31,
+				-7, -62, 48, -115, -98, -77, 123, -104, 118, 58, -69, -21, -101, 42, 52, 30, 89, 0, -121, 114, -103, 64,
+				110, 112, 102, 103, 54, 53, -60, 0 };
+
+		assertArrayEquals(expecteds, result);
 	}
 
 	@Test
-	@BenchmarkOptions(benchmarkRounds = 2, warmupRounds = 1, concurrency = 1)
+	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
 	// round: 0.05
 	public void dehandshakeRelation() {
 		String AUTH_KEY = "aacc8964324738c27c07746e3ea81aff";
@@ -311,10 +311,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 		byte[] value = protocolServiceImpl.handshake(CategoryType.HANDSHAKE_RELATION, AUTH_KEY.getBytes(), SENDER);
 		Message result = null;
 		//
-		final int COUNT = 1000;
-		for (int i = 0; i < COUNT; i++) {
-			result = protocolServiceImpl.dehandshake(value);
-		}
+		result = protocolServiceImpl.dehandshake(value);
 		System.out.println(result);
 		System.out.println(result.getCategoryType());
 		System.out.println(result.getSender());// slave2
@@ -324,60 +321,64 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 	}
 
 	@Test
-	@BenchmarkOptions(benchmarkRounds = 2, warmupRounds = 1, concurrency = 1)
+	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
 	// round: 0.09
-	public void handshakeRelation2() {
+	public void handshakeRelationByteArray() {
 		byte[] authKey = new byte[] { 48, 49, 97, 55, 54, 51, 99, 98, 97, 51, 100, 98, 54, 101, 50, 98, 51, 49, 54, 97,
 				48, 98, 55, 98, 48, 102, 101, 54, 97, 52, 97, 48 };
 		String sender = "slave2:0:127.0.0.1:3110";
 		byte[] result = null;
 		//
-		final int COUNT = 1;
-		for (int i = 0; i < COUNT; i++) {
-			result = protocolServiceImpl.handshake(CategoryType.HANDSHAKE_RELATION, authKey, sender);
-		}
+		result = protocolServiceImpl.handshake(CategoryType.HANDSHAKE_RELATION, authKey, sender);
 		System.out.println("length: " + result.length);
 		SystemHelper.println(result);
+
+		byte[] expecteds = new byte[] { 0, 0, 0, 1, 0, 0, 0, 89, 81, 20, -68, 0, 0, 0, 72, -16, 57, -21, -121, 122,
+				-114, -2, 42, -100, 8, -111, -100, 56, -9, -123, -126, -125, -69, 101, 40, -45, -72, 91, 95, -53, -65,
+				125, -62, -54, 51, -95, -1, 87, -119, -15, -122, -110, 110, 47, 104, 52, -87, 113, 9, -35, 73, 68, -14,
+				-118, -5, -36, 98, -74, 124, -59, 93, 122, 87, -26, -25, 116, 103, 75, 57, -2, -84, 101, -122, 90, 40,
+				-25, -93, -69, 18 };
+
+		assertArrayEquals(expecteds, result);
 	}
 
 	@Test
+	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
 	// 10000 times: 3513 mills.
-	public void assembleClient2Server() throws Exception {
+	public void assembleClientToServer() throws Exception {
 		Message message = mockClientToServer();
 		//
 		byte[] result = null;
 		//
-		final int COUNT = 1000;
-		for (int i = 0; i < COUNT; i++) {
-			result = protocolServiceImpl.assemble(message);
-		}
-		//
+		result = protocolServiceImpl.assemble(message);
 		System.out.println("length: " + result.length);
 		SystemHelper.println(result);
-		assertNotNull(result);
+
+		byte[] expecteds = new byte[] { 0, 0, 0, 11, 0, 0, 0, 60, 0, 0, 0, 52, -68, 20, 0, 0, 0, 40, -16, 25, 102, -16,
+				-90, 24, 124, -116, -61, 119, -102, 46, 76, -73, -76, -75, 24, -93, -57, 28, -102, -33, 103, 92, 125,
+				33, -15, 87, 11, 108, -13, 18, -1, -35, -54, 25, -35, -25, -2, 58, 112, -70 };
+
+		assertArrayEquals(expecteds, result);
 
 		// 輸出成ser檔
 		// OutputStream out =
 		// IoHelper.createOutputStream(ConfigHelper.getSerDir()
-		// + "/assembleClient2Server.ser");
+		// + "/assembleClientToServer.ser");
 		// out.write(result);
 		// out.close();
 	}
 
 	@Test
-	@BenchmarkOptions(benchmarkRounds = 2, warmupRounds = 1, concurrency = 1)
+	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
 	// 10000 times: 902 mills.
-	public void disassembleClient2Server() {
+	public void disassembleClientToServer() {
 		Message message = mockClientToServer();
 		byte[] value = protocolServiceImpl.assemble(message);
 		// SystemHelper.println(value);
 		//
 		List<Message> result = null;
 		//
-		final int COUNT = 1000;
-		for (int i = 0; i < COUNT; i++) {
-			result = protocolServiceImpl.disassemble(value, CoreModuleType.class, CoreMessageType.class);
-		}
+		result = protocolServiceImpl.disassemble(value, CoreModuleType.class, CoreMessageType.class);
 		assertTrue(result.size() > 0);
 		//
 		for (Message entry : result) {
@@ -387,41 +388,44 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 	}
 
 	@Test
+	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
 	// 10000 times: 5709 mills.
-	public void assembleServer2Client() throws Exception {
+	public void assembleServerToClient() throws Exception {
 		Message message = mockServerToClient();
 		//
 		byte[] result = null;
 		//
-		final int COUNT = 1000;
-		for (int i = 0; i < COUNT; i++) {
-			result = protocolServiceImpl.assemble(message);
-		}
+		result = protocolServiceImpl.assemble(message);
 		System.out.println("length: " + result.length);
 		SystemHelper.println(result);
 		assertNotNull(result);
 
+		byte[] expecteds = new byte[] { 0, 0, 0, 11, 0, 0, 0, 92, 0, 0, 0, 84, -68, 20, 0, 0, 0, 72, -16, 57, -104, -21,
+				-25, 107, 32, -16, 9, -33, 15, 17, -54, 124, 47, -94, -65, 26, -73, 119, 101, -69, 91, -121, 87, -53,
+				-57, -35, -23, -122, -68, -68, -108, -26, -127, 17, 73, 57, 65, -40, 36, -84, -46, -61, -93, -45, 1,
+				-121, 64, 95, 34, 54, -121, -106, 71, -75, -30, -99, 124, 76, -4, -75, -20, 107, -34, 43, 36, -104,
+				-102, -98, 33, 60, 40, 83 };
+
+		assertArrayEquals(expecteds, result);
+
 		// 輸出成ser檔
 		// OutputStream out =
 		// IoHelper.createOutputStream(ConfigHelper.getSerDir()
-		// + "/assembleServer2Client.ser");
+		// + "/assembleServerToClient.ser");
 		// out.write(result);
 		// out.close();
 	}
 
 	@Test
-	@BenchmarkOptions(benchmarkRounds = 2, warmupRounds = 1, concurrency = 1)
+	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
 	// 10000 times: 1113 mills.
-	public void disassembleServer2Client() {
+	public void disassembleServerToClient() {
 		Message message = mockServerToClient();
 		byte[] value = protocolServiceImpl.assemble(message);
 		//
 		List<Message> result = null;
 		//
-		final int COUNT = 1000;
-		for (int i = 0; i < COUNT; i++) {
-			result = protocolServiceImpl.disassemble(value, CoreModuleType.class, CoreMessageType.class);
-		}
+		result = protocolServiceImpl.disassemble(value, CoreModuleType.class, CoreMessageType.class);
 		assertTrue(result.size() > 0);
 		//
 		for (Message entry : result) {
@@ -436,35 +440,38 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 	}
 
 	@Test
+	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
 	// 10000 times: 3375 mills.
-	public void assembleServer2Server() {
+	public void assembleServerToServer() {
 		Message message = mockServerToServer();
 		//
 		byte[] result = null;
 		//
-		final int COUNT = 1000;
-		for (int i = 0; i < COUNT; i++) {
-			result = protocolServiceImpl.assemble(message);
-		}
+		result = protocolServiceImpl.assemble(message);
 		System.out.println("length: " + result.length);
 		SystemHelper.println(result);
 		assertNotNull(result);
+
+		byte[] expecteds = new byte[] { 0, 0, 0, 11, 0, 0, 0, 108, 0, 0, 0, 100, -68, 20, 0, 0, 0, 88, -16, 73, 17, -21,
+				-20, -86, -2, -39, 35, 46, -91, 63, 15, 93, -85, 58, 23, -36, -125, 108, -21, -20, 86, -78, -118, 46,
+				-57, -35, -23, -122, -68, -68, -108, -26, -127, 17, 73, 57, 65, -40, 36, -84, 91, 9, -5, -24, 6, 41,
+				-100, 19, 115, 19, -29, -78, 77, -87, -68, -92, -28, 57, 53, 102, 120, -16, -115, -126, -69, -81, 18,
+				-34, -36, -57, -16, 78, -62, 20, -116, 78, -34, -29, 109, 119, -44, 50, -26, -44, 17, 94, 124, -35 };
+
+		assertArrayEquals(expecteds, result);
 	}
 
 	@Test
-	@BenchmarkOptions(benchmarkRounds = 2, warmupRounds = 1, concurrency = 1)
+	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
 	// 10000 times: 768 mills.
-	public void disassembleServer2Server() {
+	public void disassembleServerToServer() {
 		Message message = mockServerToServer();
 		byte[] value = protocolServiceImpl.assemble(message);
 		// SystemHelper.println(value);
 		//
 		List<Message> result = null;
 		//
-		final int COUNT = 1000;
-		for (int i = 0; i < COUNT; i++) {
-			result = protocolServiceImpl.disassemble(value, CoreModuleType.class, CoreMessageType.class);
-		}
+		result = protocolServiceImpl.disassemble(value, CoreModuleType.class, CoreMessageType.class);
 		assertNotNull(result);
 		//
 		for (Message entry : result) {
@@ -477,36 +484,37 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 	}
 
 	@Test
-	@BenchmarkOptions(benchmarkRounds = 2, warmupRounds = 1, concurrency = 1)
+	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
 	// 10000 times: 3276 mills.
-	public void assembleServer2Relation() {
+	public void assembleServerToRelation() {
 		Message message = mockServerToRelation();
 		//
 		byte[] result = null;
 		//
-		final int COUNT = 1000;
-		for (int i = 0; i < COUNT; i++) {
-			result = protocolServiceImpl.assemble(message);
-		}
+		result = protocolServiceImpl.assemble(message);
 		System.out.println("length: " + result.length);
 		SystemHelper.println(result);
 		assertNotNull(result);
+
+		byte[] expecteds = new byte[] { 0, 0, 0, 11, 0, 0, 0, 100, 0, 0, 0, 92, -68, 20, 0, 0, 0, 80, -16, 65, -125, 84,
+				98, -42, -107, 18, -6, -65, -41, 87, 67, -59, -13, 63, 85, 97, -71, -42, 97, -35, 76, 5, -81, 6, -11,
+				90, -21, 91, 68, 126, 122, 75, -26, -38, 75, -20, -125, 49, 104, -109, 112, -88, -17, -105, -106, -27,
+				105, 8, 90, -65, -75, -16, 13, -11, 27, -99, -99, 96, -60, -119, -31, -30, 114, -30, -10, 121, 30, 54,
+				99, -7, -124, -46, 63, -54, -21, -29, -100, 87, 24, -84 };
+
+		assertArrayEquals(expecteds, result);
 	}
 
 	@Test
-	@BenchmarkOptions(benchmarkRounds = 2, warmupRounds = 1, concurrency = 1)
+	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
 	// 10000 times: 790 mills.
-	public void disassembleServer2Relation() {
+	public void disassembleServerToRelation() {
 		Message message = mockServerToRelation();
 		byte[] value = protocolServiceImpl.assemble(message);
 		//
 		List<Message> result = null;
 		//
-		final int COUNT = 1000;
-		for (int i = 0; i < COUNT; i++) {
-			result = protocolServiceImpl.disassemble(value, CoreModuleType.class, CoreMessageType.class);
-
-		}
+		result = protocolServiceImpl.disassemble(value, CoreModuleType.class, CoreMessageType.class);
 		assertNotNull(result);
 		//
 		for (Message entry : result) {
@@ -519,36 +527,38 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 	}
 
 	@Test
-	@BenchmarkOptions(benchmarkRounds = 2, warmupRounds = 1, concurrency = 1)
+	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
 	// 10000 times: 792 mills.
-	public void assembleAcceptor2Relation() {
+	public void assembleAcceptorToRelation() {
 		Message message = mockAcceptorToRelation();
 		//
 		byte[] result = null;
 		//
-		final int COUNT = 1000;
-		for (int i = 0; i < COUNT; i++) {
-			result = protocolServiceImpl.assemble(message);
-		}
+		result = protocolServiceImpl.assemble(message);
 		System.out.println("length: " + result.length);
 		SystemHelper.println(result);
 		assertNotNull(result);
+
+		byte[] expecteds = new byte[] { 0, 0, 0, 11, 0, 0, 0, 96, 0, 0, 0, 88, -68, 20, 0, 0, 0, 88, -4, 41, 103, 121,
+				-85, 10, -14, 2, -81, 110, -21, -33, 108, -48, -35, 78, 63, -37, -11, -44, 10, -120, 48, 70, -125, 40,
+				-102, 46, 76, -73, -76, -75, 24, -93, 82, 96, 5, -6, -87, 108, -62, -111, -19, 123, -7, 103, -60, -125,
+				-27, 50, -67, -45, 54, 7, 67, 76, -61, -18, 8, 0, -16, 1, 66, 17, -55, -75, -128, 15, -60, -58, -124,
+				-73, -103, -92, -105, -117, -81, 10 };
+
+		assertArrayEquals(expecteds, result);
 	}
 
 	@Test
-	@BenchmarkOptions(benchmarkRounds = 2, warmupRounds = 1, concurrency = 1)
+	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
 	// 10000 times: 766 mills.
-	public void disassembleAcceptor2Relation() {
+	public void disassembleAcceptorToRelation() {
 		Message message = mockAcceptorToRelation();
 		byte[] value = protocolServiceImpl.assemble(message);
 		// SystemHelper.println(value);
 		//
 		List<Message> result = null;
 		//
-		final int COUNT = 1000;
-		for (int i = 0; i < COUNT; i++) {
-			result = protocolServiceImpl.disassemble(value, AcceptorModuleType.class, AcceptorMessageType.class);
-		}
+		result = protocolServiceImpl.disassemble(value, AcceptorModuleType.class, AcceptorMessageType.class);
 		assertNotNull(result);
 		//
 		for (Message entry : result) {
@@ -562,20 +572,40 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 	}
 
 	@Test
-	@BenchmarkOptions(benchmarkRounds = 2, warmupRounds = 1, concurrency = 1)
+	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
 	// round: 0.06, GC: 2
 	// round: 0.05, GC: 2
 	public void encode() {
 		byte[] result = null;
 		//
-		final int COUNT = 1000000;
-		for (int i = 0; i < COUNT; i++) {
-			result = protocolServiceImpl.encode(HeadType.HANDSHAKE);
-		}
+		result = protocolServiceImpl.encode(HeadType.HANDSHAKE);
 		// 0, 0, 0, 1, 0, 0, 0, 12, 0, 0, 0, 1
 		System.out.println("length: " + result.length);// 12
 		SystemHelper.println(result);
 		assertNotNull(result);
+
+		byte[] expecteds = new byte[] { 0, 0, 0, 1, 0, 0, 0, 12, 0, 0, 0, 1 };
+
+		assertArrayEquals(expecteds, result);
+	}
+
+	@Test
+	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
+	// round: 0.06, GC: 2
+	// round: 0.05, GC: 2
+	public void decode() {
+		byte[] value = protocolServiceImpl.encode(HeadType.HANDSHAKE);
+		Packet<byte[]> result = null;
+		//
+		result = protocolServiceImpl.decode(value);
+		System.out.println(result);
+		//
+		assertEquals(HeadType.HANDSHAKE, result.getHeadType());
+		assertEquals(12, result.getLength());
+
+		byte[] expecteds = new byte[] { 0, 0, 0, 1, 0, 0, 0, 12, 0, 0, 0, 1 };
+
+		assertArrayEquals(expecteds, result.getBody());
 	}
 }
 
