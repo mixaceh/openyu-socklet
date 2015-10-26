@@ -18,7 +18,7 @@ public class AccountServiceImplTest extends CoreTestSupporter {
 		SecretKey secretKey = SecurityHelper.createSecretKey(ASSIGN_KEY,
 				ALGORITHM);
 		byte[] buff = SecurityHelper.mac("1111", secretKey, ALGORITHM);
-		final String PASSWORD = EncodingHelper.encodeHexString(buff);
+		final String PASSWORD = EncodingHelper.encodeHex(buff);
 		System.out.println(PASSWORD);
 		//
 		accountService.authorize(ACCOUNT_ID, PASSWORD);
@@ -33,7 +33,7 @@ public class AccountServiceImplTest extends CoreTestSupporter {
 		SecretKey secretKey = SecurityHelper.createSecretKey(ASSIGN_KEY,
 				ALGORITHM);
 		byte[] buff = SecurityHelper.mac("1111", secretKey, ALGORITHM);
-		final String PASSWORD = EncodingHelper.encodeHexString(buff);
+		final String PASSWORD = EncodingHelper.encodeHex(buff);
 		System.out.println(PASSWORD);
 		//
 		String authKey = accountService.checkAccount(ACCOUNT_ID, PASSWORD);

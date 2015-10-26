@@ -10,6 +10,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openyu.commons.service.supporter.BaseServiceSupporter;
+import org.openyu.commons.thread.ThreadService;
 import org.openyu.commons.thread.supporter.TriggerQueueSupporter;
 import org.openyu.socklet.acceptor.service.AcceptorService;
 import org.openyu.socklet.acceptor.vo.AcceptorStarter;
@@ -20,38 +21,38 @@ import org.openyu.socklet.socklet.ex.SockletException;
 import org.openyu.socklet.socklet.service.SockletService;
 import org.openyu.socklet.socklet.vo.SockletConfig;
 import org.openyu.socklet.socklet.vo.impl.SockletConfigImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * socket的小程式,此為控制器
  * 
  * 邏輯處理,會放在xxxService中
  */
-public abstract class SockletServiceSupporter extends BaseServiceSupporter
-		implements SockletService {
+public abstract class SockletServiceSupporter extends BaseServiceSupporter implements SockletService {
 
 	private static final long serialVersionUID = -7346709988055422446L;
+
+	private static transient final Logger LOGGER = LoggerFactory.getLogger(SockletServiceSupporter.class);
+
+	/**
+	 * 線程服務
+	 */
+	@Autowired
+	@Qualifier("threadService")
+	protected transient ThreadService threadService;
 
 	private String id;
 
 	private SockletConfig sockletConfig;
 
-	private Map<String, String> initParameters = new LinkedHashMap<String, String>(
-			10);
+	private Map<String, String> initParameters = new LinkedHashMap<String, String>(10);
 
 	private Set<String> acceptors = new LinkedHashSet<String>();
 
-	// /**
-	// * 監聽毫秒
-	// */
-	// private long LISTEN_MILLS = 1L;
-
-	// private Queue<Message> messages = new ConcurrentLinkedQueue<Message>();
-	//
-	// private Lock messagesLock = new ReentrantLock();
-	//
-	// private Condition messagesNotEmpty = messagesLock.newCondition();
-
-	private MessageQueue<Message> messageQueue = new MessageQueue<Message>();
+	private MessageQueue<Message> messageQueue;
 
 	private transient AcceptorStarter acceptorStarter;
 
@@ -66,35 +67,20 @@ public abstract class SockletServiceSupporter extends BaseServiceSupporter
 	public SockletServiceSupporter() {
 	}
 
-	/**
-	 * 初始化
-	 *
-	 * @throws Exception
-	 */
-	protected void init() throws Exception {
-		super.init();
-		//
-		// LOGGER.info("Initialization of SockletService [" + this.id + "]");
-		threadService.submit(messageQueue);
+	@Override
+	protected void doStart() throws Exception {
 		SockletConfig sockletConfig = new SockletConfigImpl(this);
-		try {
-			init(sockletConfig);
-		} catch (Exception ex) {
-			throw new RuntimeException(ex);
-		}
+		init(sockletConfig);
+		//
+		messageQueue = new MessageQueue<Message>(threadService);
+		messageQueue.start();
 	}
 
-	/**
-	 * 銷毀化
-	 *
-	 * @throws Exception
-	 */
-	protected void uninit() throws Exception {
-		super.uninit();
-		//
-		// LOGGER.info("Uninitialization of SockletService [" + this.id + "]");
-		messageQueue.setCancel(true);
+	@Override
+	protected void doShutdown() throws Exception {
 		setSockletConfig(null);
+		//
+		messageQueue.shutdown();
 	}
 
 	public String getId() {
@@ -154,42 +140,9 @@ public abstract class SockletServiceSupporter extends BaseServiceSupporter
 	 * @throws SockletException
 	 * @throws IOException
 	 */
-	public void service(Request request, Response response)
-			throws SockletException, IOException {
+	public void service(Request request, Response response) throws SockletException, IOException {
 		throw new UnsupportedOperationException();
 	}
-
-	// /**
-	// * 加入訊息
-	// *
-	// * @param message
-	// * @return
-	// */
-	// public boolean ___addMessage(Message message)
-	// {
-	// boolean result = false;
-	// result = messages.add(message);
-	// return result;
-	// }
-
-	// /**
-	// * 加入訊息
-	// *
-	// * @param message
-	// * @return
-	// */
-	// public boolean __2addMessage(Message message)
-	// {
-	// boolean result = false;
-	// //System.out.println("addMessage T: " + Thread.currentThread().getId());
-	// // result = messages.add(message);
-	// synchronized (messages)
-	// {
-	// result = messages.add(message);
-	// messages.notifyAll();//喚醒所有的進程
-	// }
-	// return result;
-	// }
 
 	/**
 	 * 加入訊息
@@ -198,177 +151,21 @@ public abstract class SockletServiceSupporter extends BaseServiceSupporter
 	 * @return
 	 */
 	public boolean addMessage(Message message) {
-		// boolean result = false;
-		// try
-		// {
-		// messagesLock.lockInterruptibly();
-		// try
-		// {
-		// result = messages.offer(message);
-		// messagesNotEmpty.signalAll();
-		// }
-		// catch (Exception ex)
-		// {
-		// ex.printStackTrace();
-		// }
-		// finally
-		// {
-		// messagesLock.unlock();
-		// }
-		// }
-		// catch (InterruptedException ex)
-		// {
-		// ex.printStackTrace();
-		// }
-		// return result;
-
 		return messageQueue.offer(message);
 	}
-
-	// /**
-	// * 服務
-	// */
-	// protected class ServiceRunner extends BaseRunnableSupporter
-	// {
-	// public void execute()
-	// {
-	// while (true)
-	// {
-	// try
-	// {
-	// service();
-	// //ThreadHelper.sleep(LISTEN_MILLS);
-	// }
-	// catch (Exception ex)
-	// {
-	// //ex.printStackTrace();
-	// }
-	// }
-	// }
-	// }
-
-	// /**
-	// * 服務
-	// *
-	// */
-	// protected void ___service()
-	// {
-	// //一直監聽,浪費cpu
-	// while (!messages.isEmpty())
-	// {
-	// Message message = messages.poll();
-	// if (message == null)
-	// {
-	// continue;
-	// }
-	// //
-	// service(message);
-	// }
-	// }
-
-	// /**
-	// * 服務
-	// */
-	// protected void __2service()
-	// {
-	// //wait/notify 改善,但卻用了 synchronized
-	// synchronized (messages)
-	// {
-	// try
-	// {
-	// while (messages.isEmpty())
-	// {
-	// messages.wait();//暫時釋放資源
-	// }
-	// }
-	// catch (InterruptedException ex)
-	// {
-	// ex.printStackTrace();
-	// }
-	//
-	// //service
-	// //System.out.println("service T: " + Thread.currentThread().getId());
-	// try
-	// {
-	// Message message = messages.poll();
-	// if (message == null)
-	// {
-	// return;
-	// }
-	// //
-	// service(message);
-	// }
-	// catch (Exception ex)
-	// {
-	// ex.printStackTrace();
-	// }
-	// }
-	// }
-
-	// /**
-	// * 服務
-	// */
-	// protected void service()
-	// {
-	// //3.改用lock
-	// try
-	// {
-	// messagesLock.lockInterruptibly();
-	// try
-	// {
-	//
-	// try
-	// {
-	// while (messages.isEmpty())
-	// {
-	// messagesNotEmpty.await();
-	// }
-	// }
-	// catch (InterruptedException ex)
-	// {
-	// ex.printStackTrace();
-	// }
-	// //
-	// try
-	// {
-	// Message message = messages.poll();
-	// if (message == null)
-	// {
-	// return;
-	// }
-	// //
-	// service(message);
-	// }
-	// catch (Exception ex)
-	// {
-	// ex.printStackTrace();
-	// }
-	//
-	// }
-	// catch (Exception ex)
-	// {
-	// ex.printStackTrace();
-	// }
-	// finally
-	// {
-	// messagesLock.unlock();
-	// }
-	// }
-	// catch (InterruptedException ex)
-	// {
-	// ex.printStackTrace();
-	// }
-	// }
 
 	/**
 	 * 訊息佇列
 	 */
-	protected class MessageQueue<E> extends TriggerQueueSupporter<E> {
-		public MessageQueue() {
+	protected class MessageQueue<E> extends TriggerQueueSupporter<Message> {
+
+		public MessageQueue(ThreadService threadService) {
+			super(threadService);
 		}
 
-		public void process(E e) {
-			service((Message) e);
+		@Override
+		protected void doExecute(Message e) throws Exception {
+			service(e);
 		}
 	}
 
@@ -381,8 +178,7 @@ public abstract class SockletServiceSupporter extends BaseServiceSupporter
 	protected AcceptorStarter getAcceptorStarter() {
 		if (acceptorStarter == null) {
 			try {
-				acceptorStarter = (AcceptorStarter) applicationContext
-						.getBean("acceptorStarter");
+				acceptorStarter = (AcceptorStarter) applicationContext.getBean("acceptorStarter");
 			} catch (Exception ex) {
 			}
 		}

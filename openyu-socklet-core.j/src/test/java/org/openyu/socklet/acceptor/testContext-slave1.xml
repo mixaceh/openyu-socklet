@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="
+             http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+             http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+             ">
+
+	<!-- slave1 -->
+	<bean
+		id="slave1Acceptor"
+		class="org.openyu.socklet.acceptor.service.impl.AcceptorServiceImpl">
+		<property
+			name="moduleTypeName"
+			value="org.openyu.socklet.core.net.socklet.CoreModuleType" />
+		<property
+			name="messageTypeName"
+			value="org.openyu.socklet.core.net.socklet.CoreMessageType" />
+		<property
+			name="id"
+			value="slave1" />
+		<property
+			name="instanceId"
+			value="01" />
+		<property
+			name="outputId"
+			value="01" />
+		<property name="relationServers">
+			<list>
+				<value>127.0.0.1:3300</value>
+				<value>127.0.0.1:3301</value>
+			</list>
+		</property>
+		<property name="clientServers">
+			<list>
+				<value>127.0.0.1:10300</value>
+				<value>127.0.0.1:10301</value>
+			</list>
+		</property>
+		<property
+			name="maxClient"
+			value="1000" />
+		<property
+			name="cluster"
+			value="socklet" />
+		<property name="relations">
+			<list>
+				<!--  
+				<value>account</value>
+				<value>login</value>
+				<value>master</value>
+				-->
+			</list>
+		</property>
+		<property
+			name="retryNumber"
+			value="1" />
+		<property
+			name="retryPauseMills"
+			value="1000" />
+		<property
+			name="relationRetryNumber"
+			value="1" />
+		<property
+			name="relationRetryPauseMills"
+			value="1000" />
+		<property name="initParameters">
+			<props>
+				<prop key="debug">7</prop>
+			</props>
+		</property>
+	</bean>
+
+</beans>

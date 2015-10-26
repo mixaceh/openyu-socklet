@@ -81,10 +81,7 @@ public interface SockletService extends BaseService {
 	 * @throws SockletException
 	 * @throws IOException
 	 */
-	void service(Request request, Response response) throws SockletException,
-			IOException;
-
-	void destroy();
+	void service(Request request, Response response) throws SockletException, IOException;
 
 	/**
 	 * 服務

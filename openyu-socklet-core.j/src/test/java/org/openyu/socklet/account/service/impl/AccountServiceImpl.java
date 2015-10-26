@@ -9,20 +9,34 @@ import org.openyu.socklet.core.net.socklet.CoreMessageType;
 import org.openyu.socklet.core.net.socklet.CoreModuleType;
 import org.openyu.socklet.message.service.MessageService;
 import org.openyu.socklet.message.vo.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class AccountServiceImpl extends BaseServiceSupporter implements
-		AccountService {
+public class AccountServiceImpl extends BaseServiceSupporter implements AccountService {
+
+	private static final long serialVersionUID = 399071075904033809L;
+
+	private static transient final Logger LOGGER = LoggerFactory.getLogger(AccountServiceImpl.class);
 
 	@Autowired
 	@Qualifier("messageService")
 	protected transient MessageService messageService;
-	
+
 	@Autowired
 	@Qualifier("authKeyService")
 	protected transient AuthKeyService authKeyService;
-	
 
 	public AccountServiceImpl() {
+	}
+
+	@Override
+	protected void doStart() throws Exception {
+
+	}
+
+	@Override
+	protected void doShutdown() throws Exception {
+
 	}
 
 	public void authorize(String accountId, String password) {
@@ -31,8 +45,7 @@ public class AccountServiceImpl extends BaseServiceSupporter implements
 		String authKey = checkAccount(accountId, password);
 		//
 		if (authKey != null) {
-			Message message = messageService.createMessage(
-					CoreModuleType.ACCOUNT, CoreModuleType.LOGIN,
+			Message message = messageService.createMessage(CoreModuleType.ACCOUNT, CoreModuleType.LOGIN,
 					CoreMessageType.LOGIN_AUTHORIZE_FROM_ACCOUNT_REQUEST);
 			message.addString(accountId);
 			message.addString(authKey);
@@ -42,17 +55,15 @@ public class AccountServiceImpl extends BaseServiceSupporter implements
 	}
 
 	public String checkAccount(String accountId, String password) {
-		return authKeyService.randomKey();
+		return authKeyService.createAuthKey().getId();
 	}
 
 	public void authorizeFromLogin(String accountId, String authKey) {
 		sendAuthorize(ErrorType.NO_ERROR, accountId, authKey);
 	}
 
-	public void sendAuthorize(ErrorType errorType, String accountId,
-			String authKey) {
-		Message message = messageService.createMessage(CoreModuleType.ACCOUNT,
-				CoreModuleType.CLIENT,
+	public void sendAuthorize(ErrorType errorType, String accountId, String authKey) {
+		Message message = messageService.createMessage(CoreModuleType.ACCOUNT, CoreModuleType.CLIENT,
 				CoreMessageType.ACCOUNT_AUTHORIZE_REPONSE, accountId);
 
 		message.addInt(errorType.getValue());// 0, errorType 錯誤碼
