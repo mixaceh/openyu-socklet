@@ -11,6 +11,7 @@ import com.carrotsearch.junitbenchmarks.BenchmarkOptions;
 import com.carrotsearch.junitbenchmarks.BenchmarkRule;
 
 import org.openyu.commons.junit.supporter.BaseTestSupporter;
+import org.openyu.commons.thread.ThreadHelper;
 
 public class Slave1AcceptorTest extends BaseTestSupporter {
 
@@ -37,6 +38,8 @@ public class Slave1AcceptorTest extends BaseTestSupporter {
 	public void slave1Acceptor() {
 		System.out.println(slave1Acceptor);
 		assertNotNull(slave1Acceptor);
+		//
+		ThreadHelper.sleep(5 * 1000);
 	}
 
 	@Test
