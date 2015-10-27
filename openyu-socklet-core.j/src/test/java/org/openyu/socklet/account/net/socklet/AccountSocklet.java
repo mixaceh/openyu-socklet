@@ -24,25 +24,26 @@ public class AccountSocklet extends SockletServiceSupporter {
 
 	}
 
-	public void service(Message request) {
+	public void service(Message message) {
 		// 訊息
-		CoreMessageType messageType = (CoreMessageType) request.getMessageType();
+		CoreMessageType messageType = (CoreMessageType) message.getMessageType();
 		switch (messageType) {
 		case ACCOUNT_AUTHORIZE_REQUEST: {
-			String accountId = request.getString(0);
-			String password = request.getString(1);
+			String accountId = message.getString(0);
+			String password = message.getString(1);
 			accountService.authorize(accountId, password);
 			break;
 		}
 		case ACCOUNT_AUTHORIZE_FROM_LOGIN_REQUEST: {
-			String accountId = request.getString(0);
-			String authKey = request.getString(1);
+			String accountId = message.getString(0);
+			String authKey = message.getString(1);
 			accountService.authorizeFromLogin(accountId, authKey);
 			break;
 		}
-		default:
-			LOGGER.warn("Can't resolve: " + request);
+		default: {
+			LOGGER.warn("Can't resolve: " + message);
 			break;
+		}
 		}
 	}
 

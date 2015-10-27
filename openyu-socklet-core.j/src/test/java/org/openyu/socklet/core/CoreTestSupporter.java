@@ -68,8 +68,9 @@ public class CoreTestSupporter extends BaseTestSupporter {
 	public static void setUpBeforeClass() throws Exception {
 		applicationContext = new ClassPathXmlApplicationContext(new String[] {
 				"applicationContext-init.xml",//
-				"META-INF/applicationContext-commons-core.xml",//
-				"META-INF/applicationContext-socklet-core.xml",//
+				"testContext-thread.xml", //
+				"testContext-security.xml", //
+				"org/openyu/socklet/message/testContext-message.xml", //
 				"applicationContext-acceptor.xml",//
 		});
 		threadService = (ThreadService) applicationContext

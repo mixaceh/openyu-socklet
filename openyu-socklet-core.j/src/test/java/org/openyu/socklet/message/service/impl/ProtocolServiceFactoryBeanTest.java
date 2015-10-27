@@ -1,9 +1,6 @@
 package org.openyu.socklet.message.service.impl;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
-import java.lang.reflect.Method;
 
 import org.junit.BeforeClass;
 import org.junit.Rule;

@@ -28,9 +28,10 @@ public class BlankSocklet extends SockletServiceSupporter {
 			System.out.println(message);
 			break;
 		}
-		default:
+		default: {
 			LOGGER.warn("Can't resolve: " + message);
 			break;
+		}
 		}
 	}
 

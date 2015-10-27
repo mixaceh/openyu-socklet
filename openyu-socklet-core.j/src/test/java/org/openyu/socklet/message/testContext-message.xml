@@ -43,15 +43,10 @@
 		p:compressType="LZ4" />
 				
 	<!-- factory -->
-
 	<bean
 		id="protocolServiceFactoryBean"
 		class="org.openyu.socklet.message.service.impl.ProtocolServiceFactoryBean"
-		parent="baseServiceFactorySupporter">
-		<property
-			name="configLocation"
-			value="file:src/test/config/etc/ProtocolService.properties" />
-	</bean>
-
+		parent="baseServiceFactorySupporter"
+		p:configLocation="file:src/test/config/etc/ProtocolService.properties" />
 
 </beans>

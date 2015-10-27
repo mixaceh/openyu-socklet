@@ -9,14 +9,144 @@
              http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
              http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
              ">
+	<bean
+		id="messageService"
+		class="org.openyu.socklet.message.service.impl.MessageServiceImpl"
+		parent="baseServiceSupporter" />
 
-	<!-- supporter -->
+	<bean
+		id="protocolService"
+		class="org.openyu.socklet.message.service.impl.ProtocolServiceFactoryBean"
+		parent="baseServiceFactorySupporter"
+		p:configLocation="file:src/test/config/etc/ProtocolService.properties" />
+
+	<!-- acceptor -->
+	<bean
+		id="acceptorThreadService"
+		class="org.openyu.commons.thread.impl.ThreadServiceFactoryBean"
+		parent="threadService"
+		p:configLocation="file:src/test/config/etc/AcceptorThreadService.properties" />
+
+	<bean
+		id="acceptorServiceSupporter"
+		class="org.openyu.socklet.acceptor.service.impl.AcceptorServiceImpl"
+		parent="baseServiceSupporter"
+		abstract="true"
+		p:threadService-ref="acceptorThreadService" />
+
 	<bean
 		id="acceptorSupporter"
 		parent="acceptorServiceSupporter"
 		abstract="true"
-		p:moduleTypeName="${acceptorSupporter.moduleTypeName}"
-		p:messageTypeName="${acceptorSupporter.messageTypeName}" />
+		p:moduleTypeName="org.openyu.socklet.core.net.socklet.CoreModuleType"
+		p:messageTypeName="org.openyu.socklet.core.net.socklet.CoreMessageType" />
+			
+	<!-- socklet -->
+	<bean
+		id="sockletThreadService"
+		class="org.openyu.commons.thread.impl.ThreadServiceFactoryBean"
+		parent="threadService"
+		p:configLocation="file:src/test/config/etc/SockletThreadService.properties" />
+
+	<bean
+		id="sockletServiceSupporter"
+		class="org.openyu.socklet.socklet.service.supporter.SockletServiceSupporter"
+		parent="baseServiceSupporter"
+		abstract="true"
+		p:threadService-ref="sockletThreadService" />
+		
+	<!--listener -->
+	<bean
+		id="contextListenerSupporter"
+		class="org.openyu.socklet.context.service.event.supporter.ContextListenerSupporter"
+		parent="baseListenerSupporter"
+		abstract="true" />
+
+	<bean
+		id="relationListenerSupporter"
+		class="org.openyu.socklet.acceptor.service.event.supporter.RelationListenerSupporter"
+		parent="baseListenerSupporter"
+		abstract="true" />
+
+	<bean
+		id="sessionListenerSupporter"
+		class="org.openyu.socklet.session.service.event.supporter.SessionListenerSupporter"
+		parent="baseListenerSupporter"
+		abstract="true" />	
+		
+				<!-- system -->
+	<bean
+		id="systemContextAdapter"
+		class="org.openyu.socklet.context.service.event.adapter.ContextAdapter"
+		parent="contextListenerSupporter"
+		abstract="true"
+		p:acceptors-ref="systemContextAdapterAcceptors" />
+
+	<util:set
+		id="systemContextAdapterAcceptors"
+		set-class="java.util.LinkedHashSet">
+		<value>system</value>
+	</util:set>
+
+	<bean
+		id="systemRelationAdapter"
+		class="org.openyu.socklet.acceptor.service.event.adapter.RelationAdapter"
+		parent="relationListenerSupporter"
+		abstract="true"
+		p:acceptors-ref="systemRelationAdapterAcceptors" />
+
+	<util:set
+		id="systemRelationAdapterAcceptors"
+		set-class="java.util.LinkedHashSet">
+		<value>system</value>
+	</util:set>
+
+	<!-- slave -->
+	<bean
+		id="slaveSessionAdapter"
+		class="org.openyu.socklet.session.service.event.adapter.SessionAdapter"
+		parent="sessionListenerSupporter"
+		abstract="true"
+		p:acceptors-ref="slaveSessionAdapterAcceptors" />
+
+	<util:set
+		id="slaveSessionAdapterAcceptors"
+		set-class="java.util.LinkedHashSet">
+		<value>slave1</value>
+		<value>slave2</value>
+		<value>slave3</value>
+		<value>slave4</value>
+		<value>slave5</value>
+		<value>slave6</value>
+		<value>slave7</value>
+		<value>slave8</value>
+		<value>slave9</value>
+		<value>slave10</value>
+	</util:set>	
+
+	<!-- system, slave -->
+	<bean
+		id="systemSlaveSessionAdapter"
+		class="org.openyu.socklet.session.service.event.adapter.SessionAdapter"
+		parent="sessionListenerSupporter"
+		abstract="true"
+		p:acceptors-ref="systemSlaveSessionAdapterAcceptors" />
+
+	<util:set
+		id="systemSlaveSessionAdapterAcceptors"
+		set-class="java.util.LinkedHashSet">
+		<value>system</value>
+		<value>slave1</value>
+		<value>slave2</value>
+		<value>slave3</value>
+		<value>slave4</value>
+		<value>slave5</value>
+		<value>slave6</value>
+		<value>slave7</value>
+		<value>slave8</value>
+		<value>slave9</value>
+		<value>slave10</value>
+	</util:set>
 
 	<!-- account -->
 	<bean
@@ -24,51 +154,50 @@
 		parent="acceptorSupporter">
 		<property
 			name="id"
-			value="${account.id}" />
+			value="account" />
 		<property
 			name="instanceId"
-			value="${account.instanceId}" />
+			value="01" />
 		<property
 			name="outputId"
-			value="${account.outputId}" />
+			value="01" />
 		<property name="relationServers">
 			<list>
-				<value>${account.relationServers.0}</value>
-				<value>${account.relationServers.1}</value>
+				<value>127.0.0.1:3000</value>
+				<value>127.0.0.1:3001</value>
 			</list>
 		</property>
 		<property name="clientServers">
 			<list>
-				<value>${account.clientServers.0}</value>
-				<value>${account.clientServers.1}</value>
+				<value>127.0.0.1:10000</value>
+				<value>127.0.0.1:10001</value>
 			</list>
 		</property>
 		<property
 			name="maxClient"
-			value="${account.maxClient}" />
+			value="1000" />
 		<property
 			name="cluster"
-			value="${account.cluster}" />
+			value="socklet" />
 		<property name="relations">
 			<list>
 			</list>
 		</property>
 		<property
 			name="retryNumber"
-			value="${account.retryNumber}" />
+			value="1" />
 		<property
 			name="retryPauseMills"
-			value="${account.retryPauseMills}" />
+			value="1000" />
 		<property
 			name="relationRetryNumber"
-			value="${account.relationRetryNumber}" />
+			value="1" />
 		<property
 			name="relationRetryPauseMills"
-			value="${account.relationRetryPauseMills}" />
+			value="1000" />
 		<property name="initParameters">
 			<props>
-				<prop key="debug">${account.initParameters.debug}
-				</prop>
+				<prop key="debug">7</prop>
 			</props>
 		</property>
 	</bean>
@@ -79,637 +208,109 @@
 		parent="acceptorSupporter">
 		<property
 			name="id"
-			value="${login.id}" />
+			value="login" />
 		<property
 			name="instanceId"
-			value="${login.instanceId}" />
+			value="01" />
 		<property
 			name="outputId"
-			value="${login.outputId}" />
+			value="01" />
 		<property name="relationServers">
 			<list>
-				<value>${login.relationServers.0}</value>
-				<value>${login.relationServers.1}</value>
+				<value>127.0.0.1:3100</value>
+				<value>127.0.0.1:3101</value>
 			</list>
 		</property>
 		<property name="clientServers">
 			<list>
-				<value>${login.clientServers.0}</value>
-				<value>${login.clientServers.1}</value>
+				<value>127.0.0.1:10100</value>
+				<value>127.0.0.1:10101</value>
 			</list>
 		</property>
 		<property
 			name="maxClient"
-			value="${login.maxClient}" />
+			value="1000" />
 		<property
 			name="cluster"
-			value="${login.cluster}" />
+			value="socklet" />
 		<property name="relations">
 			<list>
-				<value>${login.relations.0}</value>
+				<value>account</value>
 			</list>
 		</property>
 		<property
 			name="retryNumber"
-			value="${login.retryNumber}" />
+			value="1" />
 		<property
 			name="retryPauseMills"
-			value="${login.retryPauseMills}" />
+			value="1000" />
 		<property
 			name="relationRetryNumber"
-			value="${login.relationRetryNumber}" />
+			value="1" />
 		<property
 			name="relationRetryPauseMills"
-			value="${login.relationRetryPauseMills}" />
+			value="1000" />
 		<property name="initParameters">
 			<props>
-				<prop key="debug">${login.initParameters.debug}</prop>
+				<prop key="debug">7</prop>
 			</props>
 		</property>
 	</bean>
-
+	
 	<!-- master -->
 	<bean
 		id="masterAcceptor"
 		parent="acceptorSupporter">
 		<property
 			name="id"
-			value="${master.id}" />
+			value="master" />
 		<property
 			name="instanceId"
-			value="${master.instanceId}" />
+			value="01" />
 		<property
 			name="outputId"
-			value="${master.outputId}" />
+			value="01" />
 		<property name="relationServers">
 			<list>
-				<value>${master.relationServers.0}</value>
-				<value>${master.relationServers.1}</value>
+				<value>127.0.0.1:3200</value>
+				<value>127.0.0.1:3201</value>
 			</list>
 		</property>
 		<property name="clientServers">
 			<list>
-				<value>${master.clientServers.0}</value>
-				<value>${master.clientServers.1}</value>
+				<value>127.0.0.1:10200</value>
+				<value>127.0.0.1:10201</value>
 			</list>
 		</property>
 		<property
 			name="maxClient"
-			value="${master.maxClient}" />
+			value="1000" />
 		<property
 			name="cluster"
-			value="${master.cluster}" />
+			value="socklet" />
 		<property name="relations">
 			<list>
-				<value>${master.relations.0}</value>
-				<value>${master.relations.1}</value>
-			</list>
-		</property>
-		<property
-			name="retryNumber"
-			value="${master.retryNumber}" />
-		<property
-			name="retryPauseMills"
-			value="${master.retryPauseMills}" />
-		<property
-			name="relationRetryNumber"
-			value="${master.relationRetryNumber}" />
-		<property
-			name="relationRetryPauseMills"
-			value="${master.relationRetryPauseMills}" />
-		<property name="initParameters">
-			<props>
-				<prop key="debug">${master.initParameters.debug}</prop>
-			</props>
-		</property>
-	</bean>
-
-	<!-- slave1 -->
-	<bean
-		id="slave1Acceptor"
-		parent="acceptorSupporter">
-		<property
-			name="id"
-			value="${slave1.id}" />
-		<property
-			name="instanceId"
-			value="${slave1.instanceId}" />
-		<property
-			name="outputId"
-			value="${slave1.outputId}" />
-		<property name="relationServers">
-			<list>
-				<value>${slave1.relationServers.0}</value>
-				<value>${slave1.relationServers.1}</value>
-			</list>
-		</property>
-		<property name="clientServers">
-			<list>
-				<value>${slave1.clientServers.0}</value>
-				<value>${slave1.clientServers.1}</value>
-			</list>
-		</property>
-		<property
-			name="maxClient"
-			value="${slave1.maxClient}" />
-		<property
-			name="cluster"
-			value="${slave1.cluster}" />
-		<property name="relations">
-			<list>
-				<value>${slave1.relations.0}</value>
-				<value>${slave1.relations.1}</value>
-				<value>${slave1.relations.2}</value>
-			</list>
-		</property>
-		<property
-			name="retryNumber"
-			value="${slave1.retryNumber}" />
-		<property
-			name="retryPauseMills"
-			value="${slave1.retryPauseMills}" />
-		<property
-			name="relationRetryNumber"
-			value="${slave1.relationRetryNumber}" />
-		<property
-			name="relationRetryPauseMills"
-			value="${slave1.relationRetryPauseMills}" />
-		<property name="initParameters">
-			<props>
-				<prop key="debug">${slave1.initParameters.debug}</prop>
-			</props>
-		</property>
-	</bean>
-	
-	<!-- slave1_02 -->
-	<bean
-		id="slave1_02Acceptor"
-		parent="acceptorSupporter">
-		<property
-			name="id"
-			value="${slave1_02.id}" />
-		<property
-			name="instanceId"
-			value="${slave1_02.instanceId}" />
-		<property
-			name="outputId"
-			value="${slave1_02.outputId}" />
-		<property name="relationServers">
-			<list>
-				<value>${slave1_02.relationServers.0}</value>
-				<value>${slave1_02.relationServers.1}</value>
-			</list>
-		</property>
-		<property name="clientServers">
-			<list>
-				<value>${slave1_02.clientServers.0}</value>
-				<value>${slave1_02.clientServers.1}</value>
-			</list>
-		</property>
-		<property
-			name="maxClient"
-			value="${slave1_02.maxClient}" />
-		<property
-			name="cluster"
-			value="${slave1_02.cluster}" />
-		<property name="relations">
-			<list>
-				<value>${slave1_02.relations.0}</value>
-				<value>${slave1_02.relations.1}</value>
-				<value>${slave1_02.relations.2}</value>
-			</list>
-		</property>
-		<property
-			name="retryNumber"
-			value="${slave1_02.retryNumber}" />
-		<property
-			name="retryPauseMills"
-			value="${slave1_02.retryPauseMills}" />
-		<property
-			name="relationRetryNumber"
-			value="${slave1_02.relationRetryNumber}" />
-		<property
-			name="relationRetryPauseMills"
-			value="${slave1_02.relationRetryPauseMills}" />
-		<property name="initParameters">
-			<props>
-				<prop key="debug">${slave1_02.initParameters.debug}
-				</prop>
-			</props>
-		</property>
-	</bean>
-
-	<!-- slave2 -->
-	<bean
-		id="slave2Acceptor"
-		parent="acceptorSupporter">
-		<property
-			name="id"
-			value="${slave2.id}" />
-		<property
-			name="instanceId"
-			value="${slave2.instanceId}" />
-		<property
-			name="outputId"
-			value="${slave2.outputId}" />
-		<property name="relationServers">
-			<list>
-				<value>${slave2.relationServers.0}</value>
-				<value>${slave2.relationServers.1}</value>
-			</list>
-		</property>
-		<property name="clientServers">
-			<list>
-				<value>${slave2.clientServers.0}</value>
-				<value>${slave2.clientServers.1}</value>
-			</list>
-		</property>
-		<property
-			name="maxClient"
-			value="${slave2.maxClient}" />
-
-		<property
-			name="cluster"
-			value="${slave2.cluster}" />
-		<property name="relations">
-			<list>
-				<value>${slave2.relations.0}</value>
-				<value>${slave2.relations.1}</value>
-				<value>${slave2.relations.2}</value>
-				<value>${slave2.relations.3}</value>
-			</list>
-		</property>
-		<property
-			name="retryNumber"
-			value="${slave2.retryNumber}" />
-		<property
-			name="retryPauseMills"
-			value="${slave2.retryPauseMills}" />
-		<property
-			name="relationRetryNumber"
-			value="${slave2.relationRetryNumber}" />
-		<property
-			name="relationRetryPauseMills"
-			value="${slave2.relationRetryPauseMills}" />
-		<property name="initParameters">
-			<props>
-				<prop key="debug">${slave2.initParameters.debug}</prop>
-			</props>
-		</property>
-	</bean>
-
-	<!-- slave2_02 -->
-	<bean
-		id="slave2_02Acceptor"
-		parent="acceptorSupporter">
-		<property
-			name="id"
-			value="${slave2_02.id}" />
-		<property
-			name="instanceId"
-			value="${slave2_02.instanceId}" />
-		<property
-			name="outputId"
-			value="${slave2_02.outputId}" />
-		<property name="relationServers">
-			<list>
-				<value>${slave2_02.relationServers.0}</value>
-				<value>${slave2_02.relationServers.1}</value>
-			</list>
-		</property>
-		<property name="clientServers">
-			<list>
-				<value>${slave2_02.clientServers.0}</value>
-				<value>${slave2_02.clientServers.1}</value>
-			</list>
-		</property>
-		<property
-			name="maxClient"
-			value="${slave2_02.maxClient}" />
-
-		<property
-			name="cluster"
-			value="${slave2_02.cluster}" />
-		<property name="relations">
-			<list>
-				<value>${slave2_02.relations.0}</value>
-				<value>${slave2_02.relations.1}</value>
-				<value>${slave2_02.relations.2}</value>
-				<value>${slave2_02.relations.3}</value>
-			</list>
-		</property>
-		<property
-			name="retryNumber"
-			value="${slave2_02.retryNumber}" />
-		<property
-			name="retryPauseMills"
-			value="${slave2_02.retryPauseMills}" />
-		<property
-			name="relationRetryNumber"
-			value="${slave2_02.relationRetryNumber}" />
-		<property
-			name="relationRetryPauseMills"
-			value="${slave2_02.relationRetryPauseMills}" />
-		<property name="initParameters">
-			<props>
-				<prop key="debug">${slave2_02.initParameters.debug}
-				</prop>
-			</props>
-		</property>
-	</bean>
-	
-	<!-- slave3 -->
-	<bean
-		id="slave3Acceptor"
-		parent="acceptorSupporter">
-		<property
-			name="id"
-			value="${slave3.id}" />
-		<property
-			name="instanceId"
-			value="${slave3.instanceId}" />
-		<property
-			name="outputId"
-			value="${slave3.outputId}" />
-		<property name="relationServers">
-			<list>
-				<value>${slave3.relationServers.0}</value>
-				<value>${slave3.relationServers.1}</value>
-			</list>
-		</property>
-		<property name="clientServers">
-			<list>
-				<value>${slave3.clientServers.0}</value>
-				<value>${slave3.clientServers.1}</value>
-			</list>
-		</property>
-		<property
-			name="maxClient"
-			value="${slave3.maxClient}" />
-		<property
-			name="cluster"
-			value="${slave3.cluster}" />
-		<property name="relations">
-			<list>
-				<value>${slave3.relations.0}</value>
-				<value>${slave3.relations.1}</value>
-				<value>${slave3.relations.2}</value>
-				<value>${slave3.relations.3}</value>
-				<value>${slave3.relations.4}</value>
-			</list>
-		</property>
-		<property
-			name="retryNumber"
-			value="${slave3.retryNumber}" />
-		<property
-			name="retryPauseMills"
-			value="${slave3.retryPauseMills}" />
-		<property
-			name="relationRetryNumber"
-			value="${slave3.relationRetryNumber}" />
-		<property
-			name="relationRetryPauseMills"
-			value="${slave3.relationRetryPauseMills}" />
-		<property name="initParameters">
-			<props>
-				<prop key="debug">${slave3.initParameters.debug}</prop>
-			</props>
-		</property>
-	</bean>
-	
-	<!-- slave3_02 -->
-	<bean
-		id="slave3_02Acceptor"
-		parent="acceptorSupporter">
-		<property
-			name="id"
-			value="${slave3_02.id}" />
-		<property
-			name="instanceId"
-			value="${slave3_02.instanceId}" />
-		<property
-			name="outputId"
-			value="${slave3_02.outputId}" />
-		<property name="relationServers">
-			<list>
-				<value>${slave3_02.relationServers.0}</value>
-				<value>${slave3_02.relationServers.1}</value>
-			</list>
-		</property>
-		<property name="clientServers">
-			<list>
-				<value>${slave3_02.clientServers.0}</value>
-				<value>${slave3_02.clientServers.1}</value>
-			</list>
-		</property>
-		<property
-			name="maxClient"
-			value="${slave3_02.maxClient}" />
-		<property
-			name="cluster"
-			value="${slave3_02.cluster}" />
-		<property name="relations">
-			<list>
-				<value>${slave3_02.relations.0}</value>
-				<value>${slave3_02.relations.1}</value>
-				<value>${slave3_02.relations.2}</value>
-				<value>${slave3_02.relations.3}</value>
-				<value>${slave3_02.relations.4}</value>
-			</list>
-		</property>
-		<property
-			name="retryNumber"
-			value="${slave3_02.retryNumber}" />
-		<property
-			name="retryPauseMills"
-			value="${slave3_02.retryPauseMills}" />
-		<property
-			name="relationRetryNumber"
-			value="${slave3_02.relationRetryNumber}" />
-		<property
-			name="relationRetryPauseMills"
-			value="${slave3_02.relationRetryPauseMills}" />
-		<property name="initParameters">
-			<props>
-				<prop key="debug">${slave3_02.initParameters.debug}
-				</prop>
-			</props>
-		</property>
-	</bean>
-
-	<!-- account -->
-	<bean
-		id="accountService"
-		class="org.openyu.socklet.account.service.impl.AccountServiceImpl"
-		parent="baseServiceSupporter">
-	</bean>
-
-	<bean
-		id="accountSocklet"
-		class="org.openyu.socklet.account.net.socklet.AccountSocklet"
-		parent="sockletServiceSupporter">
-		<property
-			name="id"
-			value="ACCOUNT" />
-		<property name="acceptors">
-			<set>
 				<value>account</value>
-			</set>
-		</property>
-		<property name="initParameters">
-			<props>
-				<prop key="aaa">aaa</prop>
-				<prop key="bbb">bbb</prop>
-				<prop key="ccc">ccc</prop>
-			</props>
-		</property>
-	</bean>
-
-	<!-- login -->
-	<bean
-		id="loginService"
-		class="org.openyu.socklet.login.service.impl.LoginServiceImpl"
-		parent="baseServiceSupporter">
-	</bean>
-
-	<bean
-		id="loginSocklet"
-		class="org.openyu.socklet.login.net.socklet.LoginSocklet"
-		parent="sockletServiceSupporter">
-		<property
-			name="id"
-			value="LOGIN" />
-		<property name="acceptors">
-			<set>
 				<value>login</value>
-			</set>
+			</list>
 		</property>
-		<property name="initParameters">
-			<props>
-				<prop key="aaa">aaa</prop>
-				<prop key="bbb">bbb</prop>
-				<prop key="ccc">ccc</prop>
-			</props>
-		</property>
-	</bean>
-
-	<!-- core -->
-	<bean
-		id="coreService"
-		class="org.openyu.socklet.core.service.impl.CoreServiceImpl"
-		parent="baseServiceSupporter">
-	</bean>
-
-	<!-- socklet -->
-	<bean
-		id="coreSocklet"
-		class="org.openyu.socklet.core.net.socklet.CoreSocklet"
-		parent="sockletServiceSupporter">
 		<property
-			name="id"
-			value="CORE" />
-		<property name="acceptors">
-			<set>
-				<value>slave1</value>
-				<value>slave2</value>
-				<value>slave3</value>
-			</set>
-		</property>
-		<property name="initParameters">
-			<props>
-				<prop key="aaa">aaa</prop>
-				<prop key="bbb">bbb</prop>
-				<prop key="ccc">ccc</prop>
-			</props>
-		</property>
-	</bean>
-	
-	<!-- listener -->
-	<bean
-		id="coreRelationAdapter"
-		class="org.openyu.socklet.core.service.adapter.CoreRelationAdapter"
-		parent="systemRelationAdapter">
-		<property name="acceptors">
-			<set>
-				<value>master</value>
-				<value>slave1</value>
-			</set>
-		</property>
-	</bean>
-
-	<bean
-		id="coreSessionAdapter"
-		class="org.openyu.socklet.core.service.adapter.CoreSessionAdapter"
-		parent="slaveSessionAdapter">
-		<property name="acceptors">
-			<set>
-				<value>master</value>
-				<value>slave1</value>
-			</set>
-		</property>
-	</bean>
-	
-	<!-- chat -->
-	<bean
-		id="chatService"
-		class="org.openyu.socklet.chat.service.impl.ChatServiceImpl"
-		parent="baseServiceSupporter">
-	</bean>
-
-	<bean
-		id="chatSocklet"
-		class="org.openyu.socklet.chat.net.socklet.ChatSocklet"
-		parent="sockletServiceSupporter">
+			name="retryNumber"
+			value="1" />
 		<property
-			name="id"
-			value="CHAT" />
-		<property name="acceptors">
-			<set>
-				<value>slave1</value>
-				<value>slave2</value>
-				<value>slave3</value>
-			</set>
-		</property>
-		<property name="initParameters">
-			<props>
-				<prop key="aaa">aaa</prop>
-				<prop key="bbb">bbb</prop>
-				<prop key="ccc">ccc</prop>
-			</props>
-		</property>
-	</bean>
-
-	<!-- fourSymbol -->
-	<bean
-		id="fourSymbolService"
-		class="org.openyu.socklet.fourSymbol.service.impl.FourSymbolServiceImpl"
-		parent="baseServiceSupporter">
-	</bean>
-
-	<bean
-		id="fourSymbolSocklet"
-		class="org.openyu.socklet.fourSymbol.net.socklet.FourSymbolSocklet"
-		parent="sockletServiceSupporter">
+			name="retryPauseMills"
+			value="1000" />
 		<property
-			name="id"
-			value="FOUR_SYMBOL" />
-		<property name="acceptors">
-			<set>
-				<value>slave1</value>
-				<value>slave2</value>
-				<value>slave3</value>
-				<!-- 02 -->
-				<value>slave1_02</value>
-				<value>slave2_02</value>
-				<value>slave3_02</value>
-			</set>
-		</property>
+			name="relationRetryNumber"
+			value="1" />
+		<property
+			name="relationRetryPauseMills"
+			value="1000" />
 		<property name="initParameters">
 			<props>
-				<prop key="aaa">aaa</prop>
-				<prop key="bbb">bbb</prop>
-				<prop key="ccc">ccc</prop>
+				<prop key="debug">7</prop>
 			</props>
 		</property>
 	</bean>
+
 </beans>

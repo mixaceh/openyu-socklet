@@ -1,7 +1,6 @@
 package org.openyu.socklet.blank;
 
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 import org.junit.BeforeClass;
 import org.junit.Rule;

@@ -170,6 +170,8 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	// cluster 頻道
 	private Channel clusterChannel;
 
+	private static List<String> clusterIds = new LinkedList<String>();
+
 	// ------------------------------------------------
 
 	// 連到其他的internal server
@@ -713,6 +715,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 			if (clusterChannel != null && clusterChannel.isConnected()) {
 				clusterChannel.close();
 				clusterChannel = null;
+				clusterIds.clear();
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -730,7 +733,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 			if (clusterChannel != null && clusterChannel.isConnected()) {
 				clusterChannel.send(msg);
 			} else {
-				LOGGER.warn("[" + id + "] ClusterChannel Had not been started");
+				LOGGER.error("[" + id + "] ClusterChannel Had not been started");
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -1123,13 +1126,13 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		try {
 			if (clusterChannel != null && !clusterChannel.isConnected()) {
 				clusterChannel.connect(cluster);
-				LOGGER.info("ClusterChannel Had [" + clusterChannel.getView().size() + "] members, "
+				clusterIds.add(id);
+				//
+				LOGGER.info("ClusterChannel Had [" + clusterChannel.getView().size() + "] members, acceptors" + clusterIds + ", "
 						+ clusterChannel.getView());
-				// log.info("[" + id + "] ClusterChannel has been started");
 			}
 		} catch (Exception ex) {
-			ex.printStackTrace();
-			LOGGER.info("[" + id + "] ClusterChannel Started fail");
+			LOGGER.error("[" + id + "] ClusterChannel Started fail", ex);
 		}
 	}
 

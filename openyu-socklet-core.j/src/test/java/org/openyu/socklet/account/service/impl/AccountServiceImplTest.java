@@ -15,8 +15,7 @@ public class AccountServiceImplTest extends CoreTestSupporter {
 		final String ACCOUNT_ID = "TEST_ACCOUNT_1";
 		final String ASSIGN_KEY = "FarFarAway";
 		final String ALGORITHM = "HmacMD5";
-		SecretKey secretKey = SecurityHelper.createSecretKey(ASSIGN_KEY,
-				ALGORITHM);
+		SecretKey secretKey = SecurityHelper.createSecretKey(ASSIGN_KEY, ALGORITHM);
 		byte[] buff = SecurityHelper.mac("1111", secretKey, ALGORITHM);
 		final String PASSWORD = EncodingHelper.encodeHex(buff);
 		System.out.println(PASSWORD);
@@ -30,8 +29,7 @@ public class AccountServiceImplTest extends CoreTestSupporter {
 		// b5f01d3a0898d8016b5633edfe6106b0
 		final String ASSIGN_KEY = "FarFarAway";
 		final String ALGORITHM = "HmacMD5";
-		SecretKey secretKey = SecurityHelper.createSecretKey(ASSIGN_KEY,
-				ALGORITHM);
+		SecretKey secretKey = SecurityHelper.createSecretKey(ASSIGN_KEY, ALGORITHM);
 		byte[] buff = SecurityHelper.mac("1111", secretKey, ALGORITHM);
 		final String PASSWORD = EncodingHelper.encodeHex(buff);
 		System.out.println(PASSWORD);

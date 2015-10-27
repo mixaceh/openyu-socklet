@@ -70,6 +70,8 @@ public class AcceptorServiceImplTest extends BaseTestSupporter {
 	public void slave1Acceptor() {
 		System.out.println(slave1Acceptor);
 		assertNotNull(slave1Acceptor);
+		//
+		ThreadHelper.sleep(5 * 1000);
 	}
 
 }
