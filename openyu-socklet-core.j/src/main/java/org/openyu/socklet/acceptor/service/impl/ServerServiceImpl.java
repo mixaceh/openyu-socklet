@@ -737,7 +737,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 		// HANDSHAKE_RELATION
 		// ---------------------------------------------
 		else if (CategoryType.HANDSHAKE_RELATION.equals(message.getCategoryType())) {
-			// slave2:0:localhost:3000
+			// slave2:0:127.0.0.1:3300
 			String sender = message.getSender();
 			String[] buff = sender.split(":");
 			if (buff.length == 4) {
@@ -747,7 +747,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 				GenericRelation passiveRelation = passiveRelations.get(relationId);
 				if (passiveRelation == null) {
 					passiveRelation = new GenericRelationImpl(relationId);
-					passiveRelations.put(passiveRelation.getId(), passiveRelation);
+					passiveRelations.put(relationId, passiveRelation);
 				}
 
 				// 檢查是否重覆連線,同sender,但來自於不同連線

@@ -6,7 +6,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openyu.commons.bean.supporter.BaseBeanSupporter;
+import org.openyu.commons.lang.ByteHelper;
 import org.openyu.socklet.connector.vo.GenericConnector;
 import org.openyu.socklet.connector.vo.GenericReceiver;
 import org.openyu.socklet.connector.vo.GenericRelation;
@@ -14,13 +16,11 @@ import org.openyu.socklet.message.vo.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class GenericRelationImpl extends BaseBeanSupporter implements
-		GenericRelation {
+public class GenericRelationImpl extends BaseBeanSupporter implements GenericRelation {
 
 	private static final long serialVersionUID = 4579039593477933835L;
 
-	private static transient final Logger LOGGER = LoggerFactory
-			.getLogger(GenericRelationImpl.class);
+	private static transient final Logger LOGGER = LoggerFactory.getLogger(GenericRelationImpl.class);
 
 	private String id;
 
@@ -50,7 +50,7 @@ public class GenericRelationImpl extends BaseBeanSupporter implements
 	 * 
 	 * slave1 連 master
 	 * 
-	 * id=slave1
+	 * id=master
 	 * 
 	 * @return
 	 */
@@ -159,4 +159,10 @@ public class GenericRelationImpl extends BaseBeanSupporter implements
 		return new HashCodeBuilder().append(id).toHashCode();
 	}
 
+	public String toString() {
+		ToStringBuilder builder = new ToStringBuilder(this);
+		builder.appendSuper(super.toString());
+		builder.append("id", id);
+		return builder.toString();
+	}
 }

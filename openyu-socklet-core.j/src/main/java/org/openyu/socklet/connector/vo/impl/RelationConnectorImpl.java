@@ -3,7 +3,6 @@ package org.openyu.socklet.connector.vo.impl;
 import java.nio.channels.SelectionKey;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.openyu.commons.lang.SystemHelper;
 import org.openyu.socklet.connector.vo.ConnectorType;
 import org.openyu.socklet.connector.vo.RelationConnector;
 import org.openyu.socklet.connector.vo.supporter.SocketConnectorSupporter;

@@ -16,7 +16,7 @@ public interface GenericRelation extends BaseBean
 	 * 
 	 * slave1 連 master
 	 * 
-	 * id=slave1
+	 * id=master
 	 * 
 	 * @return
 	 */

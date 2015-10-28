@@ -142,11 +142,11 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	private List<String> clientServers = new LinkedList<String>();
 
 	// 內部server,供內部server之間的連線
-	// localhost:3000,sockletServer
+	// 127.0.0.1:3300,sockletServer
 	private Map<String, ServerService> relationServices = new ConcurrentHashMap<String, ServerService>();
 
 	// 外部server,供client之間的連線
-	// localhost:3100,sockletServer
+	// 127.0.0.1:10300,sockletServer
 	private Map<String, ServerService> clientServices = new ConcurrentHashMap<String, ServerService>();
 
 	// 來自於內部其他server的client連線
@@ -745,7 +745,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	 */
 	protected void startRelationServers() throws Exception {
 		// ------------------------------------------------
-		// relationServers, localhost:2000, localhost:2001
+		// relationServers, 127.0.0.1:3300, 127.0.0.1:3301
 		// ------------------------------------------------
 		// 內部不用加密
 		for (String ipPort : relationServers) {
@@ -780,7 +780,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 				serverService.start();
 			} else {
 				LOGGER.error(
-						"[" + id + "]" + " Wrong [" + ipPort + "] format, ex: [localhost:2000] or [127.0.0.1:2000]");
+						"[" + id + "]" + " Wrong [" + ipPort + "] format, ex: [127.0.0.1:3300] or [localhost:3300]");
 			}
 		}
 	}
@@ -790,7 +790,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	 */
 	protected void startClientServers() throws Exception {
 		// ------------------------------------------------
-		// clientServers, localhost:2100
+		// clientServers, 127.0.0.1:10300, 127.0.0.1:10301
 		// ------------------------------------------------
 		if (clientServers == null || clientServers.isEmpty()) {
 			LOGGER.warn("[" + id + "]" + " ClientServer is null, not been started");
@@ -862,7 +862,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 					buildRemoteRelation(buff[0], buff[1], NumberHelper.toInt(buff[2]));
 				} else {
 					LOGGER.error("[" + id + "]" + " Wrong [" + relation
-							+ "] format, ex: [slave1] or [slave1:127.0.0.2:3110]");
+							+ "] format, ex: [slave1] or [slave1:127.0.0.2:3300]");
 				}
 			}
 			//
@@ -872,31 +872,31 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	/**
 	 * 本地關係, slave1
 	 * 
-	 * @param acceptorId
+	 * @param destAcceptorId
 	 */
-	protected void buildLocalRelation(String acceptorId) {
+	protected void buildLocalRelation(String destAcceptorId) {
 		// 關連的acceptor
-		AcceptorService acceptor = getRelationAcceptor(acceptorId);
+		AcceptorService acceptor = getAcceptorService(destAcceptorId);
 		if (acceptor == null) {
-			LOGGER.error("LocalRelation [" + acceptorId + "] is not exist");
+			LOGGER.error("LocalRelation [" + destAcceptorId + "] is not exist");
 			return;
 		}
 		//
 		// 訊息接收者
 		InitiativeReceiver initiativeReceiver = new InitiativeReceiver();
 		// 主動關係連線
-		GenericRelation initiativeRelation = initiativeRelations.get(acceptorId);
+		GenericRelation initiativeRelation = initiativeRelations.get(destAcceptorId);
 		if (initiativeRelation == null) {
-			initiativeRelation = new GenericRelationImpl(acceptorId);
-			initiativeRelations.put(initiativeRelation.getId(), initiativeRelation);
+			initiativeRelation = new GenericRelationImpl(destAcceptorId);
+			initiativeRelations.put(destAcceptorId, initiativeRelation);
 		}
 
-		// localhost:3110
+		// 127.0.0.1:3300
 		for (String ipPort : acceptor.getRelationServers()) {
 			if (StringHelper.isEmpty(ipPort)) {
 				continue;
 			}
-			//
+			// slave2->slave1
 			String[] buff = ipPort.split(":");
 			// [0]=ip
 			// [1]=port
@@ -904,57 +904,58 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 				for (int i = 0; i < RELATION_CLIENT_COUNT; i++) {
 					String ip = buff[0];
 					int port = NumberHelper.toInt(buff[1]);
-					// slave2:0:localhost:3000
-					String relationClientId = id + ":" + i + ":" + ipPort;
-					// System.out.println(relationClientId);
+					// slave2:0:127.0.0.1:3300, 來源id:index:目的ip:port
+					String relationClientId = id + ":" + i + ":" + ip + ":" + port;
 					boolean contains = initiativeRelation.getClients().containsKey(relationClientId);
+					// System.out.println(relationClientId);
 					if (!contains) {
-						// slave2:0:localhost:3000
+						// slave2:0:127.0.0.1:3300
 						RelationConnector relationConnector = new RelationConnectorImpl(relationClientId,
 								moduleTypeClass, messageTypeClass, protocolService, ip, port);
-						// relationClient.setThreadService(threadService);
 						relationConnector.setReceiver(initiativeReceiver);
 						relationConnector.setRetryNumber(retryNumber);
 						relationConnector.setRetryPauseMills(retryPauseMills);
 						//
-						initiativeRelation.getClients().put(relationConnector.getId(), relationConnector);
+						initiativeRelation.getClients().put(relationClientId, relationConnector);
 					}
 				}
 			}
 		}
+		//
+		//System.out.println(id + ", " + initiativeRelations);
 	}
 
 	/**
 	 * 遠端關係, slave1:192.168.9.28:3110
 	 * 
-	 * @param acceptorId
+	 * @param destAcceptorId
 	 * @param ip
 	 * @param port
 	 */
-	protected void buildRemoteRelation(String acceptorId, String ip, int port) {
+	protected void buildRemoteRelation(String destAcceptorId, String ip, int port) {
 		// 關連的acceptor
-		AcceptorService acceptor = getRelationAcceptor(acceptorId);
+		AcceptorService acceptor = getAcceptorService(destAcceptorId);
 		if (acceptor == null) {
-			LOGGER.error("RemoteRelation[" + acceptorId + "] is not exist");
+			LOGGER.error("RemoteRelation[" + destAcceptorId + "] is not exist");
 			return;
 		}
 		//
 		// 訊息接收者
 		InitiativeReceiver initiativeReceiver = new InitiativeReceiver();
 		// 主動關係連線
-		GenericRelation initiativeRelation = initiativeRelations.get(acceptorId);
+		GenericRelation initiativeRelation = initiativeRelations.get(destAcceptorId);
 		if (initiativeRelation == null) {
-			initiativeRelation = new GenericRelationImpl(acceptorId);
-			initiativeRelations.put(initiativeRelation.getId(), initiativeRelation);
+			initiativeRelation = new GenericRelationImpl(destAcceptorId);
+			initiativeRelations.put(destAcceptorId, initiativeRelation);
 		}
 		//
 		for (int i = 0; i < RELATION_CLIENT_COUNT; i++) {
-			// slave2:0:localhost:3000
+			// slave2:0:127.0.0.1:3300, 來源id:index:目的ip:port
 			String relationClientId = id + ":" + i + ":" + ip + ":" + port;
 			// System.out.println(relationClientId);
 			boolean contains = initiativeRelation.getClients().containsKey(relationClientId);
 			if (!contains) {
-				// slave2:0:localhost:3000
+				// slave2:0:127.0.0.1:3300
 				RelationConnector relationConnector = new RelationConnectorImpl(relationClientId, moduleTypeClass,
 						messageTypeClass, protocolService, ip, port);
 				relationConnector.setReceiver(initiativeReceiver);
@@ -966,7 +967,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		}
 	}
 
-	protected AcceptorService getRelationAcceptor(String acceptorId) {
+	protected AcceptorService getAcceptorService(String acceptorId) {
 		AcceptorService result = null;
 		// 找AcceptorService
 		if (acceptorId != null) {
@@ -1128,8 +1129,21 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 				clusterChannel.connect(cluster);
 				clusterIds.add(id);
 				//
-				LOGGER.info("ClusterChannel Had [" + clusterChannel.getView().size() + "] members, acceptors" + clusterIds + ", "
-						+ clusterChannel.getView());
+				StringBuilder buff = new StringBuilder();
+				buff.append("ClusterChannel Had [");
+				buff.append(clusterChannel.getView().size());
+				buff.append("] members, [");
+				int size = clusterIds.size();
+				for (int i = 0; i < size; i++) {
+					buff.append(clusterIds.get(i));
+					if (i < size - 1) {
+						buff.append(", ");
+					}
+				}
+				buff.append("], ");
+				buff.append(clusterChannel.getView());
+				//
+				LOGGER.info(buff.toString());
 			}
 		} catch (Exception ex) {
 			LOGGER.error("[" + id + "] ClusterChannel Started fail", ex);
