@@ -20,5 +20,8 @@
 	
 	<!-- aceptor -->
 	<import resource="classpath:applicationContext-acceptor.xml" />
+
+	<!-- service -->
+	<import resource="classpath:applicationContext-service.xml" />
 	
 </beans>

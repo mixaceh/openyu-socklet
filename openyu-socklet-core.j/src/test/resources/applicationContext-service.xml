@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="
+             http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+             http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
+             ">
+             
+	<!-- account -->
+	<bean
+		id="accountService"
+		class="org.openyu.socklet.account.service.impl.AccountServiceImpl"
+		parent="baseServiceSupporter">
+	</bean>
+
+	<bean
+		id="accountSocklet"
+		class="org.openyu.socklet.account.net.socklet.AccountSocklet"
+		parent="sockletServiceSupporter">
+		<property
+			name="id"
+			value="ACCOUNT" />
+		<property name="acceptors">
+			<set>
+				<value>ACCOUNT</value>
+			</set>
+		</property>
+		<property name="initParameters">
+			<props>
+				<prop key="aaa">aaa</prop>
+				<prop key="bbb">bbb</prop>
+				<prop key="ccc">ccc</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- login -->
+	<bean
+		id="loginService"
+		class="org.openyu.socklet.login.service.impl.LoginServiceImpl"
+		parent="baseServiceSupporter">
+	</bean>
+
+	<bean
+		id="loginSocklet"
+		class="org.openyu.socklet.login.net.socklet.LoginSocklet"
+		parent="sockletServiceSupporter">
+		<property
+			name="id"
+			value="LOGIN" />
+		<property name="acceptors">
+			<set>
+				<value>LOGIN</value>
+			</set>
+		</property>
+		<property name="initParameters">
+			<props>
+				<prop key="aaa">aaa</prop>
+				<prop key="bbb">bbb</prop>
+				<prop key="ccc">ccc</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- core -->
+	<bean
+		id="coreService"
+		class="org.openyu.socklet.core.service.impl.CoreServiceImpl"
+		parent="baseServiceSupporter">
+	</bean>
+
+	<bean
+		id="coreSocklet"
+		class="org.openyu.socklet.core.net.socklet.CoreSocklet"
+		parent="sockletServiceSupporter">
+		<property
+			name="id"
+			value="CORE" />
+		<property name="acceptors">
+			<set>
+				<value>SLAVE1</value>
+				<value>SLAVE2</value>
+				<value>SLAVE3</value>
+			</set>
+		</property>
+		<property name="initParameters">
+			<props>
+				<prop key="aaa">aaa</prop>
+				<prop key="bbb">bbb</prop>
+				<prop key="ccc">ccc</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean
+		id="coreRelationAdapter"
+		class="org.openyu.socklet.core.service.adapter.CoreRelationAdapter"
+		parent="systemRelationAdapter">
+		<property name="acceptors">
+			<set>
+				<value>MASTER</value>
+				<value>SLAVE1</value>
+			</set>
+		</property>
+	</bean>
+
+	<bean
+		id="coreSessionAdapter"
+		class="org.openyu.socklet.core.service.adapter.CoreSessionAdapter"
+		parent="slaveSessionAdapter">
+		<property name="acceptors">
+			<set>
+				<value>MASTER</value>
+				<value>SLAVE1</value>
+			</set>
+		</property>
+	</bean>
+	
+	<!-- chat -->
+	<bean
+		id="chatService"
+		class="org.openyu.socklet.chat.service.impl.ChatServiceImpl"
+		parent="baseServiceSupporter">
+	</bean>
+
+	<bean
+		id="chatSocklet"
+		class="org.openyu.socklet.chat.net.socklet.ChatSocklet"
+		parent="sockletServiceSupporter">
+		<property
+			name="id"
+			value="CHAT" />
+		<property name="acceptors">
+			<set>
+				<value>SLAVE1</value>
+				<value>SLAVE2</value>
+				<value>SLAVE3</value>
+			</set>
+		</property>
+		<property name="initParameters">
+			<props>
+				<prop key="aaa">aaa</prop>
+				<prop key="bbb">bbb</prop>
+				<prop key="ccc">ccc</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- fourSymbol -->
+	<bean
+		id="fourSymbolService"
+		class="org.openyu.socklet.fourSymbol.service.impl.FourSymbolServiceImpl"
+		parent="baseServiceSupporter">
+	</bean>
+
+	<bean
+		id="fourSymbolSocklet"
+		class="org.openyu.socklet.fourSymbol.net.socklet.FourSymbolSocklet"
+		parent="sockletServiceSupporter">
+		<property
+			name="id"
+			value="FOUR_SYMBOL" />
+		<property name="acceptors">
+			<set>
+				<value>SLAVE1</value>
+				<value>SLAVE2</value>
+				<value>SLAVE3</value>
+				<!-- 02 -->
+				<value>SLAVE1_02</value>
+				<value>SLAVE2_02</value>
+				<value>SLAVE3_02</value>
+			</set>
+		</property>
+		<property name="initParameters">
+			<props>
+				<prop key="aaa">aaa</prop>
+				<prop key="bbb">bbb</prop>
+				<prop key="ccc">ccc</prop>
+			</props>
+		</property>
+	</bean>
+</beans>

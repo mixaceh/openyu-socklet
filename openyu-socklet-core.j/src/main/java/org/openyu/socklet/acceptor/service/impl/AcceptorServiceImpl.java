@@ -1027,11 +1027,11 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 			String relationId = initiativeRelation.getId();
 			int clientSize = initiativeRelation.getClients().size();
 			for (GenericConnector genericConnector : initiativeRelation.getClients().values()) {
-				// 當未連上時,就連看看
+				// 當沒有連上時,嘗試重連
 				// [login] account, login:0:127.0.0.1:3001, true
-				// LOGGER.info("[" + id + "] " + relationId + ", " +
+				// LOGGER.info("[" + id + "] connected " + relationId + ", " +
 				// genericConnector.getId() + ", "
-				//		+ genericConnector.isStarted());
+				// + genericConnector.isStarted());
 				if (genericConnector.isStarted()
 						// 0=無限
 						|| (relationRetryNumber != 0
@@ -1134,7 +1134,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 				StringBuilder buff = new StringBuilder();
 				buff.append("ClusterChannel Had [");
 				buff.append(clusterChannel.getView().size());
-				buff.append("] members, [");
+				buff.append("] members, acceptor[");
 				int size = clusterIds.size();
 				for (int i = 0; i < size; i++) {
 					buff.append(clusterIds.get(i));
@@ -1151,77 +1151,6 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 			LOGGER.error("[" + id + "] ClusterChannel Started fail", ex);
 		}
 	}
-
-	// ------------------------------------------------
-	// shutdown step by step
-	// ------------------------------------------------
-	// 3.context
-	// 2.externals
-	// 1.internals
-	// 4.cluster
-	// 5.connect
-	// public void shutdown() {
-	// try {
-	// if (started) {
-	// // acceptorConnectors
-	// for (AcceptorConnector acceptorConnector : acceptorConnectors.values()) {
-	// ServerService serverService =
-	// clientServices.get(acceptorConnector.getServer());
-	// serverService.close(acceptorConnector);
-	// }
-	//
-	// // passiveRelations
-	// for (GenericRelation passiveRelation : passiveRelations.values()) {
-	// for (GenericConnector relationClient :
-	// passiveRelation.getClients().values()) {
-	// if (relationClient instanceof AcceptorConnector) {
-	// AcceptorConnector acceptorConnector = (AcceptorConnector) relationClient;
-	// ServerService serverService =
-	// relationServices.get(acceptorConnector.getServer());
-	// serverService.close(relationClient);
-	// }
-	// }
-	// }
-	//
-	// // clientServerServices
-	// for (Map.Entry<String, ServerService> entry : clientServices.entrySet())
-	// {
-	// String key = entry.getKey();
-	// ServerService serverService = (ServerService) entry.getValue();
-	// serverService.shutdown();
-	// clientServices.remove(key);
-	// }
-	//
-	// // relationServerServices
-	// for (Map.Entry<String, ServerService> entry :
-	// relationServices.entrySet()) {
-	// ServerService serverService = entry.getValue();
-	// serverService.shutdown();
-	// relationServices.remove(entry.getKey());
-	// }
-	//
-	// // cluster
-	// try {
-	// if (clusterChannel != null && clusterChannel.isConnected()) {
-	// clusterChannel.close();
-	// clusterChannel = null;
-	// }
-	// } catch (Exception ex) {
-	// ex.printStackTrace();
-	// }
-	//
-	// // context
-	// contextService.shutdown();
-	//
-	// started = false;
-	// LOGGER.info("[" + id + "] AcceptorService Had been shutdown");
-	// }
-	// } catch (Exception ex) {
-	// ex.printStackTrace();
-	// started = false;
-	// LOGGER.error("[" + id + "] AcceptorService Shutdown fail");
-	// }
-	// }
 
 	/**
 	 * 加入訊息到queue

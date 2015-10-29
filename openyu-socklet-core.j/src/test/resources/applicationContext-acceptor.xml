@@ -112,16 +112,16 @@
 	<util:set
 		id="slaveSessionAdapterAcceptors"
 		set-class="java.util.LinkedHashSet">
-		<value>slave1</value>
-		<value>slave2</value>
-		<value>slave3</value>
-		<value>slave4</value>
-		<value>slave5</value>
-		<value>slave6</value>
-		<value>slave7</value>
-		<value>slave8</value>
-		<value>slave9</value>
-		<value>slave10</value>
+		<value>SLAVE1</value>
+		<value>SLAVE2</value>
+		<value>SLAVE3</value>
+		<value>SLAVE4</value>
+		<value>SLAVE5</value>
+		<value>SLAVE6</value>
+		<value>SLAVE7</value>
+		<value>SLAVE8</value>
+		<value>SLAVE9</value>
+		<value>SLAVE10</value>
 	</util:set>	
 
 	<!-- system, slave -->
@@ -135,26 +135,26 @@
 	<util:set
 		id="systemSlaveSessionAdapterAcceptors"
 		set-class="java.util.LinkedHashSet">
-		<value>system</value>
-		<value>slave1</value>
-		<value>slave2</value>
-		<value>slave3</value>
-		<value>slave4</value>
-		<value>slave5</value>
-		<value>slave6</value>
-		<value>slave7</value>
-		<value>slave8</value>
-		<value>slave9</value>
-		<value>slave10</value>
+		<value>SYSTEM</value>
+		<value>SLAVE1</value>
+		<value>SLAVE2</value>
+		<value>SLAVE3</value>
+		<value>SLAVE4</value>
+		<value>SLAVE5</value>
+		<value>SLAVE6</value>
+		<value>SLAVE7</value>
+		<value>SLAVE8</value>
+		<value>SLAVE9</value>
+		<value>SLAVE10</value>
 	</util:set>
 
-	<!-- account -->
+	<!-- ACCOUNT -->
 	<bean
 		id="accountAcceptor"
 		parent="acceptorSupporter">
 		<property
 			name="id"
-			value="account" />
+			value="ACCOUNT" />
 		<property
 			name="instanceId"
 			value="01" />
@@ -178,7 +178,7 @@
 			value="1000" />
 		<property
 			name="cluster"
-			value="socklet" />
+			value="SOCKLET-CORE" />
 		<property name="relations">
 			<list>
 			</list>
@@ -196,13 +196,13 @@
 		</property>
 	</bean>
 
-	<!-- login -->
+	<!-- LOGIN -->
 	<bean
 		id="loginAcceptor"
 		parent="acceptorSupporter">
 		<property
 			name="id"
-			value="login" />
+			value="LOGIN" />
 		<property
 			name="instanceId"
 			value="01" />
@@ -226,10 +226,10 @@
 			value="1000" />
 		<property
 			name="cluster"
-			value="socklet" />
+			value="SOCKLET-CORE" />
 		<property name="relations">
 			<list>
-				<value>account</value>
+				<value>ACCOUNT</value>
 			</list>
 		</property>
 		<property
@@ -245,13 +245,13 @@
 		</property>
 	</bean>
 	
-	<!-- master -->
+	<!-- MASTER -->
 	<bean
 		id="masterAcceptor"
 		parent="acceptorSupporter">
 		<property
 			name="id"
-			value="master" />
+			value="MASTER" />
 		<property
 			name="instanceId"
 			value="01" />
@@ -275,11 +275,323 @@
 			value="1000" />
 		<property
 			name="cluster"
-			value="socklet" />
+			value="SOCKLET-CORE" />
 		<property name="relations">
 			<list>
-				<value>account</value>
-				<value>login</value>
+				<value>ACCOUNT</value>
+				<value>LOGIN</value>
+			</list>
+		</property>
+		<property
+			name="relationRetryNumber"
+			value="1" />
+		<property
+			name="relationRetryPauseMills"
+			value="1000" />
+		<property name="initParameters">
+			<props>
+				<prop key="debug">7</prop>
+			</props>
+		</property>
+	</bean>
+	
+	<!-- SLAVE1 -->
+	<bean
+		id="slave1Acceptor"
+		parent="acceptorSupporter">
+		<property
+			name="id"
+			value="SLAVE1" />
+		<property
+			name="instanceId"
+			value="01" />
+		<property
+			name="outputId"
+			value="01" />
+		<property name="relationServers">
+			<list>
+				<value>127.0.0.1:3300</value>
+				<value>127.0.0.1:3301</value>
+			</list>
+		</property>
+		<property name="clientServers">
+			<list>
+				<value>127.0.0.1:10300</value>
+				<value>127.0.0.1:10301</value>
+			</list>
+		</property>
+		<property
+			name="maxClient"
+			value="1000" />
+		<property
+			name="cluster"
+			value="SOCKLET-CORE" />
+		<property name="relations">
+			<list>
+				<value>ACCOUNT</value>
+				<value>LOGIN</value>
+				<value>MASTER</value>
+			</list>
+		</property>
+		<property
+			name="relationRetryNumber"
+			value="1" />
+		<property
+			name="relationRetryPauseMills"
+			value="1000" />
+		<property name="initParameters">
+			<props>
+				<prop key="debug">7</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- SLAVE1_02 -->
+	<bean
+		id="slave1_02Acceptor"
+		parent="acceptorSupporter">
+		<property
+			name="id"
+			value="SLAVE1_02" />
+		<property
+			name="instanceId"
+			value="02" />
+		<property
+			name="outputId"
+			value="02" />
+		<property name="relationServers">
+			<list>
+				<value>127.0.0.1:3310</value>
+				<value>127.0.0.1:3311</value>
+			</list>
+		</property>
+		<property name="clientServers">
+			<list>
+				<value>127.0.0.1:10310</value>
+				<value>127.0.0.1:10311</value>
+			</list>
+		</property>
+		<property
+			name="maxClient"
+			value="1000" />
+		<property
+			name="cluster"
+			value="SOCKLET-CORE" />
+		<property name="relations">
+			<list>
+				<value>ACCOUNT</value>
+				<value>LOGIN</value>
+				<value>MASTER</value>
+			</list>
+		</property>
+		<property
+			name="relationRetryNumber"
+			value="1" />
+		<property
+			name="relationRetryPauseMills"
+			value="1000" />
+		<property name="initParameters">
+			<props>
+				<prop key="debug">7</prop>
+			</props>
+		</property>
+	</bean>
+	
+	<!-- SLAVE2 -->
+	<bean
+		id="slave2Acceptor"
+		parent="acceptorSupporter">
+		<property
+			name="id"
+			value="SLAVE2" />
+		<property
+			name="instanceId"
+			value="01" />
+		<property
+			name="outputId"
+			value="01" />
+		<property name="relationServers">
+			<list>
+				<value>127.0.0.1:3400</value>
+				<value>127.0.0.1:3401</value>
+			</list>
+		</property>
+		<property name="clientServers">
+			<list>
+				<value>127.0.0.1:10400</value>
+				<value>127.0.0.1:10401</value>
+			</list>
+		</property>
+		<property
+			name="maxClient"
+			value="1000" />
+		<property
+			name="cluster"
+			value="SOCKLET-CORE" />
+		<property name="relations">
+			<list>
+				<value>ACCOUNT</value>
+				<value>LOGIN</value>
+				<value>MASTER</value>
+				<value>SLAVE1</value>
+			</list>
+		</property>
+		<property
+			name="relationRetryNumber"
+			value="1" />
+		<property
+			name="relationRetryPauseMills"
+			value="1000" />
+		<property name="initParameters">
+			<props>
+				<prop key="debug">7</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- SLAVE2_02 -->
+	<bean
+		id="slave2_02Acceptor"
+		parent="acceptorSupporter">
+		<property
+			name="id"
+			value="SLAVE2_02" />
+		<property
+			name="instanceId"
+			value="02" />
+		<property
+			name="outputId"
+			value="02" />
+		<property name="relationServers">
+			<list>
+				<value>127.0.0.1:3410</value>
+				<value>127.0.0.1:3411</value>
+			</list>
+		</property>
+		<property name="clientServers">
+			<list>
+				<value>127.0.0.1:10410</value>
+				<value>127.0.0.1:10411</value>
+			</list>
+		</property>
+		<property
+			name="maxClient"
+			value="1000" />
+		<property
+			name="cluster"
+			value="SOCKLET-CORE" />
+		<property name="relations">
+			<list>
+				<value>ACCOUNT</value>
+				<value>LOGIN</value>
+				<value>MASTER</value>
+				<value>SLAVE1_02</value>
+			</list>
+		</property>
+		<property
+			name="relationRetryNumber"
+			value="1" />
+		<property
+			name="relationRetryPauseMills"
+			value="1000" />
+		<property name="initParameters">
+			<props>
+				<prop key="debug">7</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- SLAVE3 -->
+	<bean
+		id="slave3Acceptor"
+		parent="acceptorSupporter">
+		<property
+			name="id"
+			value="SLAVE3" />
+		<property
+			name="instanceId"
+			value="01" />
+		<property
+			name="outputId"
+			value="01" />
+		<property name="relationServers">
+			<list>
+				<value>127.0.0.1:3500</value>
+				<value>127.0.0.1:3501</value>
+			</list>
+		</property>
+		<property name="clientServers">
+			<list>
+				<value>127.0.0.1:10500</value>
+				<value>127.0.0.1:10501</value>
+			</list>
+		</property>
+		<property
+			name="maxClient"
+			value="1000" />
+		<property
+			name="cluster"
+			value="SOCKLET-CORE" />
+		<property name="relations">
+			<list>
+				<value>ACCOUNT</value>
+				<value>LOGIN</value>
+				<value>MASTER</value>
+				<value>SLAVE1</value>
+				<value>SLAVE2</value>
+			</list>
+		</property>
+		<property
+			name="relationRetryNumber"
+			value="1" />
+		<property
+			name="relationRetryPauseMills"
+			value="1000" />
+		<property name="initParameters">
+			<props>
+				<prop key="debug">7</prop>
+			</props>
+		</property>
+	</bean>
+
+	<!-- SLAVE3_02 -->
+	<bean
+		id="slave3_02Acceptor"
+		parent="acceptorSupporter">
+		<property
+			name="id"
+			value="SLAVE3_02" />
+		<property
+			name="instanceId"
+			value="02" />
+		<property
+			name="outputId"
+			value="02" />
+		<property name="relationServers">
+			<list>
+				<value>127.0.0.1:3510</value>
+				<value>127.0.0.1:3511</value>
+			</list>
+		</property>
+		<property name="clientServers">
+			<list>
+				<value>127.0.0.1:10510</value>
+				<value>127.0.0.1:10511</value>
+			</list>
+		</property>
+		<property
+			name="maxClient"
+			value="1000" />
+		<property
+			name="cluster"
+			value="SOCKLET-CORE" />
+		<property name="relations">
+			<list>
+				<value>ACCOUNT</value>
+				<value>LOGIN</value>
+				<value>MASTER</value>
+				<value>SLAVE1_02</value>
+				<value>SLAVE2_02</value>
 			</list>
 		</property>
 		<property

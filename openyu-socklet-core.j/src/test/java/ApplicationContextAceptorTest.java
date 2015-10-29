@@ -6,7 +6,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.openyu.commons.junit.supporter.BaseTestSupporter;
 import org.openyu.commons.thread.ThreadHelper;
 import org.openyu.socklet.acceptor.service.AcceptorService;
-import org.openyu.socklet.socklet.service.SockletService;
 
 public class ApplicationContextAceptorTest extends BaseTestSupporter {
 
@@ -52,7 +51,7 @@ public class ApplicationContextAceptorTest extends BaseTestSupporter {
 		System.out.println(bean);
 		assertNotNull(bean);
 		//
-		ThreadHelper.sleep(5 * 1000);
+		ThreadHelper.sleep(10 * 1000);
 	}
 
 	@Test
@@ -65,9 +64,11 @@ public class ApplicationContextAceptorTest extends BaseTestSupporter {
 	}
 
 	@Test
-	public void fourSymbolSocklet() {
-		SockletService bean = (SockletService) applicationContext.getBean("fourSymbolSocklet");
+	public void slave3Acceptor() {
+		AcceptorService bean = (AcceptorService) applicationContext.getBean("slave3Acceptor");
 		System.out.println(bean);
 		assertNotNull(bean);
+		//
+		ThreadHelper.sleep(5 * 1000);
 	}
 }
