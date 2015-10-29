@@ -74,7 +74,7 @@
 		parent="baseListenerSupporter"
 		abstract="true" />	
 		
-				<!-- system -->
+	<!-- system -->
 	<bean
 		id="systemContextAdapter"
 		class="org.openyu.socklet.context.service.event.adapter.ContextAdapter"
@@ -184,12 +184,6 @@
 			</list>
 		</property>
 		<property
-			name="retryNumber"
-			value="1" />
-		<property
-			name="retryPauseMills"
-			value="1000" />
-		<property
 			name="relationRetryNumber"
 			value="1" />
 		<property
@@ -238,12 +232,6 @@
 				<value>account</value>
 			</list>
 		</property>
-		<property
-			name="retryNumber"
-			value="1" />
-		<property
-			name="retryPauseMills"
-			value="1000" />
 		<property
 			name="relationRetryNumber"
 			value="1" />
@@ -294,12 +282,6 @@
 				<value>login</value>
 			</list>
 		</property>
-		<property
-			name="retryNumber"
-			value="1" />
-		<property
-			name="retryPauseMills"
-			value="1000" />
 		<property
 			name="relationRetryNumber"
 			value="1" />

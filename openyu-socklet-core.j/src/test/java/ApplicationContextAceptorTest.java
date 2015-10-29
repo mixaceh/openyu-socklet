@@ -25,7 +25,7 @@ public class ApplicationContextAceptorTest extends BaseTestSupporter {
 		System.out.println(bean);
 		assertNotNull(bean);
 		//
-		ThreadHelper.sleep(5 * 1000);
+		ThreadHelper.sleep(60 * 1000);
 	}
 
 	@Test
@@ -43,7 +43,7 @@ public class ApplicationContextAceptorTest extends BaseTestSupporter {
 		System.out.println(bean);
 		assertNotNull(bean);
 		//
-		ThreadHelper.sleep(10 * 1000);
+		ThreadHelper.sleep(5 * 1000);
 	}
 
 	@Test

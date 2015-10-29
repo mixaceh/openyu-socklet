@@ -343,15 +343,15 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	 */
 	private String outputId;
 
-	/**
-	 * 重試次數, 0=無限
-	 */
-	private int retryNumber = NioHelper.DEFAULT_RETRY_NUMBER;
-
-	/**
-	 * 重試暫停毫秒
-	 */
-	private long retryPauseMills = NioHelper.DEFAULT_RETRY_PAUSE_MILLS;
+	// /**
+	// * 重試次數, 0=無限
+	// */
+	// private int retryNumber = NioHelper.DEFAULT_RETRY_NUMBER;
+	//
+	// /**
+	// * 重試暫停毫秒
+	// */
+	// private long retryPauseMills = NioHelper.DEFAULT_RETRY_PAUSE_MILLS;
 
 	/**
 	 * relation重試次數, 0=無限
@@ -547,21 +547,21 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		this.outputId = outputId;
 	}
 
-	public int getRetryNumber() {
-		return retryNumber;
-	}
-
-	public void setRetryNumber(int retryNumber) {
-		this.retryNumber = retryNumber;
-	}
-
-	public long getRetryPauseMills() {
-		return retryPauseMills;
-	}
-
-	public void setRetryPauseMills(long retryPauseMills) {
-		this.retryPauseMills = retryPauseMills;
-	}
+	// public int getRetryNumber() {
+	// return retryNumber;
+	// }
+	//
+	// public void setRetryNumber(int retryNumber) {
+	// this.retryNumber = retryNumber;
+	// }
+	//
+	// public long getRetryPauseMills() {
+	// return retryPauseMills;
+	// }
+	//
+	// public void setRetryPauseMills(long retryPauseMills) {
+	// this.retryPauseMills = retryPauseMills;
+	// }
 
 	public int getRelationRetryNumber() {
 		return relationRetryNumber;
@@ -913,8 +913,8 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 						RelationConnector relationConnector = new RelationConnectorImpl(relationClientId,
 								moduleTypeClass, messageTypeClass, protocolService, ip, port);
 						relationConnector.setReceiver(initiativeReceiver);
-						relationConnector.setRetryNumber(retryNumber);
-						relationConnector.setRetryPauseMills(retryPauseMills);
+						relationConnector.setRetryNumber(1);
+						relationConnector.setRetryPauseMills(1 * 1000L);
 						//
 						initiativeRelation.getClients().put(relationClientId, relationConnector);
 					}
@@ -922,7 +922,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 			}
 		}
 		//
-		//System.out.println(id + ", " + initiativeRelations);
+		// System.out.println(id + ", " + initiativeRelations);
 	}
 
 	/**
@@ -959,10 +959,10 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 				RelationConnector relationConnector = new RelationConnectorImpl(relationClientId, moduleTypeClass,
 						messageTypeClass, protocolService, ip, port);
 				relationConnector.setReceiver(initiativeReceiver);
-				relationConnector.setRetryNumber(retryNumber);
-				relationConnector.setRetryPauseMills(retryPauseMills);
+				relationConnector.setRetryNumber(1);
+				relationConnector.setRetryPauseMills(1 * 1000L);
 				//
-				initiativeRelation.getClients().put(relationConnector.getId(), relationConnector);
+				initiativeRelation.getClients().put(relationClientId, relationConnector);
 			}
 		}
 	}
@@ -1028,8 +1028,10 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 			int clientSize = initiativeRelation.getClients().size();
 			for (GenericConnector genericConnector : initiativeRelation.getClients().values()) {
 				// 當未連上時,就連看看
-				// System.out.println(relationId + ", " +
-				// genericClient.isStarted());
+				// [login] account, login:0:127.0.0.1:3001, true
+				// LOGGER.info("[" + id + "] " + relationId + ", " +
+				// genericConnector.getId() + ", "
+				//		+ genericConnector.isStarted());
 				if (genericConnector.isStarted()
 						// 0=無限
 						|| (relationRetryNumber != 0
@@ -2035,8 +2037,8 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		builder.append("relations", relations);
 		builder.append("initParameters", initParameters);
 		//
-		builder.append("retryNumber", retryNumber);
-		builder.append("retryPauseMills", retryPauseMills);
+		builder.append("relationRetryNumber", relationRetryNumber);
+		builder.append("relationRetryPauseMills", relationRetryPauseMills);
 		return builder.toString();
 	}
 

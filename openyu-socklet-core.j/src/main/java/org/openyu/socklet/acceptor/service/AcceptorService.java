@@ -125,23 +125,23 @@ public interface AcceptorService extends BaseService {
 
 	void setOutputId(String outputId);
 
-	/**
-	 * 重試次數, 0=無限
-	 *
-	 * @return
-	 */
-	int getRetryNumber();
-
-	void setRetryNumber(int retryNumber);
-
-	/**
-	 * 重試暫停毫秒
-	 *
-	 * @return
-	 */
-	long getRetryPauseMills();
-
-	void setRetryPauseMills(long retryPauseMills);
+//	/**
+//	 * 重試次數, 0=無限
+//	 *
+//	 * @return
+//	 */
+//	int getRetryNumber();
+//
+//	void setRetryNumber(int retryNumber);
+//
+//	/**
+//	 * 重試暫停毫秒
+//	 *
+//	 * @return
+//	 */
+//	long getRetryPauseMills();
+//
+//	void setRetryPauseMills(long retryPauseMills);
 
 	/**
 	 * relation重試次數, 0=無限
