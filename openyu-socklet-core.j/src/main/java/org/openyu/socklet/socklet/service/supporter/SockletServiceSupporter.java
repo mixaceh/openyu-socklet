@@ -67,6 +67,10 @@ public abstract class SockletServiceSupporter extends BaseServiceSupporter imple
 	public SockletServiceSupporter() {
 	}
 
+	public void setThreadService(ThreadService threadService) {
+		this.threadService = threadService;
+	}
+
 	@Override
 	protected void doStart() throws Exception {
 		SockletConfig sockletConfig = new SockletConfigImpl(this);

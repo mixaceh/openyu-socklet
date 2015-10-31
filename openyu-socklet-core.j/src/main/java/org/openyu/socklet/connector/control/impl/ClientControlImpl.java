@@ -57,6 +57,16 @@ public class ClientControlImpl extends BaseControlSupporter implements ClientCon
 		this.clientFrame = clientFrame;
 	}
 
+	@Override
+	protected void doStart() throws Exception {
+
+	}
+
+	@Override
+	protected void doShutdown() throws Exception {
+
+	}
+
 	/**
 	 * 顯示
 	 * 
@@ -230,4 +240,5 @@ public class ClientControlImpl extends BaseControlSupporter implements ClientCon
 			// }
 		}
 	}
+
 }

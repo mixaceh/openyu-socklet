@@ -4,8 +4,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.openyu.commons.junit.supporter.BaseTestSupporter;
-import org.openyu.commons.thread.ThreadHelper;
-import org.openyu.socklet.acceptor.service.AcceptorService;
+import org.openyu.socklet.account.net.socklet.AccountSocklet;
 import org.openyu.socklet.account.service.AccountService;
 
 public class ApplicationContextServiceTest extends BaseTestSupporter {
@@ -15,7 +14,7 @@ public class ApplicationContextServiceTest extends BaseTestSupporter {
 		applicationContext = new ClassPathXmlApplicationContext(new String[] { //
 				"applicationContext-init.xml", //
 				"applicationContext-bean.xml", //
-				"applicationContext-acceptor.xml",//
+				"applicationContext-acceptor.xml", //
 				"applicationContext-service.xml",//
 		});
 	}
@@ -27,4 +26,10 @@ public class ApplicationContextServiceTest extends BaseTestSupporter {
 		assertNotNull(bean);
 	}
 
+	@Test
+	public void accountSocklet() {
+		AccountSocklet bean = (AccountSocklet) applicationContext.getBean("accountSocklet");
+		System.out.println(bean);
+		assertNotNull(bean);
+	}
 }

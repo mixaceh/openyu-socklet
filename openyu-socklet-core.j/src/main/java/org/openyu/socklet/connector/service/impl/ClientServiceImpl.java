@@ -20,8 +20,7 @@ public class ClientServiceImpl extends ClientServiceSupporter {
 
 	private static final long serialVersionUID = 7304778591781788192L;
 
-	private static final transient Logger LOGGER = LoggerFactory
-			.getLogger(ClientServiceImpl.class);
+	private static final transient Logger LOGGER = LoggerFactory.getLogger(ClientServiceImpl.class);
 	/**
 	 * 客戶端控制器
 	 */
@@ -33,13 +32,9 @@ public class ClientServiceImpl extends ClientServiceSupporter {
 
 	}
 
-	/**
-	 * 初始化
-	 *
-	 * @throws Exception
-	 */
-	protected void init() throws Exception {
-		super.init();
+	@Override
+	protected void doStart() throws Exception {
+		super.doStart();
 		//
 		clientControl.setId(id);
 		clientControl.setClientService(this);
@@ -48,11 +43,9 @@ public class ClientServiceImpl extends ClientServiceSupporter {
 	public void service(final Message message) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				JTextArea messageTextArea = clientControl.getClientFrame()
-						.getMessageTextArea();
-				messageTextArea.append("server> "+message + StringHelper.LF);
-				messageTextArea.setCaretPosition(messageTextArea.getText()
-						.length());
+				JTextArea messageTextArea = clientControl.getClientFrame().getMessageTextArea();
+				messageTextArea.append("server> " + message + StringHelper.LF);
+				messageTextArea.setCaretPosition(messageTextArea.getText().length());
 			}
 		});
 		//

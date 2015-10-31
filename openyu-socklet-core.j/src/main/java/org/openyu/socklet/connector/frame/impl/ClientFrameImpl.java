@@ -25,8 +25,7 @@ public class ClientFrameImpl extends BaseFrameSupporter implements ClientFrame {
 	private static final long serialVersionUID = 6472436171710553770L;
 
 	/** The Constant LOGGER. */
-	private static final transient Logger LOGGER = LoggerFactory
-			.getLogger(ClientFrameImpl.class);
+	private static final transient Logger LOGGER = LoggerFactory.getLogger(ClientFrameImpl.class);
 	/**
 	 * 訊息區
 	 */
@@ -91,13 +90,8 @@ public class ClientFrameImpl extends BaseFrameSupporter implements ClientFrame {
 		this.reconnectButton = reconnectButton;
 	}
 
-	/**
-	 * 初始化
-	 *
-	 * @throws Exception
-	 */
-	protected void init() {
-		super.init();
+	public void initialize() {
+		super.initialize();
 		//
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(new Dimension(600, 400));
@@ -110,24 +104,24 @@ public class ClientFrameImpl extends BaseFrameSupporter implements ClientFrame {
 		messageTextArea.setEditable(false);
 		//
 		JScrollPane messageScroll = new JScrollPane();
-		//messageScroll.setBorder(new EtchedBorder(EtchedBorder.LOWERED));
+		// messageScroll.setBorder(new EtchedBorder(EtchedBorder.LOWERED));
 		messageScroll.getViewport().add(messageTextArea);
 
 		// pageEndLayout
 		GridLayout pageEndLayout = new GridLayout(0, 2);
 		JPanel pageEndPanel = new JPanel();
 		pageEndPanel.setLayout(pageEndLayout);
-		//pageEndPanel.setBorder(new EtchedBorder(EtchedBorder.LOWERED));
+		// pageEndPanel.setBorder(new EtchedBorder(EtchedBorder.LOWERED));
 
 		// commandTextField
 		commandTextField = new JTextField(51);// 51
 		pageEndPanel.add(commandTextField);
 
-		//button panel
+		// button panel
 		GridLayout buttonLayout = new GridLayout(0, 2);
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(buttonLayout);
-		//buttonPanel.setBorder(new EtchedBorder(EtchedBorder.LOWERED));
+		// buttonPanel.setBorder(new EtchedBorder(EtchedBorder.LOWERED));
 
 		// clearButton
 		clearButton = new JButton("Clear");

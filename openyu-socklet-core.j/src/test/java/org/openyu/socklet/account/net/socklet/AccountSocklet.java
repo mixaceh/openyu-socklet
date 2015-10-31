@@ -16,6 +16,7 @@ public class AccountSocklet extends SockletServiceSupporter {
 
 	private static transient final Logger LOGGER = LoggerFactory.getLogger(AccountSocklet.class);
 
+	
 	@Autowired
 	@Qualifier("accountService")
 	protected transient AccountService accountService;

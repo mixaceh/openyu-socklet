@@ -2,6 +2,7 @@ package org.openyu.socklet.connector.service.supporter;
 
 import org.openyu.commons.lang.ClassHelper;
 import org.openyu.commons.service.supporter.BaseServiceSupporter;
+import org.openyu.commons.thread.ThreadService;
 import org.openyu.commons.thread.supporter.TriggerQueueSupporter;
 import org.openyu.socklet.connector.service.ClientService;
 import org.openyu.socklet.connector.vo.JavaConnector;
@@ -19,13 +20,32 @@ import org.springframework.beans.factory.annotation.Qualifier;
 /**
  * 客戶端服務
  */
-public abstract class ClientServiceSupporter extends BaseServiceSupporter
-		implements ClientService {
+public abstract class ClientServiceSupporter extends BaseServiceSupporter implements ClientService {
 
 	private static final long serialVersionUID = -1548288681963437153L;
 
-	private static final transient Logger LOGGER = LoggerFactory
-			.getLogger(ClientServiceSupporter.class);
+	private static final transient Logger LOGGER = LoggerFactory.getLogger(ClientServiceSupporter.class);
+
+	/**
+	 * 線程服務
+	 */
+	@Autowired
+	@Qualifier("threadService")
+	protected transient ThreadService threadService;
+
+	/**
+	 * 訊息服務
+	 */
+	@Autowired
+	@Qualifier("messageService")
+	protected transient MessageService messageService;
+
+	/**
+	 * 協定服務
+	 */
+	@Autowired
+	@Qualifier("protocolService")
+	protected transient ProtocolService protocolService;
 	/**
 	 * id,sender
 	 */
@@ -64,20 +84,6 @@ public abstract class ClientServiceSupporter extends BaseServiceSupporter
 	protected int port;
 
 	/**
-	 * 訊息服務
-	 */
-	@Autowired
-	@Qualifier("messageService")
-	protected transient MessageService messageService;
-
-	/**
-	 * 協定服務
-	 */
-	@Autowired
-	@Qualifier("protocolService")
-	protected transient ProtocolService protocolService;
-
-	/**
 	 * java客戶端
 	 */
 	protected JavaConnector javaConnector;
@@ -90,7 +96,7 @@ public abstract class ClientServiceSupporter extends BaseServiceSupporter
 	 * messageType=FOUR_SYMBOL_PLAY_REQUEST
 	 */
 
-	private SendQueue<Message> sendQueue = new SendQueue<Message>();
+	private SendQueue<Message> sendQueue;
 
 	/**
 	 * receive
@@ -100,14 +106,21 @@ public abstract class ClientServiceSupporter extends BaseServiceSupporter
 	 * messageType=FOUR_SYMBOL_PLAY_REQUEST
 	 */
 
-	private ReceiveQueue<Message> receiveQueue = new ReceiveQueue<Message>();
-
-	/**
-	 * 是否啟動
-	 */
-	protected boolean started;
+	private ReceiveQueue<Message> receiveQueue;
 
 	public ClientServiceSupporter() {
+	}
+
+	public void setThreadService(ThreadService threadService) {
+		this.threadService = threadService;
+	}
+
+	public void setMessageService(MessageService messageService) {
+		this.messageService = messageService;
+	}
+
+	public void setProtocolService(ProtocolService protocolService) {
+		this.protocolService = protocolService;
 	}
 
 	/**
@@ -188,58 +201,28 @@ public abstract class ClientServiceSupporter extends BaseServiceSupporter
 	/**
 	 * 啟動
 	 */
-	public void start() {
-		try {
-			if (!started) {
-				javaConnector = new JavaConnectorImpl(moduleTypeClass,
-						messageTypeClass, protocolService);
-				// javaConnector.setThreadService(threadService);
-				ClientServiceReceiver clientServiceReceiver = new ClientServiceReceiver();
-				javaConnector.setReceiver(clientServiceReceiver);
-				//
-				javaConnector.setId(id);
-				javaConnector.setIp(ip);
-				javaConnector.setPort(port);
-				//
-				javaConnector.start();// 啟動連線
-				// ----------------------------------------------
-				started = javaConnector.isStarted();
-				// ----------------------------------------------
-
-				threadService.submit(sendQueue);
-				threadService.submit(receiveQueue);
-
-				//
-				// if (started)
-				// {
-				// log.info("[" + id + "] has been started");
-				// }
-				// else
-				// {
-				// log.error("[" + id + "] started fail");
-				// }
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			started = false;
-			LOGGER.error("[" + id + "] started fail");
-		}
+	@Override
+	protected void doStart() throws Exception {
+		javaConnector = new JavaConnectorImpl(moduleTypeClass, messageTypeClass, protocolService);
+		// javaConnector.setThreadService(threadService);
+		ClientServiceReceiver clientServiceReceiver = new ClientServiceReceiver();
+		javaConnector.setReceiver(clientServiceReceiver);
+		//
+		javaConnector.setId(id);
+		javaConnector.setIp(ip);
+		javaConnector.setPort(port);
+		//
+		javaConnector.start();// 啟動連線
+		// ----------------------------------------------
+		sendQueue = new SendQueue<Message>(threadService);
+		sendQueue.start();
+		//
+		receiveQueue = new ReceiveQueue<Message>(threadService);
+		receiveQueue.start();
 	}
 
-	/**
-	 * 是否已啟動
-	 * 
-	 * @return
-	 */
-	public boolean isStarted() {
-		return started;
-	}
-
-	public void setStarted(boolean started) {
-		this.started = started;
-	}
-
-	public void shutdown() {
+	@Override
+	protected void doShutdown() throws Exception {
 		if (javaConnector != null) {
 			javaConnector.shutdown();
 		}
@@ -278,23 +261,29 @@ public abstract class ClientServiceSupporter extends BaseServiceSupporter
 		return result;
 	}
 
-	protected class SendQueue<E> extends TriggerQueueSupporter<E> {
-		public SendQueue() {
+	protected class SendQueue<E> extends TriggerQueueSupporter<Message> {
+
+		public SendQueue(ThreadService threadService) {
+			super(threadService);
 		}
 
-		public void process(E e) {
+		@Override
+		protected void doExecute(Message e) throws Exception {
 			if (javaConnector != null && javaConnector.isValid()) {
-				javaConnector.send((Message) e);
+				javaConnector.send(e);
 			}
 		}
 	}
 
-	protected class ReceiveQueue<E> extends TriggerQueueSupporter<E> {
-		public ReceiveQueue() {
+	protected class ReceiveQueue<E> extends TriggerQueueSupporter<Message> {
+
+		public ReceiveQueue(ThreadService threadService) {
+			super(threadService);
 		}
 
-		public void process(E e) {
-			service((Message) e);
+		@Override
+		protected void doExecute(Message e) throws Exception {
+			service(e);
 		}
 	}
 
