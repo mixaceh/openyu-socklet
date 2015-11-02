@@ -67,7 +67,7 @@ public final class ClientBootstrap extends BootstrapSupporter {
 				// 建構客戶端服務
 				buildClientService();
 				// 啟動
-				doInStart();
+				doStart();
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				started = false;
@@ -137,11 +137,11 @@ public final class ClientBootstrap extends BootstrapSupporter {
 		}
 	}
 
-	protected static void doInStart() {
+	protected static void doStart() {
 		// id
 		id = clientControl.getId();
 		clientControl.setVisible(true);
 		// 啟動
-		started = clientService.isStarted();
+		started = true;
 	}
 }
