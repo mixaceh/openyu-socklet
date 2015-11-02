@@ -189,7 +189,7 @@ public final class ServerBootstrap extends BootstrapSupporter {
 	/**
 	 * 內部啟動
 	 */
-	protected static void doStart() throws Exception{
+	protected static void doStart() throws Exception {
 		AcceptorService acceptorService = null;
 		for (AcceptorStarter acceptorStarter : acceptorStarters.values()) {
 			// id
@@ -200,10 +200,8 @@ public final class ServerBootstrap extends BootstrapSupporter {
 			if (acceptorService != null) {
 				instanceId = acceptorService.getInstanceId();
 				acceptorStarter.setAcceptorService(acceptorService);
-				// 同一個jvm中只啟動一個acceptor服務
-				acceptorService.start();
-				// 啟動
-				started = true;
+				// 是否啟動
+				started = acceptorService.isStarted();
 			} else {
 				LOGGER.error("Can't find [" + acceptorStarter.getId() + "] AcceptorService");
 			}

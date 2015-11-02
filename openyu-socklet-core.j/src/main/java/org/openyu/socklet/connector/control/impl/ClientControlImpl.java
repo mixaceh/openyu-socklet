@@ -90,9 +90,7 @@ public class ClientControlImpl extends BaseControlSupporter implements ClientCon
 			}
 		});
 		//
-		clientService.start();
-		//boolean started = clientService.isStarted();
-		//if (started) {
+		if (clientService.isStarted()) {
 			EventQueue.invokeLater(new Runnable() {
 				public void run() {
 					clientFrame.getMessageTextArea().append("[" + clientService.getId() + "] Connected to " + "["
@@ -101,17 +99,16 @@ public class ClientControlImpl extends BaseControlSupporter implements ClientCon
 							.setCaretPosition(clientFrame.getMessageTextArea().getText().length());
 				}
 			});
-//		} else {
-//			EventQueue.invokeLater(new Runnable() {
-//				public void run() {
-//					clientFrame.getMessageTextArea().append("Can't connect to [" + clientService.getIp() + ":"
-//							+ clientService.getPort() + "]" + StringHelper.LF);
-//					clientFrame.getMessageTextArea()
-//							.setCaretPosition(clientFrame.getMessageTextArea().getText().length());
-//				}
-//			});
-//		}
-
+		} else {
+			EventQueue.invokeLater(new Runnable() {
+				public void run() {
+					clientFrame.getMessageTextArea().append("Can't connect to [" + clientService.getIp() + ":"
+							+ clientService.getPort() + "]" + StringHelper.LF);
+					clientFrame.getMessageTextArea()
+							.setCaretPosition(clientFrame.getMessageTextArea().getText().length());
+				}
+			});
+		}
 	}
 
 	/**

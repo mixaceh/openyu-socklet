@@ -220,11 +220,8 @@ public final class StandaloneBootstrap extends BootstrapSupporter {
 				instanceId = acceptorService.getInstanceId();
 				acceptorService.getRelations().clear();
 				acceptorStarter.setAcceptorService(acceptorService);
-				//
-				// 同一個jvm中只啟動一個acceptor服務
-				acceptorService.start();
-				// 啟動
-				started = true;
+				// 是否啟動
+				started = acceptorService.isStarted();
 			} else {
 				LOGGER.error("Can't find [" + acceptorStarter.getId()
 						+ "] AcceptorService");
