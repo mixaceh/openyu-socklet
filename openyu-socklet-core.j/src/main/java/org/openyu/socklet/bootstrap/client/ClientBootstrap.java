@@ -4,8 +4,7 @@ import java.text.MessageFormat;
 import java.util.concurrent.TimeUnit;
 
 import org.openyu.commons.bootstrap.supporter.BootstrapSupporter;
-import org.openyu.commons.lang.ArrayHelper;
-import org.openyu.commons.thread.ThreadHelper;
+import org.openyu.commons.util.AssertHelper;
 import org.openyu.socklet.connector.control.ClientControl;
 import org.openyu.socklet.connector.service.ClientService;
 import org.slf4j.Logger;
@@ -17,8 +16,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  */
 public final class ClientBootstrap extends BootstrapSupporter {
 
-	private static transient final Logger LOGGER = LoggerFactory
-			.getLogger(ClientBootstrap.class);
+	private static transient final Logger LOGGER = LoggerFactory.getLogger(ClientBootstrap.class);
 
 	/**
 	 * client id, sender
@@ -57,35 +55,34 @@ public final class ClientBootstrap extends BootstrapSupporter {
 	 * @param args
 	 */
 	public static void main(String args[]) {
-		if (!started) {
-			long start = System.nanoTime();
-			try {
-				// 建構applicationContext
-				buildApplicationContext(args);
-				// 建構客戶端控制器
-				buildClientControl();
-				// 建構客戶端服務
-				buildClientService();
-				// 啟動
-				doStart();
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				started = false;
+		try {
+			if (started) {
+				throw new IllegalStateException(new StringBuilder().append(ClientBootstrap.class.getSimpleName())
+						.append(" was already started").toString());
 			}
+			//
+			long start = System.nanoTime();
+			// 建構applicationContext
+			createApplicationContext(args);
+			// 建構客戶端控制器
+			getClientControl();
+			// 建構客戶端服務
+			getClientService();
+			// --------------------------------------------------
+			// 啟動
+			doStart();
+			// --------------------------------------------------
 			long dur = System.nanoTime() - start;
 			dur = TimeUnit.NANOSECONDS.toMillis(dur);
 			//
 			String msgPattern = "[{0}] start in {1} ms";
-			StringBuilder msg = new StringBuilder(MessageFormat.format(
-					msgPattern, id, dur));
+			StringBuilder msg = new StringBuilder(MessageFormat.format(msgPattern, id, dur));
 			//
-			if (started) {
-				LOGGER.info(msg.toString());
-				//
-				ThreadHelper.loop(50);
-			} else {
-				LOGGER.error("[" + id + "] started fail");
-			}
+			LOGGER.info(msg.toString());
+			// ThreadHelper.loop(50);
+		} catch (Exception e) {
+			clientControl.setVisible(false);
+			LOGGER.error(new StringBuilder("[" + id + "] Exception encountered during main()").toString(), e);
 		}
 	}
 
@@ -94,17 +91,13 @@ public final class ClientBootstrap extends BootstrapSupporter {
 	 * 
 	 * @param args
 	 */
-	protected static void buildApplicationContext(String args[]) {
+	protected static void createApplicationContext(String args[]) {
 		// 加入spring設定檔 from args
-		if (ArrayHelper.isEmpty(args)) {
-			throw new IllegalArgumentException("The Args must not be null");
-		}
+		AssertHelper.notNull(args, new StringBuilder().append("The Args must not be null").toString());
+		//
 		applicationContext = new ClassPathXmlApplicationContext(args);
-		//
-		if (applicationContext == null) {
-			throw new IllegalArgumentException(
-					"The ApplicationContext must not be null");
-		}
+		AssertHelper.notNull(applicationContext,
+				new StringBuilder().append("The ApplicationContext must not be null").toString());
 	}
 
 	/**
@@ -113,13 +106,10 @@ public final class ClientBootstrap extends BootstrapSupporter {
 	 * @param args
 	 * @throws Exception
 	 */
-	protected static void buildClientControl() throws Exception {
+	protected static void getClientControl() {
 		clientControl = applicationContext.getBean(ClientControl.class);
-		//
-		if (clientControl == null) {
-			throw new IllegalArgumentException(
-					"The ClientControl must not be null");
-		}
+		AssertHelper.notNull(clientControl,
+				new StringBuilder().append("The ClientControl must not be null").toString());
 	}
 
 	/**
@@ -128,16 +118,13 @@ public final class ClientBootstrap extends BootstrapSupporter {
 	 * @param args
 	 * @throws Exception
 	 */
-	protected static void buildClientService() throws Exception {
+	protected static void getClientService() {
 		clientService = applicationContext.getBean(ClientService.class);
-		//
-		if (clientService == null) {
-			throw new IllegalArgumentException(
-					"The ClientService must not be null");
-		}
+		AssertHelper.notNull(clientService,
+				new StringBuilder().append("The ClientService must not be null").toString());
 	}
 
-	protected static void doStart() {
+	protected static void doStart() throws Exception {
 		// id
 		id = clientControl.getId();
 		clientControl.setVisible(true);

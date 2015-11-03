@@ -5,6 +5,7 @@ import java.awt.EventQueue;
 import javax.swing.JTextArea;
 
 import org.openyu.commons.lang.StringHelper;
+import org.openyu.commons.service.StartCallback;
 import org.openyu.socklet.connector.service.supporter.ClientServiceSupporter;
 import org.openyu.socklet.message.vo.Message;
 import org.openyu.socklet.connector.control.ClientControl;
@@ -29,15 +30,7 @@ public class ClientServiceImpl extends ClientServiceSupporter {
 	private ClientControl clientControl;
 
 	public ClientServiceImpl() {
-
-	}
-
-	@Override
-	protected void doStart() throws Exception {
-		super.doStart();
-		//
-		clientControl.setId(id);
-		clientControl.setClientService(this);
+		addServiceCallback("StartCallbacker", new StartCallbacker());
 	}
 
 	public void service(final Message message) {
@@ -50,5 +43,16 @@ public class ClientServiceImpl extends ClientServiceSupporter {
 		});
 		//
 		LOGGER.info(String.valueOf(message));
+	}
+
+	/**
+	 * 內部啟動
+	 */
+	protected class StartCallbacker implements StartCallback {
+		@Override
+		public void doInAction() throws Exception {
+			clientControl.setId(id);
+			clientControl.setClientService(ClientServiceImpl.this);
+		}
 	}
 }

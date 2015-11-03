@@ -213,6 +213,8 @@ public abstract class ClientServiceSupporter extends BaseServiceSupporter implem
 		javaConnector.setPort(port);
 		//
 		javaConnector.start();// 啟動連線
+		
+		 
 		// ----------------------------------------------
 		sendQueue = new SendQueue<Message>(threadService);
 		sendQueue.start();
