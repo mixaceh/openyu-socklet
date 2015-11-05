@@ -724,8 +724,23 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		// context
 		contextService.shutdown();
 
-		// TODO runner and queue
-
+		//queue
+		sendClientQueue.shutdown();
+		receiveClientQueue.shutdown();
+		sendServerQueue.shutdown();
+		sendRelationQueue.shutdown();
+		receiveRelationQueue.shutdown();
+		//
+		sendAcceptorQueue.shutdown();
+		receiveAcceptorQueue.shutdown();
+		sendSyncQueue.shutdown();
+		receiveSyncQueue.shutdown();
+		
+		//listen
+		listenClusterRunner.shutdown();
+		listenClientRunner.shutdown();
+		listenPassiveRunner.shutdown();
+		listenInitiativeRunner.shutdown();
 	}
 
 	protected void clusterSend(org.jgroups.Message msg) {
