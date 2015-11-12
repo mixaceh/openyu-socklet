@@ -22,21 +22,21 @@ public final class ProtocolServiceFactoryBean<T extends ProtocolService>
 	/**
 	 * checksum
 	 */
-	public final static String CHECKSUM = "checksum";
+	public static final String CHECKSUM = "checksum";
 
 	/**
 	 * 預設是否檢查碼
 	 */
 	public static final boolean DEFAULT_CHECKSUM = true;
 
-	public final static String CHECKSUM_TYPE = "checksumType";
+	public static final String CHECKSUM_TYPE = "checksumType";
 
 	/**
 	 * 預設檢查碼類型
 	 */
 	public static final ChecksumType DEFAULT_CHECKSUM_TYPE = ChecksumType.CRC32;
 
-	public final static String CHECKSUM_KEY = "checksumKey";
+	public static final String CHECKSUM_KEY = "checksumKey";
 	/**
 	 * 預設檢查碼key
 	 */
@@ -45,21 +45,21 @@ public final class ProtocolServiceFactoryBean<T extends ProtocolService>
 	/**
 	 * security
 	 */
-	public final static String SECURITY = "security";
+	public static final String SECURITY = "security";
 
 	/**
 	 * 預設是否加密
 	 */
 	public static final boolean DEFAULT_SECURITY = true;
 
-	public final static String SECURITY_TYPE = "securityType";
+	public static final String SECURITY_TYPE = "securityType";
 
 	/**
 	 * 預設加密類型
 	 */
 	public static final SecurityType DEFAULT_SECURITY_TYPE = SecurityType.AES_ECB_PKCS5Padding;
 
-	public final static String SECURITY_KEY = "securityKey";
+	public static final String SECURITY_KEY = "securityKey";
 	/**
 	 * 預設加密key
 	 */
@@ -68,14 +68,14 @@ public final class ProtocolServiceFactoryBean<T extends ProtocolService>
 	/**
 	 * compress
 	 */
-	public final static String COMPRESS = "compress";
+	public static final String COMPRESS = "compress";
 
 	/**
 	 * 預設是否加密
 	 */
 	public static final boolean DEFAULT_COMPRESS = true;
 
-	public final static String COMPRESS_TYPE = "compressType";
+	public static final String COMPRESS_TYPE = "compressType";
 
 	/**
 	 * 預設加密類型
@@ -85,7 +85,7 @@ public final class ProtocolServiceFactoryBean<T extends ProtocolService>
 	/**
 	 * 所有屬性
 	 */
-	public final static String[] ALL_PROPERTIES = { CHECKSUM, CHECKSUM_TYPE, CHECKSUM_KEY, SECURITY, SECURITY_TYPE,
+	public static final String[] ALL_PROPERTIES = { CHECKSUM, CHECKSUM_TYPE, CHECKSUM_KEY, SECURITY, SECURITY_TYPE,
 			SECURITY_KEY, COMPRESS, COMPRESS_TYPE };
 
 	public ProtocolServiceFactoryBean() {
