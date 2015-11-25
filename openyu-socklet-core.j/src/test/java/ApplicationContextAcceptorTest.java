@@ -7,7 +7,7 @@ import org.openyu.commons.junit.supporter.BaseTestSupporter;
 import org.openyu.commons.thread.ThreadHelper;
 import org.openyu.socklet.acceptor.service.AcceptorService;
 
-public class ApplicationContextAceptorTest extends BaseTestSupporter {
+public class ApplicationContextAcceptorTest extends BaseTestSupporter {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
