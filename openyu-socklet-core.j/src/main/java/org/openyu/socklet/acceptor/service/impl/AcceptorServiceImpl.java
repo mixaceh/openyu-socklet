@@ -233,7 +233,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	 * 
 	 * srcModule=FOUR_SYMBOL, destModule= CLIENT
 	 */
-	private SendClientQueue<Message> sendClientQueue;
+	private transient SendClientQueue<Message> sendClientQueue;
 
 	/**
 	 * receive
@@ -242,7 +242,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	 * 
 	 * srcModule=CLIENT, destModule= FOUR_SYMBOL
 	 */
-	private ReceiveClientQueue<Message> receiveClientQueue;
+	private transient ReceiveClientQueue<Message> receiveClientQueue;
 
 	/**
 	 * send
@@ -255,7 +255,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	 * 
 	 * srcModule=CLIENT, destModule= CORE
 	 */
-	private SendServerQueue<Message> sendServerQueue;
+	private transient SendServerQueue<Message> sendServerQueue;
 
 	/**
 	 * send
@@ -268,7 +268,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	 * 
 	 * srcModule=slave1.CLIENT, destModule= slave2.CORE
 	 */
-	private SendRelationQueue<RelationMessage> sendRelationQueue;
+	private transient SendRelationQueue<RelationMessage> sendRelationQueue;
 
 	/**
 	 * receive
@@ -282,21 +282,21 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	 * srcModule=slave1.CLIENT, destModule= slave2.CORE
 	 * 
 	 */
-	private ReceiveRelationQueue<Message> receiveRelationQueue;
+	private transient ReceiveRelationQueue<Message> receiveRelationQueue;
 
 	/**
 	 * send
 	 * 
 	 * udp, server->relation, MESSAGE_ACCEPTOR
 	 */
-	private SendAcceptorQueue<Message> sendAcceptorQueue;
+	private transient SendAcceptorQueue<Message> sendAcceptorQueue;
 
 	/**
 	 * receive
 	 * 
 	 * udp, server->relation, MESSAGE_ACCEPTOR
 	 */
-	private ReceiveAcceptorQueue<Message> receiveAcceptorQueue;
+	private transient ReceiveAcceptorQueue<Message> receiveAcceptorQueue;
 
 	/**
 	 * send
@@ -307,7 +307,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	 * 
 	 * srcModule=ROLE, destModule= ROLE
 	 */
-	private SendSyncQueue<Message> sendSyncQueue;
+	private transient SendSyncQueue<Message> sendSyncQueue;
 
 	/**
 	 * receive
@@ -318,16 +318,16 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	 * 
 	 * srcModule=ROLE, destModule= ROLE
 	 */
-	private ReceiveSyncQueue<Message> receiveSyncQueue;
+	private transient ReceiveSyncQueue<Message> receiveSyncQueue;
 
 	// runner
-	private ListenClusterRunner listenClusterRunner;
+	private transient ListenClusterRunner listenClusterRunner;
 
-	private ListenClientRunner listenClientRunner;
+	private transient ListenClientRunner listenClientRunner;
 
-	private ListenPassiveRunner listenPassiveRunner;
+	private transient ListenPassiveRunner listenPassiveRunner;
 
-	private ListenInitiativeRunner listenInitiativeRunner;
+	private transient ListenInitiativeRunner listenInitiativeRunner;
 
 	/**
 	 * 實例id
@@ -724,7 +724,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		// context
 		contextService.shutdown();
 
-		//queue
+		// queue
 		sendClientQueue.shutdown();
 		receiveClientQueue.shutdown();
 		sendServerQueue.shutdown();
@@ -735,8 +735,8 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		receiveAcceptorQueue.shutdown();
 		sendSyncQueue.shutdown();
 		receiveSyncQueue.shutdown();
-		
-		//listen
+
+		// listen
 		listenClusterRunner.shutdown();
 		listenClientRunner.shutdown();
 		listenPassiveRunner.shutdown();
