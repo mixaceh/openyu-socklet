@@ -144,7 +144,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 	/**
 	 * 監聽 selector
 	 */
-	private ListenRunner listenRunner;
+	private SelectionKeyRunner selectionKeyRunner;
 
 	// ------------------------------------------------
 	// read
@@ -264,8 +264,8 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 		serverServices.put(id, this);
 
 		// listen,selector
-		listenRunner = new ListenRunner(threadService);
-		listenRunner.start();
+		selectionKeyRunner = new SelectionKeyRunner(threadService);
+		selectionKeyRunner.start();
 
 		// read,selectionKey
 		readKeyQueue = new ReadKeyQueue<SelectionKey>(threadService);
@@ -280,7 +280,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 
 	@Override
 	protected void doShutdown() throws Exception {
-		listenRunner.shutdown();
+		selectionKeyRunner.shutdown();
 		readKeyQueue.shutdown();
 		//
 		NioHelper.close(selector);
@@ -295,9 +295,9 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 	/**
 	 * 監聽 selector
 	 */
-	protected class ListenRunner extends BaseRunnableSupporter {
+	protected class SelectionKeyRunner extends BaseRunnableSupporter {
 
-		public ListenRunner(ThreadService threadService) {
+		public SelectionKeyRunner(ThreadService threadService) {
 			super(threadService);
 		}
 

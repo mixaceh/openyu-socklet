@@ -321,13 +321,13 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	private transient ReceiveSyncQueue<Message> receiveSyncQueue;
 
 	// runner
-	private transient ListenClusterRunner listenClusterRunner;
+	private transient ClusterListenRunner clusterListenRunner;
 
-	private transient ListenClientRunner listenClientRunner;
+	private transient ClientListenRunner clientListenRunner;
 
-	private transient ListenPassiveRunner listenPassiveRunner;
+	private transient PassiveListenRunner passiveListenRunner;
 
-	private transient ListenInitiativeRunner listenInitiativeRunner;
+	private transient InitiativeListenRunner initiativeListenRunner;
 
 	/**
 	 * 實例id
@@ -647,8 +647,8 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 
 		// cluster
 		startCluster();
-		listenClusterRunner = new ListenClusterRunner(threadService);
-		listenClusterRunner.start();
+		clusterListenRunner = new ClusterListenRunner(threadService);
+		clusterListenRunner.start();
 
 		// ------------------------------------------------
 		// ServerService
@@ -657,15 +657,15 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		startClientServers();
 
 		// acceptorConnectors
-		listenClientRunner = new ListenClientRunner(threadService);
-		listenClientRunner.start();
+		clientListenRunner = new ClientListenRunner(threadService);
+		clientListenRunner.start();
 		// passiveRelations
-		listenPassiveRunner = new ListenPassiveRunner(threadService);
-		listenPassiveRunner.start();
+		passiveListenRunner = new PassiveListenRunner(threadService);
+		passiveListenRunner.start();
 		// initiativeRelations
 		buildInitiativeRelations();
-		listenInitiativeRunner = new ListenInitiativeRunner(threadService);
-		listenInitiativeRunner.start();
+		initiativeListenRunner = new InitiativeListenRunner(threadService);
+		initiativeListenRunner.start();
 	}
 
 	// ------------------------------------------------
@@ -737,10 +737,10 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		receiveSyncQueue.shutdown();
 
 		// listen
-		listenClusterRunner.shutdown();
-		listenClientRunner.shutdown();
-		listenPassiveRunner.shutdown();
-		listenInitiativeRunner.shutdown();
+		clusterListenRunner.shutdown();
+		clientListenRunner.shutdown();
+		passiveListenRunner.shutdown();
+		initiativeListenRunner.shutdown();
 	}
 
 	protected void clusterSend(org.jgroups.Message msg) {
@@ -1010,9 +1010,9 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	/**
 	 * 監聽主動端連線
 	 */
-	protected class ListenInitiativeRunner extends BaseRunnableSupporter {
+	protected class InitiativeListenRunner extends BaseRunnableSupporter {
 
-		public ListenInitiativeRunner(ThreadService threadService) {
+		public InitiativeListenRunner(ThreadService threadService) {
 			super(threadService);
 		}
 
@@ -1023,7 +1023,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 					if (isShutdown()) {
 						break;
 					}
-					listenInitiative();
+					initiativeListen();
 					ThreadHelper.sleep(CLIENT_LISTEN_MILLS);
 				} catch (Exception ex) {
 					// ex.printStackTrace();
@@ -1035,7 +1035,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	/**
 	 * 監聽主動端連線
 	 */
-	protected void listenInitiative() {
+	protected void initiativeListen() {
 		int relationsSize = initiativeRelations.size();
 		for (GenericRelation initiativeRelation : initiativeRelations.values()) {
 			boolean clientStarted = false;
@@ -1105,7 +1105,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 				clusterChannel = new JChannel();
 				clusterChannel.setReceiver(new ClusterReceiver());
 				clusterChannel.setDiscardOwnMessages(true);// 自己本身發出的訊息不接收
-				listenCluster();
+				clusterListen();
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -1115,9 +1115,9 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	/**
 	 * 監聽cluster連線
 	 */
-	protected class ListenClusterRunner extends BaseRunnableSupporter {
+	protected class ClusterListenRunner extends BaseRunnableSupporter {
 
-		public ListenClusterRunner(ThreadService threadService) {
+		public ClusterListenRunner(ThreadService threadService) {
 			super(threadService);
 		}
 
@@ -1129,7 +1129,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 						break;
 					}
 					ThreadHelper.sleep(CLUSTER_LISTEN_MILLS);
-					listenCluster();
+					clusterListen();
 				} catch (Exception ex) {
 					// ex.printStackTrace();
 				}
@@ -1140,7 +1140,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	/**
 	 * 監聽cluster連線
 	 */
-	protected void listenCluster() {
+	protected void clusterListen() {
 		try {
 			if (clusterChannel != null && !clusterChannel.isConnected()) {
 				clusterChannel.connect(cluster);
@@ -1810,9 +1810,9 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	/**
 	 * 監聽客戶端連線
 	 */
-	protected class ListenClientRunner extends BaseRunnableSupporter {
+	protected class ClientListenRunner extends BaseRunnableSupporter {
 
-		public ListenClientRunner(ThreadService threadService) {
+		public ClientListenRunner(ThreadService threadService) {
 			super(threadService);
 		}
 
@@ -1824,7 +1824,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 						break;
 					}
 					//
-					listenClient();
+					clientListen();
 					ThreadHelper.sleep(CLIENT_LISTEN_MILLS);
 				} catch (Exception ex) {
 					// ex.printStackTrace();
@@ -1836,7 +1836,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	/**
 	 * 監聽客戶端連線
 	 */
-	protected void listenClient() {
+	protected void clientListen() {
 		// acceptorConnectors
 		for (AcceptorConnector acceptorConnector : acceptorConnectors.values()) {
 			boolean disconnected = false;
@@ -1864,9 +1864,9 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	/**
 	 * 監聽被動端連線
 	 */
-	protected class ListenPassiveRunner extends BaseRunnableSupporter {
+	protected class PassiveListenRunner extends BaseRunnableSupporter {
 
-		public ListenPassiveRunner(ThreadService threadService) {
+		public PassiveListenRunner(ThreadService threadService) {
 			super(threadService);
 		}
 
@@ -1877,7 +1877,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 					if (isShutdown()) {
 						break;
 					}
-					listenPassive();
+					passiveListen();
 					ThreadHelper.sleep(CLIENT_LISTEN_MILLS);
 				} catch (Exception ex) {
 					// ex.printStackTrace();
@@ -1889,7 +1889,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	/**
 	 * 監聽被動端連線
 	 */
-	protected void listenPassive() {
+	protected void passiveListen() {
 		// passiveRelations
 		for (GenericRelation passiveRelation : passiveRelations.values()) {
 			for (GenericConnector genericConnector : passiveRelation.getClients().values()) {

@@ -60,7 +60,7 @@ public abstract class SocketConnectorSupporter extends GenericConnectorSupporter
 	 */
 	protected static final long LISTEN_MILLS = 1L;
 
-	private ListenRunner listenRunner;
+	private SelectionKeyRunner selectionKeyRunner;
 	// ------------------------------------------------
 	// read
 	// ------------------------------------------------
@@ -222,8 +222,8 @@ public abstract class SocketConnectorSupporter extends GenericConnectorSupporter
 					throw new ConnectException("Connection refused");
 				} else {
 					// listen
-					listenRunner = new ListenRunner();
-					listenRunner.start();
+					selectionKeyRunner = new SelectionKeyRunner();
+					selectionKeyRunner.start();
 
 					// read,selectionKey
 					readKeyQueue = new ReadKeyQueue<SelectionKey>();
@@ -243,9 +243,9 @@ public abstract class SocketConnectorSupporter extends GenericConnectorSupporter
 	/**
 	 * 監聽執行緒
 	 */
-	protected class ListenRunner extends BaseRunnableSupporter {
+	protected class SelectionKeyRunner extends BaseRunnableSupporter {
 
-		public ListenRunner() {
+		public SelectionKeyRunner() {
 		}
 
 		@Override
@@ -416,7 +416,7 @@ public abstract class SocketConnectorSupporter extends GenericConnectorSupporter
 				handshake = false;
 				readHandshake = false;
 				//
-				listenRunner.shutdown();
+				selectionKeyRunner.shutdown();
 				readKeyQueue.shutdown();
 			}
 		} catch (Exception ex) {
