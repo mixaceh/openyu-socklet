@@ -17,7 +17,6 @@ import org.openyu.commons.thread.supporter.BaseRunnableSupporter;
 import org.openyu.socklet.connector.vo.ConnectorType;
 import org.openyu.socklet.connector.vo.GenericConnector;
 import org.openyu.socklet.connector.vo.GenericReceiver;
-import org.openyu.socklet.connector.vo.supporter.GenericConnectorSupporter.KeepAliveRunner;
 import org.openyu.socklet.message.service.ProtocolService;
 import org.openyu.socklet.message.vo.Message;
 import org.slf4j.Logger;

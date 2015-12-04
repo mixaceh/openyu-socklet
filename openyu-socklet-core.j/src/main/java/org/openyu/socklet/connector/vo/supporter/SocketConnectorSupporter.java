@@ -60,6 +60,9 @@ public abstract class SocketConnectorSupporter extends GenericConnectorSupporter
 	 */
 	protected static final long LISTEN_MILLS = 1L;
 
+	/**
+	 * 監聽 selector
+	 */
 	private SelectionKeyRunner selectionKeyRunner;
 	// ------------------------------------------------
 	// read
@@ -241,7 +244,7 @@ public abstract class SocketConnectorSupporter extends GenericConnectorSupporter
 	}
 
 	/**
-	 * 監聽執行緒
+	 * 監聽 selector
 	 */
 	protected class SelectionKeyRunner extends BaseRunnableSupporter {
 
