@@ -228,6 +228,8 @@ public abstract class ClientServiceSupporter extends BaseServiceSupporter implem
 		if (javaConnector != null) {
 			javaConnector.shutdown();
 		}
+		sendQueue.shutdown();
+		receiveQueue.shutdown();
 	}
 
 	/**
