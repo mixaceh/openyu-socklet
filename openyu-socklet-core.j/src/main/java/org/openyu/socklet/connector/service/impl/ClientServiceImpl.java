@@ -33,6 +33,17 @@ public class ClientServiceImpl extends ClientServiceSupporter {
 		addServiceCallback("StartCallbacker", new StartCallbacker());
 	}
 
+	/**
+	 * 內部啟動
+	 */
+	protected class StartCallbacker implements StartCallback {
+		@Override
+		public void doInAction() throws Exception {
+			clientControl.setId(id);
+			clientControl.setClientService(ClientServiceImpl.this);
+		}
+	}
+
 	public void service(final Message message) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -45,14 +56,4 @@ public class ClientServiceImpl extends ClientServiceSupporter {
 		LOGGER.info(String.valueOf(message));
 	}
 
-	/**
-	 * 內部啟動
-	 */
-	protected class StartCallbacker implements StartCallback {
-		@Override
-		public void doInAction() throws Exception {
-			clientControl.setId(id);
-			clientControl.setClientService(ClientServiceImpl.this);
-		}
-	}
 }
