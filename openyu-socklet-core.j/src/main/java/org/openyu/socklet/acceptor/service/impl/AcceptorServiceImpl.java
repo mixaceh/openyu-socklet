@@ -22,12 +22,14 @@ import org.openyu.commons.lang.ClassHelper;
 import org.openyu.commons.lang.NumberHelper;
 import org.openyu.commons.nio.NioHelper;
 import org.openyu.commons.security.AuthKeyService;
+import org.openyu.commons.security.anno.DefaultAuthKeyService;
 import org.openyu.commons.service.supporter.BaseServiceSupporter;
 import org.openyu.commons.thread.ThreadHelper;
 import org.openyu.commons.thread.ThreadService;
 import org.openyu.commons.thread.supporter.BaseRunnableSupporter;
 import org.openyu.commons.thread.supporter.TriggerQueueSupporter;
 import org.openyu.commons.util.ConfigHelper;
+import org.openyu.socklet.acceptor.anno.AcceptorThreadService;
 import org.openyu.socklet.acceptor.net.socklet.AcceptorMessageType;
 import org.openyu.socklet.acceptor.net.socklet.AcceptorModuleType;
 import org.openyu.socklet.acceptor.service.AcceptorService;
@@ -42,6 +44,8 @@ import org.openyu.socklet.connector.vo.impl.RelationConnectorImpl;
 import org.openyu.socklet.connector.vo.supporter.GenericReceiverSupporter;
 import org.openyu.socklet.context.service.ContextService;
 import org.openyu.socklet.context.service.impl.ContextServiceImpl;
+import org.openyu.socklet.message.anno.DefaultMessageService;
+import org.openyu.socklet.message.anno.DefaultProtocolService;
 import org.openyu.socklet.message.service.MessageService;
 import org.openyu.socklet.message.service.ProtocolService;
 import org.openyu.socklet.message.vo.CategoryType;
@@ -98,29 +102,24 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	/**
 	 * 線程服務
 	 */
-	@Autowired
-	@Qualifier("threadService")
 	protected transient ThreadService threadService;
 
 	/**
 	 * 訊息服務
 	 */
-	@Autowired
-	@Qualifier("messageService")
+	@DefaultMessageService
 	protected transient MessageService messageService;
 
 	/**
 	 * 協定服務
 	 */
-	@Autowired
-	@Qualifier("protocolService")
+	@DefaultProtocolService
 	protected transient ProtocolService protocolService;
 
 	/**
 	 * 認證碼服務
 	 */
-	@Autowired
-	@Qualifier("authKeyService")
+	@DefaultAuthKeyService
 	protected transient AuthKeyService authKeyService;
 
 	/**
@@ -371,6 +370,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	public AcceptorServiceImpl() {
 	}
 
+	@AcceptorThreadService
 	public void setThreadService(ThreadService threadService) {
 		this.threadService = threadService;
 	}

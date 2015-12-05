@@ -17,14 +17,13 @@ import org.openyu.socklet.acceptor.vo.AcceptorStarter;
 import org.openyu.socklet.message.vo.Message;
 import org.openyu.socklet.reponse.vo.Response;
 import org.openyu.socklet.request.vo.Request;
+import org.openyu.socklet.socklet.anno.SockletThreadService;
 import org.openyu.socklet.socklet.ex.SockletException;
 import org.openyu.socklet.socklet.service.SockletService;
 import org.openyu.socklet.socklet.vo.SockletConfig;
 import org.openyu.socklet.socklet.vo.impl.SockletConfigImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * socket的小程式,此為控制器
@@ -40,8 +39,6 @@ public abstract class SockletServiceSupporter extends BaseServiceSupporter imple
 	/**
 	 * 線程服務
 	 */
-	@Autowired
-	@Qualifier("threadService")
 	protected transient ThreadService threadService;
 
 	private String id;
@@ -67,6 +64,7 @@ public abstract class SockletServiceSupporter extends BaseServiceSupporter imple
 	public SockletServiceSupporter() {
 	}
 
+	@SockletThreadService
 	public void setThreadService(ThreadService threadService) {
 		this.threadService = threadService;
 	}
