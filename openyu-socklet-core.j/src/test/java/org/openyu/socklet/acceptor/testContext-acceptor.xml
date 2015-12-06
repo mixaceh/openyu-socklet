@@ -9,7 +9,12 @@
              http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
              http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd
              ">
-
+	<bean
+		id="acceptorThreadService"
+		class="org.openyu.commons.thread.impl.ThreadServiceFactoryBean"
+		parent="threadService"
+		p:configLocation="file:src/test/config/etc/AcceptorThreadService.properties" />
+		
 	<!-- master -->
 	<bean
 		id="masterAcceptor"
