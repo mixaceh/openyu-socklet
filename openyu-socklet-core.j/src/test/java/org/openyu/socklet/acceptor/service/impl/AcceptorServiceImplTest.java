@@ -12,15 +12,16 @@ import com.carrotsearch.junitbenchmarks.BenchmarkRule;
 
 import org.openyu.commons.junit.supporter.BaseTestSupporter;
 import org.openyu.commons.thread.ThreadHelper;
+import org.openyu.socklet.acceptor.service.AcceptorService;
 
 public class AcceptorServiceImplTest extends BaseTestSupporter {
 
 	@Rule
 	public BenchmarkRule benchmarkRule = new BenchmarkRule();
 
-	private static AcceptorServiceImpl masterAcceptor;
+	private static AcceptorService masterAcceptor;
 
-	private static AcceptorServiceImpl slave1Acceptor;
+	private static AcceptorService slave1Acceptor;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -32,8 +33,8 @@ public class AcceptorServiceImplTest extends BaseTestSupporter {
 				"org/openyu/socklet/acceptor/testContext-acceptor.xml",//
 		});
 		//
-		masterAcceptor = (AcceptorServiceImpl) applicationContext.getBean("masterAcceptor");
-		slave1Acceptor = (AcceptorServiceImpl) applicationContext.getBean("slave1Acceptor");
+		masterAcceptor = (AcceptorService) applicationContext.getBean("masterAcceptor");
+		slave1Acceptor = (AcceptorService) applicationContext.getBean("slave1Acceptor");
 	}
 
 	@Test

@@ -10,6 +10,7 @@ import com.carrotsearch.junitbenchmarks.BenchmarkOptions;
 import com.carrotsearch.junitbenchmarks.BenchmarkRule;
 
 import org.openyu.commons.junit.supporter.BaseTestSupporter;
+import org.openyu.socklet.acceptor.service.AcceptorService;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class AcceptorServiceFactoryBeanTest extends BaseTestSupporter {
@@ -17,30 +18,33 @@ public class AcceptorServiceFactoryBeanTest extends BaseTestSupporter {
 	@Rule
 	public BenchmarkRule benchmarkRule = new BenchmarkRule();
 
-	private static AcceptorServiceImpl acceptorServiceImpl;
+	private static AcceptorService acceptorService;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		applicationContext = new ClassPathXmlApplicationContext(new String[] { //
 				"applicationContext-init.xml", //
-				"org/openyu/commons/thread/testContext-thread.xml",//
+				"testContext-thread.xml", //
+				"testContext-security.xml", //
+				"org/openyu/socklet/message/testContext-message.xml", //
+				"org/openyu/socklet/acceptor/testContext-acceptor-factory-bean.xml",//
 
 		});
-		acceptorServiceImpl = (AcceptorServiceImpl) applicationContext.getBean("acceptorServiceFactoryBean");
+		acceptorService = (AcceptorService) applicationContext.getBean("acceptorServiceFactoryBean");
 	}
 
 	@Test
-	@BenchmarkOptions(benchmarkRounds = 2, warmupRounds = 0, concurrency = 1)
-	public void acceptorServiceImpl() {
-		System.out.println(acceptorServiceImpl);
-		assertNotNull(acceptorServiceImpl);
+	@BenchmarkOptions(benchmarkRounds = 1, warmupRounds = 0, concurrency = 1)
+	public void acceptorService() {
+		System.out.println(acceptorService);
+		assertNotNull(acceptorService);
 	}
 
 	@Test
 	@BenchmarkOptions(benchmarkRounds = 1, warmupRounds = 0, concurrency = 1)
 	public void close() {
-		System.out.println(acceptorServiceImpl);
-		assertNotNull(acceptorServiceImpl);
+		System.out.println(acceptorService);
+		assertNotNull(acceptorService);
 		applicationContext.close();
 		// 多次,不會丟出ex
 		applicationContext.close();
@@ -49,8 +53,8 @@ public class AcceptorServiceFactoryBeanTest extends BaseTestSupporter {
 	@Test
 	@BenchmarkOptions(benchmarkRounds = 1, warmupRounds = 0, concurrency = 1)
 	public void refresh() {
-		System.out.println(acceptorServiceImpl);
-		assertNotNull(acceptorServiceImpl);
+		System.out.println(acceptorService);
+		assertNotNull(acceptorService);
 		applicationContext.refresh();
 		// 多次,不會丟出ex
 		applicationContext.refresh();

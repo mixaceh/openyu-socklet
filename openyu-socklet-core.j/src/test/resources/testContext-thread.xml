@@ -7,7 +7,22 @@
 	xsi:schemaLocation="
              http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
              http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd">
+	
+	<!-- for acceptor thread -->
+	<bean
+		id="acceptorThreadService"
+		class="org.openyu.commons.thread.impl.ThreadServiceFactoryBean"
+		parent="threadService"
+		p:configLocation="file:src/test/config/etc/AcceptorThreadService.properties" />
 
+	<!-- for socklet thread -->
+	<bean
+		id="sockletThreadService"
+		class="org.openyu.commons.thread.impl.ThreadServiceFactoryBean"
+		parent="threadService"
+		p:configLocation="file:src/test/config/etc/SockletThreadService.properties" />
+
+	<!-- thread -->
 	<bean
 		id="threadService"
 		class="org.openyu.commons.thread.impl.ThreadServiceFactoryBean"
@@ -19,19 +34,5 @@
 		class="org.openyu.commons.thread.impl.ThreadServiceFactoryBean"
 		parent="baseServiceFactorySupporter"
 		p:configLocation="file:src/test/config/etc/BlockingThreadService.properties" />
-
-	<!-- for acceptor -->
-	<bean
-		id="acceptorThreadService"
-		class="org.openyu.commons.thread.impl.ThreadServiceFactoryBean"
-		parent="threadService"
-		p:configLocation="file:src/test/config/etc/AcceptorThreadService.properties" />
-
-	<!-- for socklet -->
-	<bean
-		id="sockletThreadService"
-		class="org.openyu.commons.thread.impl.ThreadServiceFactoryBean"
-		parent="threadService"
-		p:configLocation="file:src/test/config/etc/SockletThreadService.properties" />
 
 </beans>

@@ -26,7 +26,7 @@
 			value="ACCOUNT" />
 		<property name="acceptors">
 			<set>
-				<value>ACCOUNT</value>
+				<value>account</value>
 			</set>
 		</property>
 		<property name="initParameters">
@@ -54,7 +54,7 @@
 			value="LOGIN" />
 		<property name="acceptors">
 			<set>
-				<value>LOGIN</value>
+				<value>login</value>
 			</set>
 		</property>
 		<property name="initParameters">
@@ -82,9 +82,9 @@
 			value="CORE" />
 		<property name="acceptors">
 			<set>
-				<value>SLAVE1</value>
-				<value>SLAVE2</value>
-				<value>SLAVE3</value>
+				<value>slave1</value>
+				<value>slave2</value>
+				<value>slave3</value>
 			</set>
 		</property>
 		<property name="initParameters">
@@ -102,8 +102,8 @@
 		parent="systemRelationAdapter">
 		<property name="acceptors">
 			<set>
-				<value>MASTER</value>
-				<value>SLAVE1</value>
+				<value>master</value>
+				<value>slave1</value>
 			</set>
 		</property>
 	</bean>
@@ -114,8 +114,8 @@
 		parent="slaveSessionAdapter">
 		<property name="acceptors">
 			<set>
-				<value>MASTER</value>
-				<value>SLAVE1</value>
+				<value>master</value>
+				<value>slave1</value>
 			</set>
 		</property>
 	</bean>
@@ -136,9 +136,9 @@
 			value="CHAT" />
 		<property name="acceptors">
 			<set>
-				<value>SLAVE1</value>
-				<value>SLAVE2</value>
-				<value>SLAVE3</value>
+				<value>slave1</value>
+				<value>slave2</value>
+				<value>slave3</value>
 			</set>
 		</property>
 		<property name="initParameters">
@@ -166,13 +166,13 @@
 			value="FOUR_SYMBOL" />
 		<property name="acceptors">
 			<set>
-				<value>SLAVE1</value>
-				<value>SLAVE2</value>
-				<value>SLAVE3</value>
+				<value>slave1</value>
+				<value>slave2</value>
+				<value>slave3</value>
 				<!-- 02 -->
-				<value>SLAVE1_02</value>
-				<value>SLAVE2_02</value>
-				<value>SLAVE3_02</value>
+				<value>slave1_02</value>
+				<value>slave2_02</value>
+				<value>slave3_02</value>
 			</set>
 		</property>
 		<property name="initParameters">

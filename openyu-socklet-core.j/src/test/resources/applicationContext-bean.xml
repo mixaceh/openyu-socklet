@@ -17,6 +17,7 @@
 		parent="threadService"
 		p:configLocation="file:src/test/config/etc/AcceptorThreadService.properties" />
 
+	<!-- for socklet thread -->
 	<bean
 		id="sockletThreadService"
 		class="org.openyu.commons.thread.impl.ThreadServiceFactoryBean"

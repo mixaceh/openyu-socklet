@@ -12,7 +12,6 @@ import com.carrotsearch.junitbenchmarks.BenchmarkRule;
 
 import org.openyu.commons.junit.supporter.BaseTestSupporter;
 import org.openyu.commons.thread.ThreadHelper;
-import org.openyu.commons.thread.ThreadService;
 import org.openyu.socklet.acceptor.service.AcceptorService;
 
 public class Slave1AcceptorTest extends BaseTestSupporter {
