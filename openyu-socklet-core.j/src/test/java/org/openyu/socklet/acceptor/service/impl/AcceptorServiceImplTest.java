@@ -37,7 +37,7 @@ public class AcceptorServiceImplTest extends BaseTestSupporter {
 	}
 
 	@Test
-	@BenchmarkOptions(benchmarkRounds = 2, warmupRounds = 0, concurrency = 1)
+	@BenchmarkOptions(benchmarkRounds = 1, warmupRounds = 0, concurrency = 1)
 	public void masterAcceptor() {
 		System.out.println(masterAcceptor);
 		assertNotNull(masterAcceptor);

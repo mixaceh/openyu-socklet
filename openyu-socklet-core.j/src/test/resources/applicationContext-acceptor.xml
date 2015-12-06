@@ -22,17 +22,10 @@
 
 	<!-- acceptor -->
 	<bean
-		id="acceptorThreadService"
-		class="org.openyu.commons.thread.impl.ThreadServiceFactoryBean"
-		parent="threadService"
-		p:configLocation="file:src/test/config/etc/AcceptorThreadService.properties" />
-
-	<bean
 		id="acceptorServiceSupporter"
 		class="org.openyu.socklet.acceptor.service.impl.AcceptorServiceImpl"
 		parent="baseServiceSupporter"
-		abstract="true"
-		p:threadService-ref="acceptorThreadService" />
+		abstract="true" />
 
 	<bean
 		id="acceptorSupporter"
@@ -43,17 +36,10 @@
 			
 	<!-- socklet -->
 	<bean
-		id="sockletThreadService"
-		class="org.openyu.commons.thread.impl.ThreadServiceFactoryBean"
-		parent="threadService"
-		p:configLocation="file:src/test/config/etc/SockletThreadService.properties" />
-
-	<bean
 		id="sockletServiceSupporter"
 		class="org.openyu.socklet.socklet.service.supporter.SockletServiceSupporter"
 		parent="baseServiceSupporter"
-		abstract="true"
-		p:threadService-ref="sockletThreadService" />
+		abstract="true" />
 		
 	<!--listener -->
 	<bean

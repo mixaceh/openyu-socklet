@@ -14,8 +14,6 @@ import org.jgroups.ReceiverAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanIsAbstractException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.openyu.commons.enumz.EnumHelper;
 import org.openyu.commons.lang.ByteHelper;
 import org.openyu.commons.lang.ClassHelper;
@@ -102,6 +100,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	/**
 	 * 線程服務
 	 */
+	@AcceptorThreadService
 	protected transient ThreadService threadService;
 
 	/**
@@ -370,7 +369,6 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	public AcceptorServiceImpl() {
 	}
 
-	@AcceptorThreadService
 	public void setThreadService(ThreadService threadService) {
 		this.threadService = threadService;
 	}

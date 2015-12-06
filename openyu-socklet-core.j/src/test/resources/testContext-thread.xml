@@ -20,4 +20,18 @@
 		parent="baseServiceFactorySupporter"
 		p:configLocation="file:src/test/config/etc/BlockingThreadService.properties" />
 
+	<!-- for acceptor -->
+	<bean
+		id="acceptorThreadService"
+		class="org.openyu.commons.thread.impl.ThreadServiceFactoryBean"
+		parent="threadService"
+		p:configLocation="file:src/test/config/etc/AcceptorThreadService.properties" />
+
+	<!-- for socklet -->
+	<bean
+		id="sockletThreadService"
+		class="org.openyu.commons.thread.impl.ThreadServiceFactoryBean"
+		parent="threadService"
+		p:configLocation="file:src/test/config/etc/SockletThreadService.properties" />
+
 </beans>

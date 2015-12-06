@@ -39,6 +39,7 @@ public abstract class SockletServiceSupporter extends BaseServiceSupporter imple
 	/**
 	 * 線程服務
 	 */
+	@SockletThreadService
 	protected transient ThreadService threadService;
 
 	private String id;
@@ -64,7 +65,6 @@ public abstract class SockletServiceSupporter extends BaseServiceSupporter imple
 	public SockletServiceSupporter() {
 	}
 
-	@SockletThreadService
 	public void setThreadService(ThreadService threadService) {
 		this.threadService = threadService;
 	}
