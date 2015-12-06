@@ -112,16 +112,16 @@
 	<util:set
 		id="slaveSessionAdapterAcceptors"
 		set-class="java.util.LinkedHashSet">
-		<value>SLAVE1</value>
-		<value>SLAVE2</value>
-		<value>SLAVE3</value>
-		<value>SLAVE4</value>
-		<value>SLAVE5</value>
-		<value>SLAVE6</value>
-		<value>SLAVE7</value>
-		<value>SLAVE8</value>
-		<value>SLAVE9</value>
-		<value>SLAVE10</value>
+		<value>slave1</value>
+		<value>slave2</value>
+		<value>slave3</value>
+		<value>slave4</value>
+		<value>slave5</value>
+		<value>slave6</value>
+		<value>slave7</value>
+		<value>slave8</value>
+		<value>slave9</value>
+		<value>slave10</value>
 	</util:set>	
 
 	<!-- system, slave -->
@@ -135,26 +135,26 @@
 	<util:set
 		id="systemSlaveSessionAdapterAcceptors"
 		set-class="java.util.LinkedHashSet">
-		<value>SYSTEM</value>
-		<value>SLAVE1</value>
-		<value>SLAVE2</value>
-		<value>SLAVE3</value>
-		<value>SLAVE4</value>
-		<value>SLAVE5</value>
-		<value>SLAVE6</value>
-		<value>SLAVE7</value>
-		<value>SLAVE8</value>
-		<value>SLAVE9</value>
-		<value>SLAVE10</value>
+		<value>system</value>
+		<value>slave1</value>
+		<value>slave2</value>
+		<value>slave3</value>
+		<value>slave4</value>
+		<value>slave5</value>
+		<value>slave6</value>
+		<value>slave7</value>
+		<value>slave8</value>
+		<value>slave9</value>
+		<value>slave10</value>
 	</util:set>
 
-	<!-- ACCOUNT -->
+	<!-- account -->
 	<bean
 		id="accountAcceptor"
 		parent="acceptorSupporter">
 		<property
 			name="id"
-			value="ACCOUNT" />
+			value="account" />
 		<property
 			name="instanceId"
 			value="01" />
@@ -178,7 +178,7 @@
 			value="1000" />
 		<property
 			name="cluster"
-			value="SOCKLET-CORE" />
+			value="socklet-sore" />
 		<property name="relations">
 			<list>
 			</list>
@@ -196,13 +196,13 @@
 		</property>
 	</bean>
 
-	<!-- LOGIN -->
+	<!-- login -->
 	<bean
 		id="loginAcceptor"
 		parent="acceptorSupporter">
 		<property
 			name="id"
-			value="LOGIN" />
+			value="login" />
 		<property
 			name="instanceId"
 			value="01" />
@@ -226,10 +226,10 @@
 			value="1000" />
 		<property
 			name="cluster"
-			value="SOCKLET-CORE" />
+			value="socklet-sore" />
 		<property name="relations">
 			<list>
-				<value>ACCOUNT</value>
+				<value>account</value>
 			</list>
 		</property>
 		<property
@@ -245,13 +245,13 @@
 		</property>
 	</bean>
 	
-	<!-- MASTER -->
+	<!-- master -->
 	<bean
 		id="masterAcceptor"
 		parent="acceptorSupporter">
 		<property
 			name="id"
-			value="MASTER" />
+			value="master" />
 		<property
 			name="instanceId"
 			value="01" />
@@ -275,11 +275,11 @@
 			value="1000" />
 		<property
 			name="cluster"
-			value="SOCKLET-CORE" />
+			value="socklet-sore" />
 		<property name="relations">
 			<list>
-				<value>ACCOUNT</value>
-				<value>LOGIN</value>
+				<value>account</value>
+				<value>login</value>
 			</list>
 		</property>
 		<property
@@ -295,13 +295,13 @@
 		</property>
 	</bean>
 	
-	<!-- SLAVE1 -->
+	<!-- slave1 -->
 	<bean
 		id="slave1Acceptor"
 		parent="acceptorSupporter">
 		<property
 			name="id"
-			value="SLAVE1" />
+			value="slave1" />
 		<property
 			name="instanceId"
 			value="01" />
@@ -325,12 +325,12 @@
 			value="1000" />
 		<property
 			name="cluster"
-			value="SOCKLET-CORE" />
+			value="socklet-sore" />
 		<property name="relations">
 			<list>
-				<value>ACCOUNT</value>
-				<value>LOGIN</value>
-				<value>MASTER</value>
+				<value>account</value>
+				<value>login</value>
+				<value>master</value>
 			</list>
 		</property>
 		<property
@@ -346,13 +346,13 @@
 		</property>
 	</bean>
 
-	<!-- SLAVE1_02 -->
+	<!-- slave1_02 -->
 	<bean
 		id="slave1_02Acceptor"
 		parent="acceptorSupporter">
 		<property
 			name="id"
-			value="SLAVE1_02" />
+			value="slave1_02" />
 		<property
 			name="instanceId"
 			value="02" />
@@ -376,12 +376,12 @@
 			value="1000" />
 		<property
 			name="cluster"
-			value="SOCKLET-CORE" />
+			value="socklet-sore" />
 		<property name="relations">
 			<list>
-				<value>ACCOUNT</value>
-				<value>LOGIN</value>
-				<value>MASTER</value>
+				<value>account</value>
+				<value>login</value>
+				<value>master</value>
 			</list>
 		</property>
 		<property
@@ -397,13 +397,13 @@
 		</property>
 	</bean>
 	
-	<!-- SLAVE2 -->
+	<!-- slave2 -->
 	<bean
 		id="slave2Acceptor"
 		parent="acceptorSupporter">
 		<property
 			name="id"
-			value="SLAVE2" />
+			value="slave2" />
 		<property
 			name="instanceId"
 			value="01" />
@@ -427,13 +427,13 @@
 			value="1000" />
 		<property
 			name="cluster"
-			value="SOCKLET-CORE" />
+			value="socklet-sore" />
 		<property name="relations">
 			<list>
-				<value>ACCOUNT</value>
-				<value>LOGIN</value>
-				<value>MASTER</value>
-				<value>SLAVE1</value>
+				<value>account</value>
+				<value>login</value>
+				<value>master</value>
+				<value>slave1</value>
 			</list>
 		</property>
 		<property
@@ -449,13 +449,13 @@
 		</property>
 	</bean>
 
-	<!-- SLAVE2_02 -->
+	<!-- slave2_02 -->
 	<bean
 		id="slave2_02Acceptor"
 		parent="acceptorSupporter">
 		<property
 			name="id"
-			value="SLAVE2_02" />
+			value="slave2_02" />
 		<property
 			name="instanceId"
 			value="02" />
@@ -479,13 +479,13 @@
 			value="1000" />
 		<property
 			name="cluster"
-			value="SOCKLET-CORE" />
+			value="socklet-sore" />
 		<property name="relations">
 			<list>
-				<value>ACCOUNT</value>
-				<value>LOGIN</value>
-				<value>MASTER</value>
-				<value>SLAVE1_02</value>
+				<value>account</value>
+				<value>login</value>
+				<value>master</value>
+				<value>slave1_02</value>
 			</list>
 		</property>
 		<property
@@ -501,13 +501,13 @@
 		</property>
 	</bean>
 
-	<!-- SLAVE3 -->
+	<!-- slave3 -->
 	<bean
 		id="slave3Acceptor"
 		parent="acceptorSupporter">
 		<property
 			name="id"
-			value="SLAVE3" />
+			value="slave3" />
 		<property
 			name="instanceId"
 			value="01" />
@@ -531,14 +531,14 @@
 			value="1000" />
 		<property
 			name="cluster"
-			value="SOCKLET-CORE" />
+			value="socklet-sore" />
 		<property name="relations">
 			<list>
-				<value>ACCOUNT</value>
-				<value>LOGIN</value>
-				<value>MASTER</value>
-				<value>SLAVE1</value>
-				<value>SLAVE2</value>
+				<value>account</value>
+				<value>login</value>
+				<value>master</value>
+				<value>slave1</value>
+				<value>slave2</value>
 			</list>
 		</property>
 		<property
@@ -554,13 +554,13 @@
 		</property>
 	</bean>
 
-	<!-- SLAVE3_02 -->
+	<!-- slave3_02 -->
 	<bean
 		id="slave3_02Acceptor"
 		parent="acceptorSupporter">
 		<property
 			name="id"
-			value="SLAVE3_02" />
+			value="slave3_02" />
 		<property
 			name="instanceId"
 			value="02" />
@@ -584,14 +584,14 @@
 			value="1000" />
 		<property
 			name="cluster"
-			value="SOCKLET-CORE" />
+			value="socklet-sore" />
 		<property name="relations">
 			<list>
-				<value>ACCOUNT</value>
-				<value>LOGIN</value>
-				<value>MASTER</value>
-				<value>SLAVE1_02</value>
-				<value>SLAVE2_02</value>
+				<value>account</value>
+				<value>login</value>
+				<value>master</value>
+				<value>slave1_02</value>
+				<value>slave2_02</value>
 			</list>
 		</property>
 		<property

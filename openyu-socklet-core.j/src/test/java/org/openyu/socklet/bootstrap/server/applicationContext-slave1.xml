@@ -7,6 +7,6 @@
 
 	<bean id="slave1AcceptorStarter" class="org.openyu.socklet.acceptor.vo.impl.AcceptorStarterImpl">
 		<!-- acceptor id -->
-		<property name="id" value="SLAVE1" />
+		<property name="id" value="slave1" />
 	</bean>
 </beans>

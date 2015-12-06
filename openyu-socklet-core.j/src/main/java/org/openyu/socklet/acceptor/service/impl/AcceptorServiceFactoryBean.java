@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * ThreadService工廠
+ * AcceptorServiceGroup工廠
  */
 public final class AcceptorServiceFactoryBean<T extends ThreadService>
 		extends BaseServiceFactorySupporter<ThreadService> {
