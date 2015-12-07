@@ -170,9 +170,10 @@ public final class ServerBootstrap extends BootstrapSupporter {
 	 */
 	protected static void doStart() throws Exception {
 		for (AcceptorService acceptorService : acceptorServices.values()) {
+			started = acceptorService.isStarted();
+			//
 			id = acceptorService.getId();
 			instanceId = acceptorService.getInstanceId();
-			started = acceptorService.isStarted();
 			break;
 		}
 	}
