@@ -30,12 +30,17 @@
 		<property
 			name="outputId"
 			value="01" />
+		<!--  	
 		<property name="relationServers">
 			<list>
 				<value>127.0.0.1:3200</value>
 				<value>127.0.0.1:3201</value>
 			</list>
 		</property>
+		-->
+		<property
+			name="relationServers"
+			ref="masterAcceptor.relationServers" />
 		<property name="clientServers">
 			<list>
 				<value>127.0.0.1:10200</value>
@@ -60,6 +65,12 @@
 			</props>
 		</property>
 	</bean>
+
+	<util:list id="masterAcceptor.relationServers">
+		<value>127.0.0.1:3200</value>
+		<value>127.0.0.1:3201</value>
+	</util:list>
+	
 
 	<!-- slave1 -->
 	<bean
@@ -99,6 +110,9 @@
 			name="cluster"
 			value="socklet" />
 		<property
+			name="relations"
+			ref="slave1Acceptor.relations"/>
+		<property
 			name="relationRetryNumber"
 			value="1" />
 		<property
@@ -110,5 +124,13 @@
 			</props>
 		</property>
 	</bean>
+
+	<util:map
+		id="slave1Acceptor.relations"
+		value-type="java.util.List">
+		<entry
+			key="master"
+			value-ref="masterAcceptor.relationServers" />
+	</util:map>
 
 </beans>
