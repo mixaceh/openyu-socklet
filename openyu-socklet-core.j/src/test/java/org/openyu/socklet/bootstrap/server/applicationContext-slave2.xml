@@ -5,7 +5,7 @@
 	xsi:schemaLocation="
              http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
 
-	<bean id="slave2AcceptorStarter" class="org.openyu.socklet.acceptor.vo.impl.AcceptorStarterImpl">
+	<bean id="slave2Starter" class="org.openyu.socklet.acceptor.vo.impl.AcceptorStarterImpl">
 		<!-- acceptor id -->
 		<property name="id" value="slave2" />
 	</bean>

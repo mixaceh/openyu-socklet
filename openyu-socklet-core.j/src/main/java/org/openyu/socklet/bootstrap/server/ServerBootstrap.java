@@ -18,14 +18,12 @@ import org.openyu.commons.thread.ThreadHelper;
 import org.openyu.commons.util.ByteUnit;
 import org.openyu.commons.util.CollectionHelper;
 import org.openyu.socklet.acceptor.service.AcceptorService;
-import org.openyu.socklet.acceptor.vo.AcceptorStarter;
 
 /**
  * Acceptor啟動器
  */
-@Deprecated
-public final class ServerBootstrapBak extends BootstrapSupporter {
-	private static transient final Logger LOGGER = LoggerFactory.getLogger(ServerBootstrapBak.class);
+public final class ServerBootstrap extends BootstrapSupporter {
+	private static transient final Logger LOGGER = LoggerFactory.getLogger(ServerBootstrap.class);
 
 	/**
 	 * acceptor id
@@ -40,16 +38,11 @@ public final class ServerBootstrapBak extends BootstrapSupporter {
 	private static boolean started;
 
 	/**
-	 * 所有collector啟動器
-	 */
-	private static Map<String, AcceptorStarter> acceptorStarters = new LinkedHashMap<String, AcceptorStarter>();
-
-	/**
 	 * 所有acceptorService
 	 */
 	private static Map<String, AcceptorService> acceptorServices = new LinkedHashMap<String, AcceptorService>();
 
-	public ServerBootstrapBak() {
+	public ServerBootstrap() {
 	}
 
 	public static boolean isStarted() {
@@ -76,15 +69,13 @@ public final class ServerBootstrapBak extends BootstrapSupporter {
 			try {
 				// 建構applicationContext
 				buildApplicationContext(args);
-				// 建構acceptor啟動器
-				buildAcceptorStarters();
 				// 建構acceptorService
 				buildAcceptorServices();
 				// 啟動
 				doStart();
-			} catch (Exception ex) {
+			} catch (Exception e) {
 				started = false;
-				ex.printStackTrace();
+				LOGGER.error(new StringBuilder("Exception encountered during main()").toString(), e);
 			}
 			//
 			long durTime = System.nanoTime() - begTime;
@@ -136,17 +127,6 @@ public final class ServerBootstrapBak extends BootstrapSupporter {
 	}
 
 	/**
-	 * 建構acceptor啟動器
-	 */
-	protected static void buildAcceptorStarters() {
-		acceptorStarters = applicationContext.getBeansOfType(AcceptorStarter.class);
-		//
-		if (CollectionHelper.isEmpty(acceptorStarters)) {
-			throw new IllegalArgumentException("The AcceptorStarters must not be null or empty");
-		}
-	}
-
-	/**
 	 * 建構acceptorService
 	 */
 	protected static void buildAcceptorServices() {
@@ -165,16 +145,14 @@ public final class ServerBootstrapBak extends BootstrapSupporter {
 	public static void start(ApplicationContext applicationContext) {
 		long start = System.nanoTime();
 		try {
-			ServerBootstrapBak.applicationContext = applicationContext;
-			// 建構acceptor啟動器
-			buildAcceptorStarters();
+			ServerBootstrap.applicationContext = applicationContext;
 			// 建構acceptorService
 			buildAcceptorServices();
 			//
 			doStart();
-		} catch (Exception ex) {
+		} catch (Exception e) {
 			started = false;
-			ex.printStackTrace();
+			LOGGER.error(new StringBuilder("Exception encountered during main()").toString(), e);
 		}
 		//
 		long dur = System.nanoTime() - start;
@@ -191,52 +169,11 @@ public final class ServerBootstrapBak extends BootstrapSupporter {
 	 * 內部啟動
 	 */
 	protected static void doStart() throws Exception {
-		AcceptorService acceptorService = null;
-		for (AcceptorStarter acceptorStarter : acceptorStarters.values()) {
-			// id
-			id = acceptorStarter.getId();
-
-			// acceptor服務
-			acceptorService = getAcceptorService(acceptorStarter);
-			if (acceptorService != null) {
-				instanceId = acceptorService.getInstanceId();
-				acceptorStarter.setAcceptorService(acceptorService);
-				// 是否啟動
-				started = acceptorService.isStarted();
-			} else {
-				LOGGER.error("Can't find [" + acceptorStarter.getId() + "] AcceptorService");
-			}
+		for (AcceptorService acceptorService : acceptorServices.values()) {
+			id = acceptorService.getId();
+			instanceId = acceptorService.getInstanceId();
+			started = acceptorService.isStarted();
 			break;
 		}
-
-		// for shutdown test
-		// ThreadHelper.sleep(5 * 1000);
-		// acceptorService.shutdown();
-
-		// for restart test
-		// 若在10秒內重啟
-		// 因有acceptorService.StartClusterCaller未完全停止
-		// 此時會又再重新啟動一個StartClusterCaller
-		// ThreadHelper.sleep(10 * 1000);
-		// /acceptorService.start();
-	}
-
-	/**
-	 * 取得acceptorService
-	 * 
-	 * @param acceptorStarter
-	 * @return
-	 */
-	protected static AcceptorService getAcceptorService(AcceptorStarter acceptorStarter) {
-		AcceptorService result = null;
-		if (acceptorStarter != null) {
-			for (AcceptorService acceptorService : acceptorServices.values()) {
-				if (acceptorStarter.getId() != null && acceptorStarter.getId().equals(acceptorService.getId())) {
-					result = acceptorService;
-					break;
-				}
-			}
-		}
-		return result;
 	}
 }

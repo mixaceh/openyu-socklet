@@ -6,7 +6,7 @@ public class MasterBootstrapTest {
 
 	@Test
 	public void main() {
-		ServerBootstrapBak
+		ServerBootstrap
 				.main(new String[] { "org/openyu/socklet/bootstrap/server/applicationContext-master.xml" });
 	}
 
