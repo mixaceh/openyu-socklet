@@ -40,7 +40,7 @@ public class Slave1AcceptorTest extends BaseTestSupporter {
 		System.out.println(slave1Acceptor);
 		assertNotNull(slave1Acceptor);
 		//
-		ThreadHelper.sleep(3 * 1000);
+		ThreadHelper.sleep(5 * 1000);
 	}
 
 	@Test

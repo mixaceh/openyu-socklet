@@ -10,6 +10,7 @@ import com.carrotsearch.junitbenchmarks.BenchmarkOptions;
 import com.carrotsearch.junitbenchmarks.BenchmarkRule;
 
 import org.openyu.commons.junit.supporter.BaseTestSupporter;
+import org.openyu.commons.thread.ThreadHelper;
 import org.openyu.socklet.acceptor.service.AcceptorService;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -38,6 +39,8 @@ public class AcceptorServiceFactoryBeanTest extends BaseTestSupporter {
 	public void acceptorService() {
 		System.out.println(acceptorService);
 		assertNotNull(acceptorService);
+		//
+		ThreadHelper.sleep(5 * 1000);
 	}
 
 	@Test

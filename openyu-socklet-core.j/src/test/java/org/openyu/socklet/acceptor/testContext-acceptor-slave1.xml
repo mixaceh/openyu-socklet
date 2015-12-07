@@ -45,10 +45,6 @@
 		<property
 			name="cluster"
 			value="socklet" />
-		<property name="relations">
-			<list>
-			</list>
-		</property>
 		<property
 			name="relationRetryNumber"
 			value="1" />
