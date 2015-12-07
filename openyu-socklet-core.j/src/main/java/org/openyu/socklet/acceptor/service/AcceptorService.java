@@ -69,11 +69,13 @@ public interface AcceptorService extends BaseService {
 	/**
 	 * 連線到其他server, 以acceptor id判斷
 	 * 
+	 * <slave1,List<127.0.0.1:3300,127.0.0.1:3301>>
+	 * 
 	 * @return
 	 */
-	List<String> getRelations();
+	Map<String, List<String>> getRelations();
 
-	void setRelations(List<String> relations);
+	void setRelations(Map<String, List<String>> relations);
 
 	// ------------------------------------------------
 
@@ -125,23 +127,23 @@ public interface AcceptorService extends BaseService {
 
 	void setOutputId(String outputId);
 
-//	/**
-//	 * 重試次數, 0=無限
-//	 *
-//	 * @return
-//	 */
-//	int getRetryNumber();
-//
-//	void setRetryNumber(int retryNumber);
-//
-//	/**
-//	 * 重試暫停毫秒
-//	 *
-//	 * @return
-//	 */
-//	long getRetryPauseMills();
-//
-//	void setRetryPauseMills(long retryPauseMills);
+	// /**
+	// * 重試次數, 0=無限
+	// *
+	// * @return
+	// */
+	// int getRetryNumber();
+	//
+	// void setRetryNumber(int retryNumber);
+	//
+	// /**
+	// * 重試暫停毫秒
+	// *
+	// * @return
+	// */
+	// long getRetryPauseMills();
+	//
+	// void setRetryPauseMills(long retryPauseMills);
 
 	/**
 	 * relation重試次數, 0=無限

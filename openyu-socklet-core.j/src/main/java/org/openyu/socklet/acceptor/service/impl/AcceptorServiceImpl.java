@@ -1,6 +1,7 @@
 package org.openyu.socklet.acceptor.service.impl;
 
 import java.nio.ByteBuffer;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +14,6 @@ import org.jgroups.JChannel;
 import org.jgroups.ReceiverAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.BeanIsAbstractException;
 import org.openyu.commons.enumz.EnumHelper;
 import org.openyu.commons.lang.ByteHelper;
 import org.openyu.commons.lang.ClassHelper;
@@ -174,7 +174,12 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 
 	// 連到其他的internal server
 	// slave1...n
-	private List<String> relations;
+	// private List<String> relations = new LinkedList<String>();
+
+	// <slave1,List<127.0.0.1:3300,127.0.0.1:3301>>
+	// {login=[127.0.0.1:3101, 127.0.0.1:3100],account=[127.0.0.1:3001,
+	// 127.0.0.1:3000]}
+	private Map<String, List<String>> relations = new LinkedHashMap<String, List<String>>();
 
 	// 主動連線到其他server的RelationClient
 	// <master,InitiativeRelation>
@@ -500,11 +505,11 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		return clusterChannel;
 	}
 
-	public List<String> getRelations() {
+	public Map<String, List<String>> getRelations() {
 		return relations;
 	}
 
-	public void setRelations(List<String> relations) {
+	public void setRelations(Map<String, List<String>> relations) {
 		this.relations = relations;
 	}
 
@@ -855,104 +860,31 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	 * 主動關係連線 slave2 -> slave1
 	 */
 	protected void buildInitiativeRelations() {
-		if (relations == null) {
-			return;
-		}
-		//
-		for (String relation : relations) {
-			if (StringHelper.isEmpty(relation)) {
-				continue;
-			}
-			//
-			String[] buff = relation.split(":");
-			if (buff != null) {
-				// 1.slave1 在本機
-				if (buff.length == 1) {
-					buildLocalRelation(buff[0]);
-				}
-				// 2.slave1:192.168.9.28:3110 在另一台實體主機上
-				else if (buff.length == 3) {
-					buildRemoteRelation(buff[0], buff[1], NumberHelper.toInt(buff[2]));
+		for (Map.Entry<String, List<String>> entry : relations.entrySet()) {
+			String destAcceptorId = entry.getKey();
+			for (String ipPort : entry.getValue()) {
+				String[] buff = ipPort.split(":");
+				// [0]=ip
+				// [1]=port
+				if (buff.length == 2) {
+					buildRelation(destAcceptorId, buff[0], NumberHelper.toInt(buff[1]));
 				} else {
-					LOGGER.error("[" + id + "]" + " Wrong [" + relation
-							+ "] format, ex: [slave1] or [slave1:127.0.0.2:3300]");
+					LOGGER.error("[" + id + "]" + " Wrong [" + destAcceptorId + "] format, ex: [slave1]");
 				}
 			}
-			//
 		}
 	}
 
 	/**
-	 * 本地關係, slave1
+	 * 連線關係, slave1
 	 * 
-	 * @param destAcceptorId
-	 */
-	protected void buildLocalRelation(String destAcceptorId) {
-		// 關連的acceptor
-		AcceptorService acceptor = getAcceptorService(destAcceptorId);
-		if (acceptor == null) {
-			LOGGER.error("LocalRelation [" + destAcceptorId + "] is not exist");
-			return;
-		}
-		//
-		// 訊息接收者
-		InitiativeReceiver initiativeReceiver = new InitiativeReceiver();
-		// 主動關係連線
-		GenericRelation initiativeRelation = initiativeRelations.get(destAcceptorId);
-		if (initiativeRelation == null) {
-			initiativeRelation = new GenericRelationImpl(destAcceptorId);
-			initiativeRelations.put(destAcceptorId, initiativeRelation);
-		}
-
-		// 127.0.0.1:3300
-		for (String ipPort : acceptor.getRelationServers()) {
-			if (StringHelper.isEmpty(ipPort)) {
-				continue;
-			}
-			// slave2->slave1
-			String[] buff = ipPort.split(":");
-			// [0]=ip
-			// [1]=port
-			if (buff.length == 2) {
-				for (int i = 0; i < RELATION_CLIENT_COUNT; i++) {
-					String ip = buff[0];
-					int port = NumberHelper.toInt(buff[1]);
-					// slave2:0:127.0.0.1:3300, 來源id:index:目的ip:port
-					String relationClientId = id + ":" + i + ":" + ip + ":" + port;
-					boolean contains = initiativeRelation.getClients().containsKey(relationClientId);
-					// System.out.println(relationClientId);
-					if (!contains) {
-						// slave2:0:127.0.0.1:3300
-						RelationConnector relationConnector = new RelationConnectorImpl(relationClientId,
-								moduleTypeClass, messageTypeClass, protocolService, ip, port);
-						relationConnector.setReceiver(initiativeReceiver);
-						relationConnector.setRetryNumber(1);
-						relationConnector.setRetryPauseMills(1 * 1000L);
-						//
-						initiativeRelation.getClients().put(relationClientId, relationConnector);
-					}
-				}
-			}
-		}
-		//
-		// System.out.println(id + ", " + initiativeRelations);
-	}
-
-	/**
-	 * 遠端關係, slave1:192.168.9.28:3110
+	 * slave1.relationServers.0=127.0.0.1:3300
 	 * 
 	 * @param destAcceptorId
 	 * @param ip
 	 * @param port
 	 */
-	protected void buildRemoteRelation(String destAcceptorId, String ip, int port) {
-		// 關連的acceptor
-		AcceptorService acceptor = getAcceptorService(destAcceptorId);
-		if (acceptor == null) {
-			LOGGER.error("RemoteRelation[" + destAcceptorId + "] is not exist");
-			return;
-		}
-		//
+	protected void buildRelation(String destAcceptorId, String ip, int port) {
 		// 訊息接收者
 		InitiativeReceiver initiativeReceiver = new InitiativeReceiver();
 		// 主動關係連線
@@ -978,31 +910,6 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 				initiativeRelation.getClients().put(relationClientId, relationConnector);
 			}
 		}
-	}
-
-	protected AcceptorService getAcceptorService(String acceptorId) {
-		AcceptorService result = null;
-		// 找AcceptorService
-		if (acceptorId != null) {
-			try {
-				String[] names = applicationContext.getBeanNamesForType(AcceptorService.class);
-				for (String name : names) {
-					try {
-						AcceptorService acceptorService = (AcceptorService) applicationContext.getBean(name);
-						if (acceptorId.equalsIgnoreCase(acceptorService.getId())) {
-							result = acceptorService;
-							break;
-						}
-					} catch (BeanIsAbstractException ex) {
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}
-				}
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
-		}
-		return result;
 	}
 
 	/**
@@ -1971,8 +1878,8 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		builder.append("id", id);
 		builder.append("instanceId", instanceId);
 		builder.append("outputId", outputId);
-		builder.append("internals", relationServers);
-		builder.append("externals", clientServers);
+		builder.append("relationServers", relationServers);
+		builder.append("clientServers", clientServers);
 		builder.append("maxClient", maxClient);
 		//
 		builder.append("cluster", cluster);
