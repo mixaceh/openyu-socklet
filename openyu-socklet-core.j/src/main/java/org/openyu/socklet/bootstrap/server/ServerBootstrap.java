@@ -152,7 +152,7 @@ public final class ServerBootstrap extends BootstrapSupporter {
 			doStart();
 		} catch (Exception e) {
 			started = false;
-			LOGGER.error(new StringBuilder("Exception encountered during main()").toString(), e);
+			LOGGER.error(new StringBuilder("Exception encountered during start()").toString(), e);
 		}
 		//
 		long dur = System.nanoTime() - start;
