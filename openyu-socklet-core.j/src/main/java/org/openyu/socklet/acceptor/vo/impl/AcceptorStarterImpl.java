@@ -7,6 +7,7 @@ import org.openyu.commons.model.supporter.BaseModelSupporter;
 import org.openyu.socklet.acceptor.service.AcceptorService;
 import org.openyu.socklet.acceptor.vo.AcceptorStarter;
 
+@Deprecated
 public class AcceptorStarterImpl extends BaseModelSupporter implements
 		AcceptorStarter {
 

@@ -6,7 +6,7 @@ public class StandaloneBootstrapTest {
 
 	@Test
 	public void main() {
-		StandaloneBootstrap
+		StandaloneBootstrapBak
 				.main(new String[] { "org/openyu/socklet/bootstrap/server/applicationContext-slave1.xml" });
 	}
 

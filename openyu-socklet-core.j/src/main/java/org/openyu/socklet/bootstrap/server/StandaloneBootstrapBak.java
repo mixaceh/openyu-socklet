@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -19,12 +20,15 @@ import org.openyu.commons.util.ByteUnit;
 import org.openyu.commons.util.CollectionHelper;
 import org.openyu.socklet.acceptor.service.AcceptorService;
 import org.openyu.socklet.acceptor.vo.AcceptorStarter;
+import org.openyu.socklet.socklet.service.SockletService;
 
 /**
- * Acceptor啟動器
+ * 唯一Acceptor啟動器
  */
-public final class ServerBootstrap extends BootstrapSupporter {
-	private static transient final Logger LOGGER = LoggerFactory.getLogger(ServerBootstrap.class);
+@Deprecated
+public final class StandaloneBootstrapBak extends BootstrapSupporter {
+	private static transient final Logger LOGGER = LoggerFactory
+			.getLogger(StandaloneBootstrapBak.class);
 
 	/**
 	 * acceptor id
@@ -32,7 +36,6 @@ public final class ServerBootstrap extends BootstrapSupporter {
 	private static String id;
 
 	private static String instanceId;
-
 	/**
 	 * 判斷是否啟動
 	 */
@@ -48,7 +51,12 @@ public final class ServerBootstrap extends BootstrapSupporter {
 	 */
 	private static Map<String, AcceptorService> acceptorServices = new LinkedHashMap<String, AcceptorService>();
 
-	public ServerBootstrap() {
+	/**
+	 * 所有acceptorService
+	 */
+	private static Map<String, SockletService> sockletServices = new LinkedHashMap<String, SockletService>();
+
+	public StandaloneBootstrapBak() {
 	}
 
 	public static boolean isStarted() {
@@ -60,9 +68,7 @@ public final class ServerBootstrap extends BootstrapSupporter {
 	 * 
 	 * class path
 	 * 
-	 * org/openyu/socklet/bootstrap/server/applicationContext-slave1.xml
-	 * 
-	 * ThreadHelper.loop(50);
+	 * org/openyu/socklet/serverstrap/applicationContext-slave1.xml
 	 * 
 	 * @param args
 	 */
@@ -79,6 +85,8 @@ public final class ServerBootstrap extends BootstrapSupporter {
 				buildAcceptorStarters();
 				// 建構acceptorService
 				buildAcceptorServices();
+				// 建構sockletService
+				buildSockletServices();
 				// 啟動
 				doStart();
 			} catch (Exception ex) {
@@ -92,10 +100,10 @@ public final class ServerBootstrap extends BootstrapSupporter {
 			RuntimeHelper.gc();
 			double durUsedMemory = RuntimeHelper.usedMemory() - begUsedMemory;
 			durUsedMemory = ByteUnit.BYTE.toMB(durUsedMemory);
-			//
+
 			String msgPattern = "[{0}] ({1}) start in {2} ms, memory used {3} MB";
-			StringBuilder msg = new StringBuilder(
-					MessageFormat.format(msgPattern, id, instanceId, durTime, durUsedMemory));
+			StringBuilder msg = new StringBuilder(MessageFormat.format(
+					msgPattern, id, instanceId, durTime, durUsedMemory));
 			//
 			if (started) {
 				LOGGER.info(msg.toString());
@@ -121,27 +129,26 @@ public final class ServerBootstrap extends BootstrapSupporter {
 		if (ArrayHelper.notEmpty(args)) {
 			for (String arg : args) {
 				// class path
-				// org/openyu/socklet/bootstrap/server/applicationContext-slave1.xml
+				// org/openyu/socklet/serverstrap/applicationContext-slave1.xml
 				configLocations.add(arg);
 			}
 		}
 		//
 		applicationContext = new ClassPathXmlApplicationContext(
-				(String[]) configLocations.toArray(new String[configLocations.size()]));
-		//
-		if (applicationContext == null) {
-			throw new IllegalArgumentException("The ApplicationContext must not be null");
-		}
+				(String[]) configLocations.toArray(new String[configLocations
+						.size()]));
 	}
 
 	/**
 	 * 建構acceptor啟動器
 	 */
 	protected static void buildAcceptorStarters() {
-		acceptorStarters = applicationContext.getBeansOfType(AcceptorStarter.class);
+		acceptorStarters = applicationContext
+				.getBeansOfType(AcceptorStarter.class);
 		//
 		if (CollectionHelper.isEmpty(acceptorStarters)) {
-			throw new IllegalArgumentException("The AcceptorStarters must not be null or empty");
+			throw new IllegalArgumentException(
+					"The AcceptorStarters must not be null or empty");
 		}
 	}
 
@@ -149,11 +156,16 @@ public final class ServerBootstrap extends BootstrapSupporter {
 	 * 建構acceptorService
 	 */
 	protected static void buildAcceptorServices() {
-		acceptorServices = applicationContext.getBeansOfType(AcceptorService.class);
-		//
-		if (CollectionHelper.isEmpty(acceptorStarters)) {
-			throw new IllegalArgumentException("The AcceptorServices must not be null or empty");
-		}
+		acceptorServices = applicationContext
+				.getBeansOfType(AcceptorService.class);
+	}
+
+	/**
+	 * 建構sockletService
+	 */
+	protected static void buildSockletServices() {
+		sockletServices = applicationContext
+				.getBeansOfType(SockletService.class);
 	}
 
 	/**
@@ -164,11 +176,13 @@ public final class ServerBootstrap extends BootstrapSupporter {
 	public static void start(ApplicationContext applicationContext) {
 		long start = System.nanoTime();
 		try {
-			ServerBootstrap.applicationContext = applicationContext;
+			StandaloneBootstrapBak.applicationContext = applicationContext;
 			// 建構acceptor啟動器
 			buildAcceptorStarters();
 			// 建構acceptorService
 			buildAcceptorServices();
+			// 建構sockletService
+			buildSockletServices();
 			//
 			doStart();
 		} catch (Exception ex) {
@@ -180,7 +194,8 @@ public final class ServerBootstrap extends BootstrapSupporter {
 		dur = TimeUnit.NANOSECONDS.toMillis(dur);
 		//
 		if (started) {
-			LOGGER.info("[" + id + "] (" + instanceId + ") start in " + dur + " ms");
+			LOGGER.info("[" + id + "] (" + instanceId + ") start in " + dur
+					+ " ms");
 		} else {
 			LOGGER.error("[" + id + "] (" + instanceId + ") started fail");
 		}
@@ -189,22 +204,32 @@ public final class ServerBootstrap extends BootstrapSupporter {
 	/**
 	 * 內部啟動
 	 */
-	protected static void doStart() throws Exception {
+	protected static void doStart() throws Exception{
 		AcceptorService acceptorService = null;
 		for (AcceptorStarter acceptorStarter : acceptorStarters.values()) {
 			// id
 			id = acceptorStarter.getId();
+			for (SockletService sockletService : sockletServices.values()) {
+				Set<String> acceptors = sockletService.getAcceptors();
+				acceptors.clear();
+				acceptors.add(id);
+			}
 
 			// acceptor服務
 			acceptorService = getAcceptorService(acceptorStarter);
 			if (acceptorService != null) {
 				instanceId = acceptorService.getInstanceId();
+				acceptorService.getRelations().clear();
 				acceptorStarter.setAcceptorService(acceptorService);
 				// 是否啟動
 				started = acceptorService.isStarted();
 			} else {
-				LOGGER.error("Can't find [" + acceptorStarter.getId() + "] AcceptorService");
+				LOGGER.error("Can't find [" + acceptorStarter.getId()
+						+ "] AcceptorService");
 			}
+			//
+			id = "starndAlone";
+			acceptorService.setId(id);
 			break;
 		}
 
@@ -226,11 +251,14 @@ public final class ServerBootstrap extends BootstrapSupporter {
 	 * @param acceptorStarter
 	 * @return
 	 */
-	protected static AcceptorService getAcceptorService(AcceptorStarter acceptorStarter) {
+	protected static AcceptorService getAcceptorService(
+			AcceptorStarter acceptorStarter) {
 		AcceptorService result = null;
 		if (acceptorStarter != null) {
 			for (AcceptorService acceptorService : acceptorServices.values()) {
-				if (acceptorStarter.getId() != null && acceptorStarter.getId().equals(acceptorService.getId())) {
+				if (acceptorStarter.getId() != null
+						&& acceptorStarter.getId().equals(
+								acceptorService.getId())) {
 					result = acceptorService;
 					break;
 				}

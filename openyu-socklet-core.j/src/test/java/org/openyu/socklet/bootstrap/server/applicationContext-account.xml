@@ -5,8 +5,10 @@
 	xsi:schemaLocation="
              http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
 
-	<bean id="slave1Starter" class="org.openyu.socklet.acceptor.vo.impl.AcceptorStarterImpl">
-		<!-- acceptor id -->
-		<property name="id" value="account" />
-	</bean>
+	<bean
+		id="acceptorServiceFactoryBean"
+		class="org.openyu.socklet.acceptor.service.impl.AcceptorServiceFactoryBean"
+		parent="baseServiceFactorySupporter"
+		p:configLocation="file:src/test/config/etc/AcceptorService.properties"
+		p:acceptorId="account" />
 </beans>
