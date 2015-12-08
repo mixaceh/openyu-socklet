@@ -794,6 +794,8 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 				//
 				int maxCounter = (int) NumberHelper.divide(maxClient, relationServers.size());
 				serverService.setMaxClient(maxCounter);
+				serverService.setModuleTypeClass(moduleTypeClass);
+				serverService.setMessageTypeClass(messageTypeClass);
 				//
 				serverService.start();
 			} else {
@@ -847,6 +849,8 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 				//
 				int maxCounter = (int) NumberHelper.divide(maxClient, relationServers.size());
 				serverService.setMaxClient(maxCounter);
+				serverService.setModuleTypeClass(moduleTypeClass);
+				serverService.setMessageTypeClass(messageTypeClass);
 				//
 				serverService.start();
 			} else {

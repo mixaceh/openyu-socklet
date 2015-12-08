@@ -209,7 +209,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 			// head
 			// ------------------------------------------
 			// 0, 61(byte)
-			// 1-2, 48148(short)magic
+			// 1-2, 5308(short)magic
 
 			// ------------------------------------------
 			// data
@@ -1378,6 +1378,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 		 * 
 		 * int -> short
 		 */
+		// 14BC
 		HANKSHAKE(5308) {
 			public byte[] toByteArray() {
 				if (byteArray == null) {
@@ -1392,7 +1393,8 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 		 * 
 		 * int -> short
 		 */
-		MESSAGE(2322) {
+		// BC14
+		MESSAGE(48148) {
 			public byte[] toByteArray() {
 				if (byteArray == null) {
 					byteArray = ByteHelper.toShortByteArray(getValue());
