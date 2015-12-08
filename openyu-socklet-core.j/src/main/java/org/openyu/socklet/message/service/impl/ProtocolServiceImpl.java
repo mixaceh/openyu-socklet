@@ -1392,7 +1392,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 		 * 
 		 * int -> short
 		 */
-		MESSAGE(48148) {
+		MESSAGE(2322) {
 			public byte[] toByteArray() {
 				if (byteArray == null) {
 					byteArray = ByteHelper.toShortByteArray(getValue());

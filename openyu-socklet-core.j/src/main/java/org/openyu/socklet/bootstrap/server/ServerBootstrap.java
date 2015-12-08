@@ -61,42 +61,44 @@ public final class ServerBootstrap extends BootstrapSupporter {
 	 * @param args
 	 */
 	public static void main(String args[]) {
-		if (!started) {
-			double usedMemory = 0d;
-			long begTime = System.currentTimeMillis();
-			// 計算所耗費的記憶體(bytes)
-			RuntimeHelper.gc();
-			// 原本的記憶體
-			long memory = RuntimeHelper.usedMemory();
-			try {
+		try {
+			if (!started) {
+				double usedMemory = 0d;
+				long begTime = System.currentTimeMillis();
+				// 計算所耗費的記憶體(bytes)
+				RuntimeHelper.gc();
+				// 原本的記憶體
+				long memory = RuntimeHelper.usedMemory();
+
 				// 建構applicationContext
 				buildApplicationContext(args);
 				// 建構acceptorService
 				buildAcceptorServices();
 				// 啟動
 				doStart();
-			} catch (Exception e) {
-				started = false;
-				LOGGER.error(new StringBuilder("Exception encountered during main()").toString(), e);
-			}
-			long endTime = System.currentTimeMillis();
-			long durTime = endTime - begTime;
-			//
-			RuntimeHelper.gc();
-			usedMemory = Math.max(usedMemory, (RuntimeHelper.usedMemory() - memory));
-			double usedMemoryMB = NumberHelper.round(ByteUnit.BYTE.toMB(usedMemory), 2);
-			//
-			String msgPattern = "[{0}] ({1}) start in {2} ms, {3} bytes ({4} MB) memory used";
-			StringBuilder msg = new StringBuilder(
-					MessageFormat.format(msgPattern, id, instanceId, durTime, usedMemory, usedMemoryMB));
-			//
-			if (started) {
-				LOGGER.info(msg.toString());
 				//
-				ThreadHelper.loop(50);
-			} else {
-				LOGGER.error("[" + id + "] (" + instanceId + ") started fail");
+				long endTime = System.currentTimeMillis();
+				long durTime = endTime - begTime;
+				//
+				RuntimeHelper.gc();
+				usedMemory = Math.max(usedMemory, (RuntimeHelper.usedMemory() - memory));
+				double usedMemoryMB = NumberHelper.round(ByteUnit.BYTE.toMB(usedMemory), 2);
+				//
+				String msgPattern = "[{0}] ({1}) start in {2} ms, {3} bytes ({4} MB) memory used";
+				StringBuilder msg = new StringBuilder(
+						MessageFormat.format(msgPattern, id, instanceId, durTime, usedMemory, usedMemoryMB));
+				//
+				if (started) {
+					LOGGER.info(msg.toString());
+					//
+					ThreadHelper.loop(50);
+				} else {
+					LOGGER.error("[" + id + "] (" + instanceId + ") started fail");
+				}
 			}
+		} catch (Exception e) {
+			started = false;
+			LOGGER.error(new StringBuilder("Exception encountered during main()").toString(), e);
 		}
 	}
 
@@ -144,35 +146,36 @@ public final class ServerBootstrap extends BootstrapSupporter {
 	 * @param applicationContext
 	 */
 	public static void start(ApplicationContext applicationContext) {
-		double usedMemory = 0d;
-		long begTime = System.currentTimeMillis();
-		// 計算所耗費的記憶體(bytes)
-		RuntimeHelper.gc();
-		// 原本的記憶體
-		long memory = RuntimeHelper.usedMemory();
 		try {
+			double usedMemory = 0d;
+			long begTime = System.currentTimeMillis();
+			// 計算所耗費的記憶體(bytes)
+			RuntimeHelper.gc();
+			// 原本的記憶體
+			long memory = RuntimeHelper.usedMemory();
+
 			ServerBootstrap.applicationContext = applicationContext;
 			// 建構acceptorService
 			buildAcceptorServices();
 			//
 			doStart();
+
+			//
+			long endTime = System.currentTimeMillis();
+			long durTime = endTime - begTime;
+			//
+			RuntimeHelper.gc();
+			usedMemory = Math.max(usedMemory, (RuntimeHelper.usedMemory() - memory));
+			double usedMemoryMB = NumberHelper.round(ByteUnit.BYTE.toMB(usedMemory), 2);
+			//
+			if (started) {
+				LOGGER.info("[" + id + "] (" + instanceId + ") start in " + durTime + " ms");
+			} else {
+				LOGGER.error("[" + id + "] (" + instanceId + ") started fail");
+			}
 		} catch (Exception e) {
 			started = false;
 			LOGGER.error(new StringBuilder("Exception encountered during start()").toString(), e);
-		}
-		//
-		long endTime = System.currentTimeMillis();
-		long durTime = endTime - begTime;
-		//
-		RuntimeHelper.gc();
-		usedMemory = Math.max(usedMemory, (RuntimeHelper.usedMemory() - memory));
-		double usedMemoryMB = NumberHelper.round(ByteUnit.BYTE.toMB(usedMemory), 2);
-		//
-		//
-		if (started) {
-			LOGGER.info("[" + id + "] (" + instanceId + ") start in " + durTime + " ms");
-		} else {
-			LOGGER.error("[" + id + "] (" + instanceId + ") started fail");
 		}
 	}
 

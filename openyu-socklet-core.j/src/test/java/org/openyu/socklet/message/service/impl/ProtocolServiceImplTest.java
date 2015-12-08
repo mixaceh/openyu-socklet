@@ -344,7 +344,9 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 
 	@Test
 	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
-	// 10000 times: 3513 mills.
+	// round: 0.45 [+- 0.00], round.block: 0.29 [+- 0.02], round.gc: 0.00 [+-
+	// 0.00], GC.calls: 1, GC.time: 0.01, time.total: 0.46, time.warmup: 0.00,
+	// time.bench: 0.46
 	public void assembleClientToServer() throws Exception {
 		Message message = mockClientToServer();
 		//
@@ -354,7 +356,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 		System.out.println("length: " + result.length);
 		SystemHelper.println(result);
 
-		byte[] expecteds = new byte[] { 0, 0, 0, 11, 0, 0, 0, 60, 0, 0, 0, 52, -68, 20, 0, 0, 0, 40, -16, 25, 102, -16,
+		byte[] expecteds = new byte[] { 0, 0, 0, 11, 0, 0, 0, 60, 0, 0, 0, 52, 3, -112, 0, 0, 0, 40, -16, 25, 102, -16,
 				-90, 24, 124, -116, -61, 119, -102, 46, 76, -73, -76, -75, 24, -93, -57, 28, -102, -33, 103, 92, 125,
 				33, -15, 87, 11, 108, -13, 18, -1, -35, -54, 25, -35, -25, -2, 58, 112, -70 };
 
@@ -370,7 +372,9 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 
 	@Test
 	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
-	// 10000 times: 902 mills.
+	// round: 0.45 [+- 0.01], round.block: 0.29 [+- 0.02], round.gc: 0.00 [+-
+	// 0.00], GC.calls: 1, GC.time: 0.01, time.total: 0.46, time.warmup: 0.00,
+	// time.bench: 0.46
 	public void disassembleClientToServer() {
 		Message message = mockClientToServer();
 		byte[] value = protocolServiceImpl.assemble(message);
