@@ -5,7 +5,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +12,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.openyu.commons.bootstrap.supporter.BootstrapSupporter;
 import org.openyu.commons.lang.ArrayHelper;
+import org.openyu.commons.lang.NumberHelper;
 import org.openyu.commons.lang.RuntimeHelper;
 import org.openyu.commons.thread.ThreadHelper;
 import org.openyu.commons.util.ByteUnit;
@@ -62,10 +62,12 @@ public final class ServerBootstrap extends BootstrapSupporter {
 	 */
 	public static void main(String args[]) {
 		if (!started) {
+			double usedMemory = 0d;
+			long begTime = System.currentTimeMillis();
 			// 計算所耗費的記憶體(bytes)
 			RuntimeHelper.gc();
-			long begUsedMemory = RuntimeHelper.usedMemory();
-			long begTime = System.nanoTime();
+			// 原本的記憶體
+			long memory = RuntimeHelper.usedMemory();
 			try {
 				// 建構applicationContext
 				buildApplicationContext(args);
@@ -77,17 +79,16 @@ public final class ServerBootstrap extends BootstrapSupporter {
 				started = false;
 				LOGGER.error(new StringBuilder("Exception encountered during main()").toString(), e);
 			}
-			//
-			long durTime = System.nanoTime() - begTime;
-			durTime = TimeUnit.NANOSECONDS.toMillis(durTime);
+			long endTime = System.currentTimeMillis();
+			long durTime = endTime - begTime;
 			//
 			RuntimeHelper.gc();
-			double durUsedMemory = RuntimeHelper.usedMemory() - begUsedMemory;
-			durUsedMemory = ByteUnit.BYTE.toMB(durUsedMemory);
+			usedMemory = Math.max(usedMemory, (RuntimeHelper.usedMemory() - memory));
+			double usedMemoryMB = NumberHelper.round(ByteUnit.BYTE.toMB(usedMemory), 2);
 			//
-			String msgPattern = "[{0}] ({1}) start in {2} ms, memory used {3} MB";
+			String msgPattern = "[{0}] ({1}) start in {2} ms, {3} bytes ({4} MB) memory used";
 			StringBuilder msg = new StringBuilder(
-					MessageFormat.format(msgPattern, id, instanceId, durTime, durUsedMemory));
+					MessageFormat.format(msgPattern, id, instanceId, durTime, usedMemory, usedMemoryMB));
 			//
 			if (started) {
 				LOGGER.info(msg.toString());
@@ -143,7 +144,12 @@ public final class ServerBootstrap extends BootstrapSupporter {
 	 * @param applicationContext
 	 */
 	public static void start(ApplicationContext applicationContext) {
-		long start = System.nanoTime();
+		double usedMemory = 0d;
+		long begTime = System.currentTimeMillis();
+		// 計算所耗費的記憶體(bytes)
+		RuntimeHelper.gc();
+		// 原本的記憶體
+		long memory = RuntimeHelper.usedMemory();
 		try {
 			ServerBootstrap.applicationContext = applicationContext;
 			// 建構acceptorService
@@ -155,11 +161,16 @@ public final class ServerBootstrap extends BootstrapSupporter {
 			LOGGER.error(new StringBuilder("Exception encountered during start()").toString(), e);
 		}
 		//
-		long dur = System.nanoTime() - start;
-		dur = TimeUnit.NANOSECONDS.toMillis(dur);
+		long endTime = System.currentTimeMillis();
+		long durTime = endTime - begTime;
+		//
+		RuntimeHelper.gc();
+		usedMemory = Math.max(usedMemory, (RuntimeHelper.usedMemory() - memory));
+		double usedMemoryMB = NumberHelper.round(ByteUnit.BYTE.toMB(usedMemory), 2);
+		//
 		//
 		if (started) {
-			LOGGER.info("[" + id + "] (" + instanceId + ") start in " + dur + " ms");
+			LOGGER.info("[" + id + "] (" + instanceId + ") start in " + durTime + " ms");
 		} else {
 			LOGGER.error("[" + id + "] (" + instanceId + ") started fail");
 		}
