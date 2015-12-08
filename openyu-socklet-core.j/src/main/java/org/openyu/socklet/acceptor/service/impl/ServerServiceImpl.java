@@ -369,7 +369,8 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 					// 127.0.0.1:64237
 					LOGGER.error(acceptorServer + "counter[" + nowCounter + "] > max[" + getMaxClient() + "], "
 							+ client.socket().getRemoteSocketAddress() + " Can't connect server");
-					NioHelper.close(selectionKey);
+					NioHelper.cancel(selectionKey);
+					NioHelper.close(selectionKey.channel());
 				}
 				// ---------------------------------------------
 				// create client and attach
@@ -436,7 +437,8 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 			if (acceptorConnector != null) {
 				close(acceptorConnector);
 			}
-			NioHelper.close(selectionKey);
+			NioHelper.cancel(selectionKey);
+			NioHelper.close(selectionKey.channel());
 		}
 		// 當client自行中斷
 		catch (ClosedChannelException ex) {
@@ -446,7 +448,8 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 			if (acceptorConnector != null) {
 				close(acceptorConnector);
 			}
-			NioHelper.close(selectionKey);
+			NioHelper.cancel(selectionKey);
+			NioHelper.close(selectionKey.channel());
 		} catch (IOException ex) {
 			// 遠端主機已強制關閉一個現存的連線
 			// System.out.println(ex.getMessage());
@@ -456,10 +459,12 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 			if (acceptorConnector != null) {
 				close(acceptorConnector);
 			}
-			NioHelper.close(selectionKey);
+			NioHelper.cancel(selectionKey);
+			NioHelper.close(selectionKey.channel());
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			// close(selectionKey);
+			LOGGER.error(new StringBuilder("Exception encountered during process()").toString(), ex);
 		}
 	}
 

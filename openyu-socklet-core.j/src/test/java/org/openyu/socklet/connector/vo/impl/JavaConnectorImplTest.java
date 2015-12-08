@@ -1,5 +1,6 @@
 package org.openyu.socklet.connector.vo.impl;
 
+import org.apache.commons.net.ftp.FTPClient;
 import org.junit.Test;
 import org.openyu.commons.thread.ThreadHelper;
 import org.openyu.socklet.connector.vo.JavaConnector;
@@ -17,7 +18,7 @@ public class JavaConnectorImplTest extends CoreTestSupporter {
 				CoreModuleType.class, CoreMessageType.class, protocolService,
 				"localhost", 10300);
 		javaConnector.setReceiver(receiver);
-		javaConnector.setRetryNumber(0);
+		javaConnector.setRetryNumber(3);
 		javaConnector.start();
 		//
 		ThreadHelper.sleep(3 * 1000);

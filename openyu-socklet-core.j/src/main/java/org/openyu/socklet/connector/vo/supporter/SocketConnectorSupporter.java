@@ -145,11 +145,16 @@ public abstract class SocketConnectorSupporter extends GenericConnectorSupporter
 			if (!started) {
 				sender = id;
 				selector = Selector.open();
-				socketChannel = SocketChannel.open();
-				socketChannel.configureBlocking(false);
-				InetSocketAddress address = NioHelper.createInetSocketAddress(ip, port);
-				socketChannel.connect(address);
-				socketChannel.register(selector, SelectionKey.OP_CONNECT);
+
+				// socketChannel = SocketChannel.open();
+				// socketChannel.configureBlocking(false);
+				// InetSocketAddress address =
+				// NioHelper.createInetSocketAddress(ip, port);
+				// socketChannel.connect(address);
+				// // socketChannel.socket().setKeepAlive(true);//
+				// socketChannel.register(selector, SelectionKey.OP_CONNECT);
+
+				socketChannel = createSocketChannel();
 				//
 				int select = selector.select();
 				if (select > 0) {
@@ -164,17 +169,37 @@ public abstract class SocketConnectorSupporter extends GenericConnectorSupporter
 					}
 				}
 			}
-		} catch (ConnectException ex) {
+		} catch (ConnectException e) {
+			NioHelper.close(selector);
+			NioHelper.close(socketChannel);
 			started = false;
 			// LOGGER.error("[" + id + "] can't connect to [" + ip + ":" + port
 			// + "]");
 			// ex.printStackTrace();
-		} catch (Exception ex) {
+		} catch (Exception e) {
+			NioHelper.close(selector);
+			NioHelper.close(socketChannel);
 			started = false;
+
 			// 遠端主機已強制關閉一個現存的連線
-			LOGGER.error("[" + id + "]", ex);
-			// ex.printStackTrace();
+			// LOGGER.error("[" + id + "]", ex);
+			LOGGER.error(new StringBuilder("[" + id + "] Exception encountered during start()").toString(), e);
 		}
+	}
+
+	/**
+	 * 建立 SocketChannel
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	protected SocketChannel createSocketChannel() throws Exception {
+		SocketChannel result = SocketChannel.open();
+		result.configureBlocking(false);
+		InetSocketAddress address = NioHelper.createInetSocketAddress(ip, port);
+		result.connect(address);
+		result.register(selector, SelectionKey.OP_CONNECT);
+		return result;
 	}
 
 	/**
@@ -202,7 +227,21 @@ public abstract class SocketConnectorSupporter extends GenericConnectorSupporter
 							started = true;
 							break;
 						}
-					} catch (Exception ex) {
+					} catch (ConnectException ex) {
+						// socketChannel== selectionKey.channel()
+
+						// 要改成
+						// 1.selectionKey.cancel()
+						// 2.重建socketChannel
+
+						// 1.selectionKey.cancel()
+						selectionKey.cancel();
+						// socketChannel.close();//
+						// 因為沒開啟,isClosed=true,所以也無法close
+
+						// 2.重建socketChannel
+						socketChannel = createSocketChannel();
+
 						// 連線重試
 						addTries();
 						// [1/3] time(s) Failed to get the session
@@ -217,6 +256,7 @@ public abstract class SocketConnectorSupporter extends GenericConnectorSupporter
 						ThreadHelper.sleep(pauseMills);
 						LOGGER.info("Retrying connect to [" + ip + ":" + port + "]. Already tried [" + (tries + 1) + "/"
 								+ (retryNumber != 0 ? retryNumber : "INFINITE") + "] time(s)");
+
 					}
 				}
 				//
@@ -421,12 +461,12 @@ public abstract class SocketConnectorSupporter extends GenericConnectorSupporter
 				//
 				selectionKeyRunner.shutdown();
 				readKeyQueue.shutdown();
+				keepAliveRunner.shutdown();
 			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
+		} catch (Exception e) {
 			started = false;
+			LOGGER.error(new StringBuilder("[" + id + "] Exception encountered during shutdown()").toString(), e);
 		}
-
 	}
 
 	/**

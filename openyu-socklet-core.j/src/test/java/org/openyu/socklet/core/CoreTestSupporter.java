@@ -68,10 +68,14 @@ public class CoreTestSupporter extends BaseTestSupporter {
 	public static void setUpBeforeClass() throws Exception {
 		applicationContext = new ClassPathXmlApplicationContext(new String[] {
 				"applicationContext-init.xml",//
-				"testContext-thread.xml", //
-				"testContext-security.xml", //
-				"org/openyu/socklet/message/testContext-message.xml", //
+				"applicationContext-bean.xml", //
+				"applicationContext-message.xml", //
+//				"testContext-thread.xml", //
+//				"testContext-security.xml", //
+//				"org/openyu/socklet/message/testContext-message.xml", //
 				"applicationContext-acceptor.xml",//
+				//biz
+				"testContext-service.xml",//
 		});
 		threadService = (ThreadService) applicationContext
 				.getBean("threadService");
