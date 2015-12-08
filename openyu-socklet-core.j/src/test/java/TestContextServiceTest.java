@@ -7,15 +7,17 @@ import org.openyu.commons.junit.supporter.BaseTestSupporter;
 import org.openyu.socklet.account.net.socklet.AccountSocklet;
 import org.openyu.socklet.account.service.AccountService;
 
-public class ApplicationContextServiceTest extends BaseTestSupporter {
+public class TestContextServiceTest extends BaseTestSupporter {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		applicationContext = new ClassPathXmlApplicationContext(new String[] { //
-				"applicationContext-init.xml", //
+				"applicationContext-init.xml",//
 				"applicationContext-bean.xml", //
-				"applicationContext-acceptor.xml", //
-				"applicationContext-service.xml",//
+				"applicationContext-i18n.xml", //
+				"applicationContext-acceptor.xml",//
+				//
+				"testContext-service.xml",//
 		});
 	}
 

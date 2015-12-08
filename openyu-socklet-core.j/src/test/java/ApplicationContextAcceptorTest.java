@@ -5,7 +5,8 @@ import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.openyu.commons.junit.supporter.BaseTestSupporter;
 import org.openyu.commons.thread.ThreadHelper;
-import org.openyu.socklet.acceptor.service.AcceptorService;
+import org.openyu.socklet.message.service.ProtocolService;
+import org.openyu.socklet.message.service.MessageService;
 
 public class ApplicationContextAcceptorTest extends BaseTestSupporter {
 
@@ -19,56 +20,17 @@ public class ApplicationContextAcceptorTest extends BaseTestSupporter {
 	}
 
 	@Test
-	public void accountAcceptor() {
-		AcceptorService bean = (AcceptorService) applicationContext.getBean("accountAcceptor");
+	public void messageService() {
+		MessageService bean = (MessageService) applicationContext.getBean("messageService");
 		System.out.println(bean);
 		assertNotNull(bean);
-		//
-		ThreadHelper.sleep(60 * 1000);
 	}
 
 	@Test
-	public void loginAcceptor() {
-		AcceptorService bean = (AcceptorService) applicationContext.getBean("loginAcceptor");
+	public void protocolService() {
+		ProtocolService bean = (ProtocolService) applicationContext.getBean("protocolService");
 		System.out.println(bean);
 		assertNotNull(bean);
-		//
-		ThreadHelper.sleep(5 * 1000);
 	}
 
-	@Test
-	public void masterAcceptor() {
-		AcceptorService bean = (AcceptorService) applicationContext.getBean("masterAcceptor");
-		System.out.println(bean);
-		assertNotNull(bean);
-		//
-		ThreadHelper.sleep(5 * 1000);
-	}
-
-	@Test
-	public void slave1Acceptor() {
-		AcceptorService bean = (AcceptorService) applicationContext.getBean("slave1Acceptor");
-		System.out.println(bean);
-		assertNotNull(bean);
-		//
-		ThreadHelper.sleep(10 * 1000);
-	}
-
-	@Test
-	public void slave2Acceptor() {
-		AcceptorService bean = (AcceptorService) applicationContext.getBean("slave2Acceptor");
-		System.out.println(bean);
-		assertNotNull(bean);
-		//
-		ThreadHelper.sleep(5 * 1000);
-	}
-
-	@Test
-	public void slave3Acceptor() {
-		AcceptorService bean = (AcceptorService) applicationContext.getBean("slave3Acceptor");
-		System.out.println(bean);
-		assertNotNull(bean);
-		//
-		ThreadHelper.sleep(5 * 1000);
-	}
 }
