@@ -274,7 +274,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 		// RelationServer [3110]
 		// ClientServer [4110]
 
-		LOGGER.info(acceptorServer + (relationServer ? "RelationServer" : "ClientServer") + " [" + port
+		LOGGER.info(acceptorServer + (relationServer ? "RelationServer" : "ClientServer") + " [" + ip + ":" + port
 				+ "] Had been started");
 	}
 

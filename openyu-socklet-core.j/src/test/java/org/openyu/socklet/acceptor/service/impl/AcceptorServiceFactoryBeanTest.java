@@ -25,9 +25,10 @@ public class AcceptorServiceFactoryBeanTest extends BaseTestSupporter {
 	public static void setUpBeforeClass() throws Exception {
 		applicationContext = new ClassPathXmlApplicationContext(new String[] { //
 				"applicationContext-init.xml", //
-				"testContext-thread.xml", //
-				"testContext-security.xml", //
-				"org/openyu/socklet/message/testContext-message.xml", //
+				"applicationContext-bean.xml", //
+				"applicationContext-i18n.xml", //
+				"applicationContext-acceptor.xml", //
+				//
 				"org/openyu/socklet/acceptor/testContext-acceptor-factory-bean.xml",//
 
 		});
@@ -40,7 +41,7 @@ public class AcceptorServiceFactoryBeanTest extends BaseTestSupporter {
 		System.out.println(acceptorService);
 		assertNotNull(acceptorService);
 		//
-		ThreadHelper.sleep(5 * 1000);
+		ThreadHelper.sleep(3 * 1000);
 	}
 
 	@Test
