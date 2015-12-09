@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.openyu.commons.junit.supporter.BaseTestSupporter;
 import org.openyu.socklet.core.net.socklet.CoreMessageType;
 import org.openyu.socklet.core.net.socklet.CoreModuleType;
+import org.openyu.socklet.message.service.MessageService;
 import org.openyu.socklet.message.vo.Message;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -20,7 +21,7 @@ public class MessageServiceImplTest extends BaseTestSupporter {
 	@Rule
 	public BenchmarkRule benchmarkRule = new BenchmarkRule();
 
-	private static MessageServiceImpl messageServiceImpl;
+	private static MessageService messageService;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -29,21 +30,21 @@ public class MessageServiceImplTest extends BaseTestSupporter {
 				"org/openyu/socklet/message/testContext-message.xml",//
 		});
 
-		messageServiceImpl = (MessageServiceImpl) applicationContext.getBean("messageService");
+		messageService = (MessageServiceImpl) applicationContext.getBean("messageService");
 	}
 
 	@Test
 	@BenchmarkOptions(benchmarkRounds = 2, warmupRounds = 0, concurrency = 1)
 	public void messageServiceImpl() {
-		System.out.println(messageServiceImpl);
-		assertNotNull(messageServiceImpl);
+		System.out.println(messageService);
+		assertNotNull(messageService);
 	}
 
 	@Test
 	@BenchmarkOptions(benchmarkRounds = 1, warmupRounds = 0, concurrency = 1)
 	public void close() {
-		System.out.println(messageServiceImpl);
-		assertNotNull(messageServiceImpl);
+		System.out.println(messageService);
+		assertNotNull(messageService);
 		applicationContext.close();
 		// 多次,不會丟出ex
 		applicationContext.close();
@@ -52,8 +53,8 @@ public class MessageServiceImplTest extends BaseTestSupporter {
 	@Test
 	@BenchmarkOptions(benchmarkRounds = 1, warmupRounds = 0, concurrency = 1)
 	public void refresh() {
-		System.out.println(messageServiceImpl);
-		assertNotNull(messageServiceImpl);
+		System.out.println(messageService);
+		assertNotNull(messageService);
 		applicationContext.refresh();
 		// 多次,不會丟出ex
 		applicationContext.refresh();
@@ -69,7 +70,7 @@ public class MessageServiceImplTest extends BaseTestSupporter {
 		// from [TEST_ROLE] MESSAGE_CLIENT, (21003) FOUR_SYMBOL_PLAY_REQUEST
 		// to []
 		// 1
-		result = messageServiceImpl.createClient(ROLE_CODE, CoreMessageType.FOUR_SYMBOL_PLAY_REQUEST);
+		result = messageService.createClient(ROLE_CODE, CoreMessageType.FOUR_SYMBOL_PLAY_REQUEST);
 		result.addInt(1);
 		//
 		System.out.println(result);
@@ -87,7 +88,7 @@ public class MessageServiceImplTest extends BaseTestSupporter {
 		// from [null] MESSAGE_SERVER, (11251) ACCOUNT_COIN_REPONSE, (11200)
 		// ACCOUNT => (19900) CLIENT to [TEST_ROLE]
 		// 1000
-		result = messageServiceImpl.createMessage(CoreModuleType.ACCOUNT, CoreModuleType.CLIENT,
+		result = messageService.createMessage(CoreModuleType.ACCOUNT, CoreModuleType.CLIENT,
 				CoreMessageType.ACCOUNT_COIN_REPONSE, ROLE_CODE);
 		result.addInt(1000);
 		//
@@ -107,7 +108,7 @@ public class MessageServiceImplTest extends BaseTestSupporter {
 		// from [null] MESSAGE_SERVER, (11001) CORE_ROLE_CONNECT_REQUEST,
 		// (19900) CLIENT => (11000) CORE to []
 		// TEST_ROLE
-		result = messageServiceImpl.createMessage(CoreModuleType.CLIENT, CoreModuleType.CORE,
+		result = messageService.createMessage(CoreModuleType.CLIENT, CoreModuleType.CORE,
 				CoreMessageType.CORE_CONNECT_REQUEST, (String) null);
 		result.addString(ROLE_CODE);
 		//
@@ -125,10 +126,10 @@ public class MessageServiceImplTest extends BaseTestSupporter {
 		// from [null] MESSAGE_SERVER, (21053) FOUR_SYMBOL_PLAY_RESPONSE,
 		// (21000) FOUR_SYMBOL => (19900) CLIENT to [TEST_ROLE]
 		// 0
-		Message message = messageServiceImpl.createMessage(CoreModuleType.FOUR_SYMBOL, CoreModuleType.CLIENT,
+		Message message = messageService.createMessage(CoreModuleType.FOUR_SYMBOL, CoreModuleType.CLIENT,
 				CoreMessageType.FOUR_SYMBOL_PLAY_RESPONSE, ROLE_CODE);
 		message.addInt(0);
-		result = messageServiceImpl.addMessage(message);
+		result = messageService.addMessage(message);
 		//
 		System.out.println(result);
 		assertTrue(result);
@@ -145,10 +146,10 @@ public class MessageServiceImplTest extends BaseTestSupporter {
 		// from [null] MESSAGE_SERVER, (11001) CORE_ROLE_CONNECT_REQUEST,
 		// (19900) CLIENT => (11000) CORE to []
 		// TEST_ROLE
-		Message message = messageServiceImpl.createMessage(CoreModuleType.CLIENT, CoreModuleType.CORE,
+		Message message = messageService.createMessage(CoreModuleType.CLIENT, CoreModuleType.CORE,
 				CoreMessageType.CORE_CONNECT_REQUEST, (String) null);
 		message.addString(ROLE_CODE);
-		result = messageServiceImpl.addMessage(message);
+		result = messageService.addMessage(message);
 		//
 		System.out.println(result);
 		assertTrue(result);

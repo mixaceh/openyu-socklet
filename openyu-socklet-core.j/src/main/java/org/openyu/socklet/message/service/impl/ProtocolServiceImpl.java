@@ -240,7 +240,6 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 					+ (1)// (byte)senderLength
 					+ sender.length() // sender, max=32
 					+ (32)// authkeyLength
-
 			// 8 checksum
 			;
 
@@ -377,8 +376,8 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 			//
 			result = UnsafeHelper.getByteArray(out, 0, pos);
 			result = encode(HeadType.HANDSHAKE, result);
-		} catch (Exception ex) {
-			ex.printStackTrace();
+		} catch (Exception e) {
+			LOGGER.error(new StringBuilder("Exception encountered during handshake()").toString(), e);
 		} finally {
 			// IoHelper.close(headOut);
 			// IoHelper.close(dataOut);
@@ -514,8 +513,8 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 			} else {
 				AssertHelper.unsupported("Unsupported categoryType [" + categoryType + "]");
 			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
+		} catch (Exception e) {
+			LOGGER.error(new StringBuilder("Exception encountered during dehandshake()").toString(), e);
 		} finally {
 			IoHelper.close(dataIn);
 		}
@@ -576,7 +575,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 			// head
 			// ------------------------------------------
 			// 0-3, 61(int)
-			// 4-5, 48148(short)magic
+			// 4-5, 2322(short)magic
 
 			// ------------------------------------------
 			// data
@@ -742,20 +741,20 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 			// ------------------------------------------
 			// out
 			// ------------------------------------------
-			byte[] buf = dataOut.toByteArray();
+			byte[] newArray = dataOut.toByteArray();
 			// 2.加密
 			if (isSecurity()) {
-				buf = securityProcessor.encrypt(buf);
+				newArray = securityProcessor.encrypt(newArray);
 				// 會改變長度
-				dataLength = buf.length;
+				dataLength = newArray.length;
 				totalLength = headLengh + dataLength;
 			}
 
 			// 3.壓縮
 			if (isCompress()) {
-				buf = compressProcessor.compress(buf);
+				newArray = compressProcessor.compress(newArray);
 				// 會改變長度
-				dataLength = buf.length;
+				dataLength = newArray.length;
 				totalLength = headLengh + dataLength;
 			}
 			// 總長度
@@ -767,12 +766,12 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 			headOut.writeTo(out);
 
 			// data
-			out.write(buf);
+			out.write(newArray);
 			//
 			result = out.toByteArray();
 			result = encode(HeadType.MESSAGE, result);
-		} catch (Exception ex) {
-			ex.printStackTrace();
+		} catch (Exception e) {
+			LOGGER.error(new StringBuilder("Exception encountered during assemble()").toString(), e);
 		} finally {
 			IoHelper.close(headOut);
 			IoHelper.close(dataOut);
@@ -813,8 +812,8 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 				// System.out.println("pos: " + pos + ", " + dataLength);
 				pos += dataLength;
 			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
+		} catch (Exception e) {
+			LOGGER.error(new StringBuilder("Exception encountered during disassemble()").toString(), e);
 		}
 		return result;
 	}
@@ -861,7 +860,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 			pos += 2;
 			// System.out.println("magicTypeValue: " + magicTypeValue);
 			if (MagicType.MESSAGE.getValue() != magicTypeValue) {
-				LOGGER.error("Invalid message");
+				LOGGER.error("Invalid MagicType");
 				return result;
 			}
 
@@ -1067,8 +1066,8 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 			} else {
 				LOGGER.error("Unsupported categoryType [" + categoryType + "]");
 			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
+		} catch (Exception e) {
+			LOGGER.error(new StringBuilder("Exception encountered during disassemble()").toString(), e);
 		} finally {
 			IoHelper.close(dataOut);
 		}
@@ -1393,8 +1392,8 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 		 * 
 		 * int -> short
 		 */
-		// BC14
-		MESSAGE(48148) {
+		// 0912
+		MESSAGE(2322) {
 			public byte[] toByteArray() {
 				if (byteArray == null) {
 					byteArray = ByteHelper.toShortByteArray(getValue());

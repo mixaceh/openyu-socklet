@@ -1,7 +1,6 @@
 package org.openyu.socklet.bootstrap.client;
 
 import java.text.MessageFormat;
-import java.util.concurrent.TimeUnit;
 
 import org.openyu.commons.bootstrap.supporter.BootstrapSupporter;
 import org.openyu.commons.lang.NumberHelper;
@@ -87,12 +86,18 @@ public final class ClientBootstrap extends BootstrapSupporter {
 			usedMemory = Math.max(usedMemory, (RuntimeHelper.usedMemory() - memory));
 			double usedMemoryMB = NumberHelper.round(ByteUnit.BYTE.toMB(usedMemory), 2);
 			//
-			String msgPattern = "[{0}] start in {1} ms, {2} bytes ({3} MB) memory used";
-			StringBuilder msg = new StringBuilder(
-					MessageFormat.format(msgPattern, id, durTime, usedMemory, usedMemoryMB));
-			//
-			LOGGER.info(msg.toString());
-			// ThreadHelper.loop(50);
+			if (started){
+				String msgPattern = "[{0}] start in {1} ms, {2} bytes ({3} MB) memory used";
+				StringBuilder msg = new StringBuilder(
+						MessageFormat.format(msgPattern, id, durTime, usedMemory, usedMemoryMB));
+				LOGGER.info(msg.toString());
+				//
+				// ThreadHelper.loop(50);
+			}
+			else{
+				LOGGER.error("[" + id + "] started fail");
+			}
+				
 		} catch (Exception e) {
 			clientControl.setVisible(false);
 			LOGGER.error(new StringBuilder("[" + id + "] Exception encountered during main()").toString(), e);

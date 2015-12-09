@@ -84,11 +84,10 @@ public final class ServerBootstrap extends BootstrapSupporter {
 				usedMemory = Math.max(usedMemory, (RuntimeHelper.usedMemory() - memory));
 				double usedMemoryMB = NumberHelper.round(ByteUnit.BYTE.toMB(usedMemory), 2);
 				//
-				String msgPattern = "[{0}] ({1}) start in {2} ms, {3} bytes ({4} MB) memory used";
-				StringBuilder msg = new StringBuilder(
-						MessageFormat.format(msgPattern, id, instanceId, durTime, usedMemory, usedMemoryMB));
-				//
 				if (started) {
+					String msgPattern = "[{0}] ({1}) start in {2} ms, {3} bytes ({4} MB) memory used";
+					StringBuilder msg = new StringBuilder(
+							MessageFormat.format(msgPattern, id, instanceId, durTime, usedMemory, usedMemoryMB));
 					LOGGER.info(msg.toString());
 					//
 					ThreadHelper.loop(50);

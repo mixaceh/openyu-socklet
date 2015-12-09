@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertArrayEquals;
 
+import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -18,12 +19,16 @@ import com.carrotsearch.junitbenchmarks.annotation.AxisRange;
 import com.carrotsearch.junitbenchmarks.annotation.BenchmarkHistoryChart;
 import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
 
+import org.openyu.commons.io.IoHelper;
 import org.openyu.commons.junit.supporter.BaseTestSupporter;
 import org.openyu.commons.lang.SystemHelper;
+import org.openyu.commons.util.ConfigHelper;
 import org.openyu.socklet.acceptor.net.socklet.AcceptorMessageType;
 import org.openyu.socklet.acceptor.net.socklet.AcceptorModuleType;
 import org.openyu.socklet.core.net.socklet.CoreMessageType;
 import org.openyu.socklet.core.net.socklet.CoreModuleType;
+import org.openyu.socklet.message.service.MessageService;
+import org.openyu.socklet.message.service.ProtocolService;
 import org.openyu.socklet.message.vo.CategoryType;
 import org.openyu.socklet.message.vo.HeadType;
 import org.openyu.socklet.message.vo.Message;
@@ -40,9 +45,9 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 	@Rule
 	public BenchmarkRule benchmarkRule = new BenchmarkRule();
 
-	private static MessageServiceImpl messageServiceImpl;
+	private static MessageService messageService;
 
-	private static ProtocolServiceImpl protocolServiceImpl;
+	private static ProtocolService protocolService;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -51,22 +56,22 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 				"org/openyu/socklet/message/testContext-message.xml",//
 		});
 
-		messageServiceImpl = (MessageServiceImpl) applicationContext.getBean("messageService");
-		protocolServiceImpl = (ProtocolServiceImpl) applicationContext.getBean("protocolService");
+		messageService = (MessageServiceImpl) applicationContext.getBean("messageService");
+		protocolService = (ProtocolServiceImpl) applicationContext.getBean("protocolService");
 	}
 
 	@Test
 	@BenchmarkOptions(benchmarkRounds = 2, warmupRounds = 0, concurrency = 1)
 	public void protocolServiceImpl() {
-		System.out.println(protocolServiceImpl);
-		assertNotNull(protocolServiceImpl);
+		System.out.println(protocolService);
+		assertNotNull(protocolService);
 	}
 
 	@Test
 	@BenchmarkOptions(benchmarkRounds = 1, warmupRounds = 0, concurrency = 1)
 	public void close() {
-		System.out.println(protocolServiceImpl);
-		assertNotNull(protocolServiceImpl);
+		System.out.println(protocolService);
+		assertNotNull(protocolService);
 		applicationContext.close();
 		// 多次,不會丟出ex
 		applicationContext.close();
@@ -75,8 +80,8 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 	@Test
 	@BenchmarkOptions(benchmarkRounds = 1, warmupRounds = 0, concurrency = 1)
 	public void refresh() {
-		System.out.println(protocolServiceImpl);
-		assertNotNull(protocolServiceImpl);
+		System.out.println(protocolService);
+		assertNotNull(protocolService);
 		applicationContext.refresh();
 		// 多次,不會丟出ex
 		applicationContext.refresh();
@@ -89,7 +94,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 	 */
 	public static Message mockClientToServer() {
 		final String ROLE_ID = "TEST_ROLE";// bytes.length=9
-		Message result = messageServiceImpl.createClient(ROLE_ID, CoreMessageType.FOUR_SYMBOL_PLAY_REQUEST);
+		Message result = messageService.createClient(ROLE_ID, CoreMessageType.FOUR_SYMBOL_PLAY_REQUEST);
 		result.addInt(1);// 0, 玩幾次
 		return result;
 	}
@@ -105,7 +110,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 		receivers.add(ROLE_ID);
 		receivers.add(ROLE_ID + "_1");
 
-		Message result = messageServiceImpl.createMessage(CoreModuleType.FOUR_SYMBOL, CoreModuleType.CLIENT,
+		Message result = messageService.createMessage(CoreModuleType.FOUR_SYMBOL, CoreModuleType.CLIENT,
 				CoreMessageType.FOUR_SYMBOL_PLAY_RESPONSE, receivers);
 		result.setSender("slave1");
 		//
@@ -135,7 +140,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 		List<String> receviers = new LinkedList<String>();
 		receviers.add("TEST_ROLE");
 		receviers.add("TEST_ROLE_2");
-		Message result = messageServiceImpl.createMessage(CoreModuleType.CORE, CoreModuleType.CHAT,
+		Message result = messageService.createMessage(CoreModuleType.CORE, CoreModuleType.CHAT,
 				CoreMessageType.CHAT_SAY_REQUEST, receviers);
 		result.setSender("slave1");
 		//
@@ -151,7 +156,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 	 * @return
 	 */
 	public static Message mockServerToRelation() {
-		Message result = messageServiceImpl.createMessage(CoreModuleType.CHAT, CoreModuleType.CLIENT,
+		Message result = messageService.createMessage(CoreModuleType.CHAT, CoreModuleType.CLIENT,
 				CoreMessageType.CHAT_SAY_REPONSE, "TEST_ROLE_1");
 
 		result.setSender("slave2");
@@ -198,7 +203,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 		String sender = "TEST_ROLE";
 		byte[] result = null;
 		//
-		result = protocolServiceImpl.handshake(CategoryType.HANDSHAKE_CLIENT, authKey.getBytes(), sender);
+		result = protocolService.handshake(CategoryType.HANDSHAKE_CLIENT, authKey.getBytes(), sender);
 		//
 		System.out.println("length: " + result.length);// 73
 		SystemHelper.println(result);
@@ -231,11 +236,11 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 		String AUTH_KEY = "aacc8964324738c27c07746e3ea81aff";
 		String SENDER = "TEST_ROLE";
 
-		byte[] value = protocolServiceImpl.handshake(CategoryType.HANDSHAKE_CLIENT, AUTH_KEY.getBytes(), SENDER);
+		byte[] value = protocolService.handshake(CategoryType.HANDSHAKE_CLIENT, AUTH_KEY.getBytes(), SENDER);
 		//
 		Message result = null;
 		//
-		result = protocolServiceImpl.dehandshake(value);
+		result = protocolService.dehandshake(value);
 		System.out.println(result);
 		System.out.println(result.getSender());// TEST_ROLE_1
 		//
@@ -251,7 +256,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 		String sender = "slave1";
 		byte[] result = null;
 		//
-		result = protocolServiceImpl.handshake(CategoryType.HANDSHAKE_SERVER, authKey.getBytes(), sender);
+		result = protocolService.handshake(CategoryType.HANDSHAKE_SERVER, authKey.getBytes(), sender);
 		System.out.println("length: " + result.length);// 73
 		SystemHelper.println(result);
 
@@ -272,10 +277,10 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 		String AUTH_KEY = "aacc8964324738c27c07746e3ea81aff";
 		String SENDER = "slave1";
 
-		byte[] value = protocolServiceImpl.handshake(CategoryType.HANDSHAKE_SERVER, AUTH_KEY.getBytes(), SENDER);
+		byte[] value = protocolService.handshake(CategoryType.HANDSHAKE_SERVER, AUTH_KEY.getBytes(), SENDER);
 		Message result = null;
 		//
-		result = protocolServiceImpl.dehandshake(value);
+		result = protocolService.dehandshake(value);
 		System.out.println(result.getSender());// slave1
 		assertEquals(SENDER, result.getSender());
 		assertEquals(AUTH_KEY, result.getString(0));
@@ -289,7 +294,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 		String sender = "slave2";
 		byte[] result = null;
 		//
-		result = protocolServiceImpl.handshake(CategoryType.HANDSHAKE_RELATION, authKey.getBytes(), sender);
+		result = protocolService.handshake(CategoryType.HANDSHAKE_RELATION, authKey.getBytes(), sender);
 		System.out.println("length: " + result.length);
 		SystemHelper.println(result);
 
@@ -308,10 +313,10 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 		String AUTH_KEY = "aacc8964324738c27c07746e3ea81aff";
 		String SENDER = "slave2";
 
-		byte[] value = protocolServiceImpl.handshake(CategoryType.HANDSHAKE_RELATION, AUTH_KEY.getBytes(), SENDER);
+		byte[] value = protocolService.handshake(CategoryType.HANDSHAKE_RELATION, AUTH_KEY.getBytes(), SENDER);
 		Message result = null;
 		//
-		result = protocolServiceImpl.dehandshake(value);
+		result = protocolService.dehandshake(value);
 		System.out.println(result);
 		System.out.println(result.getCategoryType());
 		System.out.println(result.getSender());// slave2
@@ -329,7 +334,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 		String sender = "slave2:0:127.0.0.1:3110";
 		byte[] result = null;
 		//
-		result = protocolServiceImpl.handshake(CategoryType.HANDSHAKE_RELATION, authKey, sender);
+		result = protocolService.handshake(CategoryType.HANDSHAKE_RELATION, authKey, sender);
 		System.out.println("length: " + result.length);
 		SystemHelper.println(result);
 
@@ -343,7 +348,12 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 	}
 
 	@Test
-	@BenchmarkOptions(benchmarkRounds = 100, warmupRounds = 0, concurrency = 100)
+	@BenchmarkOptions(benchmarkRounds = 1, warmupRounds = 0, concurrency = 100)
+	// round: 0.24 [+- 0.00], round.block: 0.00 [+- 0.00], round.gc: 0.00 [+-
+	// 0.00], GC.calls: 0, GC.time: 0.00, time.total: 0.24, time.warmup: 0.00,
+	// time.bench: 0.24
+
+	// security+compress
 	// round: 0.45 [+- 0.00], round.block: 0.29 [+- 0.02], round.gc: 0.00 [+-
 	// 0.00], GC.calls: 1, GC.time: 0.01, time.total: 0.46, time.warmup: 0.00,
 	// time.bench: 0.46
@@ -352,20 +362,20 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 		//
 		byte[] result = null;
 		//
-		result = protocolServiceImpl.assemble(message);
+		result = protocolService.assemble(message);
 		System.out.println("length: " + result.length);
 		SystemHelper.println(result);
 
-		byte[] expecteds = new byte[] { 0, 0, 0, 11, 0, 0, 0, 60, 0, 0, 0, 52, 3, -112, 0, 0, 0, 40, -16, 25, 102, -16,
+		byte[] expecteds = new byte[] { 0, 0, 0, 11, 0, 0, 0, 60, 0, 0, 0, 52, 9, 18, 0, 0, 0, 40, -16, 25, 102, -16,
 				-90, 24, 124, -116, -61, 119, -102, 46, 76, -73, -76, -75, 24, -93, -57, 28, -102, -33, 103, 92, 125,
 				33, -15, 87, 11, 108, -13, 18, -1, -35, -54, 25, -35, -25, -2, 58, 112, -70 };
-
+		//
 		assertArrayEquals(expecteds, result);
 
 		// 輸出成ser檔
 		// OutputStream out =
-		// IoHelper.createOutputStream(ConfigHelper.getSerDir()
-		// + "/assembleClientToServer.ser");
+		// IoHelper.createOutputStream(ConfigHelper.getSerDir() +
+		// "/assembleClientToServer.ser");
 		// out.write(result);
 		// out.close();
 	}
@@ -377,12 +387,12 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 	// time.bench: 0.46
 	public void disassembleClientToServer() {
 		Message message = mockClientToServer();
-		byte[] value = protocolServiceImpl.assemble(message);
+		byte[] value = protocolService.assemble(message);
 		// SystemHelper.println(value);
 		//
 		List<Message> result = null;
 		//
-		result = protocolServiceImpl.disassemble(value, CoreModuleType.class, CoreMessageType.class);
+		result = protocolService.disassemble(value, CoreModuleType.class, CoreMessageType.class);
 		assertTrue(result.size() > 0);
 		//
 		for (Message entry : result) {
@@ -399,7 +409,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 		//
 		byte[] result = null;
 		//
-		result = protocolServiceImpl.assemble(message);
+		result = protocolService.assemble(message);
 		System.out.println("length: " + result.length);
 		SystemHelper.println(result);
 		assertNotNull(result);
@@ -425,11 +435,11 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 	// 10000 times: 1113 mills.
 	public void disassembleServerToClient() {
 		Message message = mockServerToClient();
-		byte[] value = protocolServiceImpl.assemble(message);
+		byte[] value = protocolService.assemble(message);
 		//
 		List<Message> result = null;
 		//
-		result = protocolServiceImpl.disassemble(value, CoreModuleType.class, CoreMessageType.class);
+		result = protocolService.disassemble(value, CoreModuleType.class, CoreMessageType.class);
 		assertTrue(result.size() > 0);
 		//
 		for (Message entry : result) {
@@ -451,7 +461,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 		//
 		byte[] result = null;
 		//
-		result = protocolServiceImpl.assemble(message);
+		result = protocolService.assemble(message);
 		System.out.println("length: " + result.length);
 		SystemHelper.println(result);
 		assertNotNull(result);
@@ -470,12 +480,12 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 	// 10000 times: 768 mills.
 	public void disassembleServerToServer() {
 		Message message = mockServerToServer();
-		byte[] value = protocolServiceImpl.assemble(message);
+		byte[] value = protocolService.assemble(message);
 		// SystemHelper.println(value);
 		//
 		List<Message> result = null;
 		//
-		result = protocolServiceImpl.disassemble(value, CoreModuleType.class, CoreMessageType.class);
+		result = protocolService.disassemble(value, CoreModuleType.class, CoreMessageType.class);
 		assertNotNull(result);
 		//
 		for (Message entry : result) {
@@ -495,7 +505,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 		//
 		byte[] result = null;
 		//
-		result = protocolServiceImpl.assemble(message);
+		result = protocolService.assemble(message);
 		System.out.println("length: " + result.length);
 		SystemHelper.println(result);
 		assertNotNull(result);
@@ -514,11 +524,11 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 	// 10000 times: 790 mills.
 	public void disassembleServerToRelation() {
 		Message message = mockServerToRelation();
-		byte[] value = protocolServiceImpl.assemble(message);
+		byte[] value = protocolService.assemble(message);
 		//
 		List<Message> result = null;
 		//
-		result = protocolServiceImpl.disassemble(value, CoreModuleType.class, CoreMessageType.class);
+		result = protocolService.disassemble(value, CoreModuleType.class, CoreMessageType.class);
 		assertNotNull(result);
 		//
 		for (Message entry : result) {
@@ -538,7 +548,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 		//
 		byte[] result = null;
 		//
-		result = protocolServiceImpl.assemble(message);
+		result = protocolService.assemble(message);
 		System.out.println("length: " + result.length);
 		SystemHelper.println(result);
 		assertNotNull(result);
@@ -557,12 +567,12 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 	// 10000 times: 766 mills.
 	public void disassembleAcceptorToRelation() {
 		Message message = mockAcceptorToRelation();
-		byte[] value = protocolServiceImpl.assemble(message);
+		byte[] value = protocolService.assemble(message);
 		// SystemHelper.println(value);
 		//
 		List<Message> result = null;
 		//
-		result = protocolServiceImpl.disassemble(value, AcceptorModuleType.class, AcceptorMessageType.class);
+		result = protocolService.disassemble(value, AcceptorModuleType.class, AcceptorMessageType.class);
 		assertNotNull(result);
 		//
 		for (Message entry : result) {
@@ -582,7 +592,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 	public void encode() {
 		byte[] result = null;
 		//
-		result = protocolServiceImpl.encode(HeadType.HANDSHAKE);
+		result = protocolService.encode(HeadType.HANDSHAKE);
 		// 0, 0, 0, 1, 0, 0, 0, 12, 0, 0, 0, 1
 		System.out.println("length: " + result.length);// 12
 		SystemHelper.println(result);
@@ -598,10 +608,10 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 	// round: 0.06, GC: 2
 	// round: 0.05, GC: 2
 	public void decode() {
-		byte[] value = protocolServiceImpl.encode(HeadType.HANDSHAKE);
+		byte[] value = protocolService.encode(HeadType.HANDSHAKE);
 		Packet<byte[]> result = null;
 		//
-		result = protocolServiceImpl.decode(value);
+		result = protocolService.decode(value);
 		System.out.println(result);
 		//
 		assertEquals(HeadType.HANDSHAKE, result.getHeadType());

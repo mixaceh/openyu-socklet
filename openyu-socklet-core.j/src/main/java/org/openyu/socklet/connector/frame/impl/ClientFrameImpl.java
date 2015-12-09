@@ -10,7 +10,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JButton;
-import javax.swing.border.EtchedBorder;
 
 import org.openyu.commons.awt.frame.supporter.BaseFrameSupporter;
 import org.openyu.socklet.connector.frame.ClientFrame;
@@ -90,9 +89,7 @@ public class ClientFrameImpl extends BaseFrameSupporter implements ClientFrame {
 		this.reconnectButton = reconnectButton;
 	}
 
-	public void initialize() {
-		super.initialize();
-		//
+	protected void doStart() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(new Dimension(600, 400));
 
