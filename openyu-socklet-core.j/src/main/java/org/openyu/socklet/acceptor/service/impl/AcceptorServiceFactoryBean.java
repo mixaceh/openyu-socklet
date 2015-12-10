@@ -81,7 +81,9 @@ public final class AcceptorServiceFactoryBean<T extends AcceptorService>
 	/**
 	 * 所有屬性
 	 */
-	public static final String[] ALL_PROPERTIES = {};
+	public static final String[] ALL_PROPERTIES = { MODULE_TYPE_NAME, MESSAGE_TYPE_NAME, ID, INSTANCE_ID, OUTPUT_ID,
+			RELATION_SERVERS, CLIENT_SERVERS, MAX_CLIENT, CLUSTER, RELATIONS, RELATION_RETRY_NUMBER,
+			RELATION_RETRY_PAUSEMILLS, INIT_PARAMETERS };
 
 	public AcceptorServiceFactoryBean() {
 	}
