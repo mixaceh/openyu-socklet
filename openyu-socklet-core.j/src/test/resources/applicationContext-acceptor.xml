@@ -20,20 +20,6 @@
 		parent="baseServiceFactorySupporter"
 		p:configLocation="file:src/test/config/etc/ProtocolService.properties" />
 
-	<!-- acceptor -->
-	<bean
-		id="acceptorServiceSupporter"
-		class="org.openyu.socklet.acceptor.service.impl.AcceptorServiceImpl"
-		parent="baseServiceSupporter"
-		abstract="true" />
-
-	<bean
-		id="acceptorSupporter"
-		parent="acceptorServiceSupporter"
-		abstract="true"
-		p:moduleTypeName="org.openyu.socklet.core.net.socklet.CoreModuleType"
-		p:messageTypeName="org.openyu.socklet.core.net.socklet.CoreMessageType" />
-			
 	<!-- socklet -->
 	<bean
 		id="sockletServiceSupporter"
