@@ -93,10 +93,15 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 	// 是否當內部server
 	private boolean relationServer;
 
-	// 取acceptorService實作,因會用到acceptor上的內部方法
-	private transient AcceptorServiceImpl acceptorService;
+	/**
+	 * 取acceptorServiceImpl,因會用到內部方法
+	 */
+	private transient AcceptorServiceImpl acceptorServiceImpl;
 
-	private transient ContextServiceImpl contextService;
+	/**
+	 * 取contextServiceImpl,因會用到內部方法
+	 */
+	private transient ContextServiceImpl contextServiceImpl;
 
 	/**
 	 * 模組類別
@@ -116,7 +121,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 
 	// ------------------------------------------------
 	// aceptor id, master,slave1...n
-	private String acceptorId;
+//	private String acceptorId;
 
 	// [slave1][3100]
 	private String acceptorServer;
@@ -127,11 +132,11 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 	private Map<String, ServerService> serverServices = new ConcurrentHashMap<String, ServerService>();
 
 	// 來自於內部其他server的client連線
-	private Map<String, GenericRelation> passiveRelations = new ConcurrentHashMap<String, GenericRelation>();
+//	private Map<String, GenericRelation> passiveRelations = new ConcurrentHashMap<String, GenericRelation>();
 
 	// 來自於外部client的連線
 	// <client.sender,client>
-	private Map<String, AcceptorConnector> acceptorConnectors = new ConcurrentHashMap<String, AcceptorConnector>();
+//	private Map<String, AcceptorConnector> acceptorConnectors = new ConcurrentHashMap<String, AcceptorConnector>();
 
 	// ------------------------------------------------
 	// listen
@@ -179,15 +184,15 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 		this.authKeyService = authKeyService;
 	}
 
-	public void setAcceptorService(AcceptorServiceImpl acceptorService) {
-		this.acceptorService = acceptorService;
-		this.acceptorId = acceptorService.getId();
-		this.acceptorConnectors = acceptorService.getAcceptorConnectors();
-		this.passiveRelations = acceptorService.getPassiveRelations();
+	public void setAcceptorServiceImpl(AcceptorServiceImpl acceptorServiceImpl) {
+		this.acceptorServiceImpl = acceptorServiceImpl;
+//		this.acceptorId = acceptorServiceImpl.getId();
+//		this.acceptorConnectors = acceptorServiceImpl.getAcceptorConnectors();
+//		this.passiveRelations = acceptorServiceImpl.getPassiveRelations();
 	}
 
-	public void setContextService(ContextServiceImpl contextService) {
-		this.contextService = contextService;
+	public void setContextServiceImpl(ContextServiceImpl contextServiceImpl) {
+		this.contextServiceImpl = contextServiceImpl;
 	}
 
 	public String getId() {
@@ -241,7 +246,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 		// [slave1][3000]
 		// acceptorServer = "[" + acceptorId + "][" + port + "] ";
 		// [slave1]
-		acceptorServer = "[" + acceptorId + "] ";
+		acceptorServer = "[" + acceptorServiceImpl.getId() + "] ";
 		/*
 		 * OP_READ: 1 OP_WRITE: 4 OP_CONNECT: 8 OP_ACCEPT: 16
 		 */
@@ -259,8 +264,8 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 		// + serverKey.readyOps());//16 0
 
 		// 加入已啟動的servers
-		serverServices = (relationServer ? acceptorService.getRelationServerServices()
-				: acceptorService.getClientServerServices());
+		serverServices = (relationServer ? acceptorServiceImpl.getRelationServerServices()
+				: acceptorServiceImpl.getClientServerServices());
 		serverServices.put(id, this);
 
 		// listen,selector
@@ -383,7 +388,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 					String clientId = String.valueOf(clientKey);
 					AcceptorConnector acceptorConnector = new AcceptorConnectorImpl(clientId, moduleTypeClass,
 							messageTypeClass, protocolService);
-					acceptorConnector.setAcceptor(acceptorId);// slave1
+					acceptorConnector.setAcceptor(acceptorServiceImpl.getId());// slave1
 					acceptorConnector.setServer(id);// localhost:3100
 					// acceptorConnector.setSelectionKey(clientKey);
 					// acceptorConnector.setSocketChannel(clientChannel);
@@ -704,7 +709,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 			String sender = message.getSender();
 			authKeyService.removeAuthKey(acceptorConnector.getId());
 			//
-			AcceptorConnector existClient = acceptorConnectors.get(sender);
+			AcceptorConnector existClient = acceptorServiceImpl.getAcceptorConnectors().get(sender);
 			// 檢查是否重覆連線,同sender,但來自於不同連線
 			if (existClient != null && !acceptorConnector.getId().equals(existClient.getId())) {
 				// 已經存在的client
@@ -719,7 +724,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 			else {
 				acceptorConnector.setHandshake(true);
 				acceptorConnector.setSender(sender);
-				acceptorConnectors.put(acceptorConnector.getSender(), acceptorConnector);
+				acceptorServiceImpl.getAcceptorConnectors().put(acceptorConnector.getSender(), acceptorConnector);
 
 				// ---------------------------------------------
 				// 握手成功後
@@ -727,7 +732,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 				// send client connect,by udp
 				// ---------------------------------------------
 				// 發送客戶端連線請求
-				acceptorService.sendSyncClientConnect(acceptorConnector);
+				acceptorServiceImpl.sendSyncClientConnect(acceptorConnector);
 				// ---------------------------------------------
 				// create session
 				// ---------------------------------------------
@@ -749,10 +754,10 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 				authKeyService.removeAuthKey(acceptorConnector.getId());
 				// slave2 -> slave1
 				String relationId = buff[0]; // slave2
-				GenericRelation passiveRelation = passiveRelations.get(relationId);
+				GenericRelation passiveRelation = acceptorServiceImpl.getPassiveRelations().get(relationId);
 				if (passiveRelation == null) {
 					passiveRelation = new GenericRelationImpl(relationId);
-					passiveRelations.put(relationId, passiveRelation);
+					acceptorServiceImpl.getPassiveRelations().put(relationId, passiveRelation);
 				}
 
 				// 檢查是否重覆連線,同sender,但來自於不同連線
@@ -781,12 +786,12 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 					// #fix isConnected判斷
 					if (!passiveRelation.isConnected()) {
 						// 網路層同步,所有slave都會收到
-						for (AcceptorConnector currentClient : acceptorService.getAcceptorConnectors().values()) {
-							acceptorService.sendSyncClientConnect(currentClient);
+						for (AcceptorConnector currentClient : acceptorServiceImpl.getAcceptorConnectors().values()) {
+							acceptorServiceImpl.sendSyncClientConnect(currentClient);
 						}
 
 						// 邏輯層同步,用relationEvent處理
-						contextService.fireRelationConnected(relationId);
+						contextServiceImpl.fireRelationConnected(relationId);
 						//
 						passiveRelation.setConnected(true);
 						LOGGER.info(acceptorServer + "Connected from [" + passiveRelation.getId() + "]");
@@ -823,7 +828,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 		if (!acceptorConnector.isSendHandshake() && acceptorConnector.isHandshake()) {
 			message.setCategoryType(CategoryType.HANDSHAKE_SERVER);
 			byte[] bytes = protocolService.handshake(message.getCategoryType(), acceptorConnector.getAuthKey(),
-					acceptorService.getId());// sender表server本身
+					acceptorServiceImpl.getId());// sender表server本身
 			int write = acceptorConnector.send(bytes);
 			// 握手成功,且已通知client
 			if (write > 0) {
@@ -862,7 +867,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 
 		// receiveClients
 		// receiveRelations
-		acceptorService.addMessages(messages);
+		acceptorServiceImpl.addMessages(messages);
 	}
 
 	/**
@@ -873,8 +878,8 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 	protected void createSession(GenericConnector genericConnector) {
 		Session session = new SessionImpl(genericConnector.getSender());
 		// session.id=sender
-		contextService.getSessions().put(session.getId(), session);
-		contextService.fireSessionCreated(session);
+		contextServiceImpl.getSessions().put(session.getId(), session);
+		contextServiceImpl.fireSessionCreated(session);
 		// System.out.println("createSession: " + contextService.getSessions());
 	}
 
@@ -885,8 +890,8 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 	 */
 	protected void destroySession(GenericConnector genericConnector) {
 		// session.id=sender
-		Session session = contextService.getSessions().remove(genericConnector.getSender());
-		contextService.fireSessionDestroyed(session);
+		Session session = contextServiceImpl.getSessions().remove(genericConnector.getSender());
+		contextServiceImpl.fireSessionDestroyed(session);
 		// System.out.println("destroySession: " +
 		// contextService.getSessions());
 	}
@@ -903,15 +908,15 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 			String sender = genericConnector.getSender();
 			if (genericConnector != null && sender != null) {
 				// acceptorConnectors
-				boolean contains = acceptorConnectors.containsKey(sender);
+				boolean contains = acceptorServiceImpl.getAcceptorConnectors().containsKey(sender);
 				if (contains) {
 					genericConnector.shutdown();
-					acceptorConnectors.remove(sender);
+					acceptorServiceImpl.getAcceptorConnectors().remove(sender);
 					result = true;
 					//
 					counter.decrementAndGet();
 					// 發送客戶端斷線請求
-					acceptorService.sendSyncClientDisconnect(genericConnector);
+					acceptorServiceImpl.sendSyncClientDisconnect(genericConnector);
 					// 銷毀session
 					destroySession(genericConnector);
 					//
@@ -921,7 +926,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 				else {
 					// 當relation的socket都斷光時,就移除吧
 					List<String> removeRelations = new LinkedList<String>();
-					for (GenericRelation passiveRelation : passiveRelations.values()) {
+					for (GenericRelation passiveRelation : acceptorServiceImpl.getPassiveRelations().values()) {
 						boolean relationContains = passiveRelation.getClients().containsKey(sender);
 						if (relationContains) {
 							genericConnector.shutdown();
@@ -933,7 +938,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 								// 網路層同步,沒做任何事
 
 								// 邏輯層同步,用relationEvent處理
-								contextService.fireRelationDisconnected(passiveRelation.getId());
+								contextServiceImpl.fireRelationDisconnected(passiveRelation.getId());
 								//
 								passiveRelation.setConnected(false);
 								removeRelations.add(passiveRelation.getId());
@@ -946,7 +951,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 					}
 					// 當relation的socket都斷光時,就移除吧
 					for (String relationId : removeRelations) {
-						passiveRelations.remove(relationId);
+						acceptorServiceImpl.getPassiveRelations().remove(relationId);
 					}
 				}
 				//

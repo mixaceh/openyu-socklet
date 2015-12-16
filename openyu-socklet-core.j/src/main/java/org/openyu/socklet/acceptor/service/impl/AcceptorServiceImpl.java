@@ -126,7 +126,10 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 	 */
 	private String id;
 
-	protected ContextServiceImpl contextService;
+	/**
+	 * 取contextServiceImpl,因會用到內部方法
+	 */
+	protected ContextServiceImpl contextServiceImpl;
 
 	// relationServers
 	private List<String> relationServers = new LinkedList<String>();
@@ -436,10 +439,6 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		this.id = id;
 	}
 
-	public ContextService getContextService() {
-		return contextService;
-	}
-
 	public List<String> getRelationServers() {
 		return relationServers;
 	}
@@ -636,17 +635,17 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		// ------------------------------------------------
 		// ContextService,須等內部完全啟動後,再繼續
 		// ------------------------------------------------
-		contextService = new ContextServiceImpl(id);
+		contextServiceImpl = new ContextServiceImpl(id);
 		//
-		contextService.setApplicationContext(applicationContext);
-		contextService.setBeanFactory(beanFactory);
-		contextService.setResourceLoader(resourceLoader);
+		contextServiceImpl.setApplicationContext(applicationContext);
+		contextServiceImpl.setBeanFactory(beanFactory);
+		contextServiceImpl.setResourceLoader(resourceLoader);
 		//
-		contextService.setInitParameters(initParameters);
-		contextService.setModuleTypeClass(moduleTypeClass);
-		contextService.setMessageTypeClass(messageTypeClass);
+		contextServiceImpl.setInitParameters(initParameters);
+		contextServiceImpl.setModuleTypeClass(moduleTypeClass);
+		contextServiceImpl.setMessageTypeClass(messageTypeClass);
 		// 啟動
-		contextService.start();
+		contextServiceImpl.start();
 
 		// cluster
 		startCluster();
@@ -725,7 +724,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		}
 
 		// context
-		contextService.shutdown();
+		contextServiceImpl.shutdown();
 
 		// queue
 		sendClientQueue.shutdown();
@@ -785,8 +784,8 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 				serverService.setMessageService(messageService);
 				serverService.setProtocolService(protocolService);
 				serverService.setAuthKeyService(authKeyService);
-				serverService.setAcceptorService(this);
-				serverService.setContextService(contextService);
+				serverService.setAcceptorServiceImpl(this);
+				serverService.setContextServiceImpl(contextServiceImpl);
 				//
 				serverService.setIp(buff[0]);
 				int port = NumberHelper.toInt(buff[1]);
@@ -840,8 +839,8 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 				serverService.setMessageService(messageService);
 				serverService.setProtocolService(protocolService);
 				serverService.setAuthKeyService(authKeyService);
-				serverService.setAcceptorService(this);
-				serverService.setContextService(contextService);
+				serverService.setAcceptorServiceImpl(this);
+				serverService.setContextServiceImpl(contextServiceImpl);
 				//
 				serverService.setIp(buff[0]);
 				int port = NumberHelper.toInt(buff[1]);
@@ -984,12 +983,12 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 
 						initiativeRelation.setConnected(true);
 						// 邏輯層同步,用relationEvent處理
-						contextService.fireRelationConnected(relationId);
+						contextServiceImpl.fireRelationConnected(relationId);
 					}
 				}
 				// 無法連線
 				else {
-					contextService.fireRelationRefused(relationId);
+					contextServiceImpl.fireRelationRefused(relationId);
 				}
 
 				//
@@ -1003,7 +1002,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 
 				initiativeRelation.setConnected(false);
 				// 邏輯層同步,用relationEvent處理
-				contextService.fireRelationDisconnected(relationId);
+				contextServiceImpl.fireRelationDisconnected(relationId);
 			}
 		}
 	}
@@ -1266,7 +1265,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		@SuppressWarnings("unchecked")
 		Enum<?> destModule = EnumHelper.valueOf(moduleTypeClass, message.getDestModule().getValue());
 		// System.out.println("destModule: " + destModule);
-		SockletService sockletService = contextService.getSockletServices().get(destModule);
+		SockletService sockletService = contextServiceImpl.getSockletServices().get(destModule);
 		// System.out.println("sockletService: " + sockletService);
 		// 若在此acceptor的sockletService,則執行service
 		if (message.getSender() == null) {
@@ -1290,7 +1289,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		}
 		// 若不在此acceptor的sockletService,則轉發到其他acceptor
 		else {
-			sockletService = contextService.getRelationServices().get(destModule);
+			sockletService = contextServiceImpl.getRelationServices().get(destModule);
 			if (sockletService != null) {
 				for (String acceptor : sockletService.getAcceptors()) {
 					Message cloneMessage = (Message) message.clone();
@@ -1672,7 +1671,7 @@ public class AcceptorServiceImpl extends BaseServiceSupporter implements Accepto
 		@SuppressWarnings("unchecked")
 		Enum<?> destModule = EnumHelper.valueOf(moduleTypeClass, message.getDestModule().getValue());
 		// System.out.println("destModule: " + destModule);
-		SockletService sockletService = contextService.getSockletServices().get(destModule);
+		SockletService sockletService = contextServiceImpl.getSockletServices().get(destModule);
 		// System.out.println("sockletService: " + sockletService);
 		// 若在此acceptor的sockletService,則執行service
 		if (sockletService != null) {
