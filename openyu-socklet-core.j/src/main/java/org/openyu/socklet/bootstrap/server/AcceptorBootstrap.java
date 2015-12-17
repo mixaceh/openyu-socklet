@@ -1,6 +1,7 @@
 package org.openyu.socklet.bootstrap.server;
 
 import java.text.MessageFormat;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -114,7 +115,7 @@ public final class AcceptorBootstrap extends BootstrapSupporter {
 		} catch (Exception e) {
 			started = false;
 			LOGGER.error(new StringBuilder("Exception encountered during main()").toString(), e);
-			//結束
+			// 結束
 			System.exit(0);
 		}
 	}
@@ -324,6 +325,13 @@ public final class AcceptorBootstrap extends BootstrapSupporter {
 			}
 		}
 		return 0;
+	}
+
+	public static Map<String, List<String>> getRelations() {
+		if (started) {
+			return acceptorService.getRelations();
+		}
+		return new LinkedHashMap<String, List<String>>();
 	}
 
 }
