@@ -40,7 +40,6 @@ import org.openyu.socklet.connector.vo.impl.AcceptorConnectorImpl;
 import org.openyu.socklet.connector.vo.impl.GenericRelationImpl;
 import org.openyu.socklet.connector.vo.impl.RelationConnectorImpl;
 import org.openyu.socklet.connector.vo.supporter.GenericReceiverSupporter;
-import org.openyu.socklet.context.service.ContextService;
 import org.openyu.socklet.context.service.impl.ContextServiceImpl;
 import org.openyu.socklet.message.anno.DefaultMessageService;
 import org.openyu.socklet.message.anno.DefaultProtocolService;

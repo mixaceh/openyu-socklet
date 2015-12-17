@@ -21,14 +21,14 @@ public final class ClientBootstrap extends BootstrapSupporter {
 	private static transient final Logger LOGGER = LoggerFactory.getLogger(ClientBootstrap.class);
 
 	/**
-	 * client id, sender
-	 */
-	private static String id;
-
-	/**
-	 * 判斷是否啟動
+	 * 是否啟動
 	 */
 	private static boolean started;
+
+	/**
+	 * 客戶端id, sender
+	 */
+	private static String id;
 
 	/**
 	 * 客戶端控制器
@@ -40,7 +40,9 @@ public final class ClientBootstrap extends BootstrapSupporter {
 	 */
 	private static ClientService clientService;
 
-	public ClientBootstrap() {
+	private ClientBootstrap() {
+		throw new SecurityException(
+				new StringBuilder().append(ClientBootstrap.class.getName()).append(" can not construct").toString());
 	}
 
 	public static boolean isStarted() {
@@ -70,11 +72,12 @@ public final class ClientBootstrap extends BootstrapSupporter {
 			// 原本的記憶體
 			long memory = RuntimeHelper.usedMemory();
 			// 建構applicationContext
-			createApplicationContext(args);
+			buildApplicationContext(args);
+
 			// 建構客戶端控制器
-			getClientControl();
+			buildClientControl();
 			// 建構客戶端服務
-			getClientService();
+			buildClientService();
 			// --------------------------------------------------
 			// 啟動
 			doStart();
@@ -86,21 +89,22 @@ public final class ClientBootstrap extends BootstrapSupporter {
 			usedMemory = Math.max(usedMemory, (RuntimeHelper.usedMemory() - memory));
 			double usedMemoryMB = NumberHelper.round(ByteUnit.BYTE.toMB(usedMemory), 2);
 			//
-			if (started){
+			if (started) {
 				String msgPattern = "[{0}] start in {1} ms, {2} bytes ({3} MB) memory used";
 				StringBuilder msg = new StringBuilder(
 						MessageFormat.format(msgPattern, id, durTime, usedMemory, usedMemoryMB));
 				LOGGER.info(msg.toString());
 				//
 				// ThreadHelper.loop(50);
-			}
-			else{
+			} else {
 				LOGGER.error("[" + id + "] started fail");
 			}
-				
+
 		} catch (Exception e) {
 			clientControl.setVisible(false);
 			LOGGER.error(new StringBuilder("[" + id + "] Exception encountered during main()").toString(), e);
+			//結束
+			System.exit(0);
 		}
 	}
 
@@ -109,11 +113,12 @@ public final class ClientBootstrap extends BootstrapSupporter {
 	 * 
 	 * @param args
 	 */
-	protected static void createApplicationContext(String args[]) {
-		// 加入spring設定檔 from args
+	protected static void buildApplicationContext(String args[]) {
+		// 從args加入spring設定檔
 		AssertHelper.notNull(args, new StringBuilder().append("The Args must not be null").toString());
 		//
 		applicationContext = new ClassPathXmlApplicationContext(args);
+		//
 		AssertHelper.notNull(applicationContext,
 				new StringBuilder().append("The ApplicationContext must not be null").toString());
 	}
@@ -124,8 +129,9 @@ public final class ClientBootstrap extends BootstrapSupporter {
 	 * @param args
 	 * @throws Exception
 	 */
-	protected static void getClientControl() {
+	protected static void buildClientControl() {
 		clientControl = applicationContext.getBean(ClientControl.class);
+		//
 		AssertHelper.notNull(clientControl,
 				new StringBuilder().append("The ClientControl must not be null").toString());
 	}
@@ -136,17 +142,22 @@ public final class ClientBootstrap extends BootstrapSupporter {
 	 * @param args
 	 * @throws Exception
 	 */
-	protected static void getClientService() {
+	protected static void buildClientService() {
 		clientService = applicationContext.getBean(ClientService.class);
+		//
 		AssertHelper.notNull(clientService,
 				new StringBuilder().append("The ClientService must not be null").toString());
 	}
 
+	/**
+	 * 內部啟動
+	 * 
+	 * @throws Exception
+	 */
 	protected static void doStart() throws Exception {
-		// id
 		id = clientControl.getId();
 		clientControl.setVisible(true);
-		// 啟動
+		// TODO 啟動
 		started = true;
 	}
 }

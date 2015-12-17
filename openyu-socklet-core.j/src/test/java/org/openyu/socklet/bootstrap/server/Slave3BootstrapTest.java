@@ -6,7 +6,7 @@ public class Slave3BootstrapTest {
 
 	@Test
 	public void main() {
-		ServerBootstrap.main(new String[] { "org/openyu/socklet/bootstrap/server/applicationContext-slave3.xml" });
+		AcceptorBootstrap.main(new String[] { "org/openyu/socklet/bootstrap/server/applicationContext-slave3.xml" });
 	}
 
 }
