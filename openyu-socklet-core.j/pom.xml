@@ -18,8 +18,8 @@
 		<name>OpenYu</name>
 		<url>http://www.openyu.org</url>
 	</organization>
-
-	<licenses>
+ 
+	<licenses> 
 		<license>
 			<name>Apache 2</name>
 			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
