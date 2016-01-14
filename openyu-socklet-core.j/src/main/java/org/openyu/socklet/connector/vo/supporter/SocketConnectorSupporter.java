@@ -227,7 +227,8 @@ public abstract class SocketConnectorSupporter extends GenericConnectorSupporter
 							started = true;
 							break;
 						}
-					} catch (ConnectException ex) {
+					} catch (ConnectException e) {
+						// 當連線失敗時,重試
 						// socketChannel== selectionKey.channel()
 
 						// 要改成
@@ -242,7 +243,6 @@ public abstract class SocketConnectorSupporter extends GenericConnectorSupporter
 						// 2.重建socketChannel
 						socketChannel = createSocketChannel();
 
-						// 連線重試
 						addTries();
 						// [1/3] time(s) Failed to get the session
 						LOGGER.warn("[" + tries + "/" + (retryNumber != 0 ? retryNumber : "INFINITE")
