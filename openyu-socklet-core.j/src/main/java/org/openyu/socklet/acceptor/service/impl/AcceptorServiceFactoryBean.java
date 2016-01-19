@@ -6,7 +6,7 @@ import java.util.Set;
 import org.openyu.commons.nio.NioHelper;
 import org.openyu.commons.security.AuthKeyService;
 import org.openyu.commons.security.anno.DefaultAuthKeyService;
-import org.openyu.commons.service.supporter.BaseServiceFactorySupporter;
+import org.openyu.commons.service.supporter.BaseServiceFactoryBeanSupporter;
 import org.openyu.commons.thread.ThreadService;
 import org.openyu.socklet.acceptor.anno.AcceptorThreadService;
 import org.openyu.socklet.acceptor.service.AcceptorService;
@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
  * AcceptorService工廠
  */
 public final class AcceptorServiceFactoryBean<T extends AcceptorService>
-		extends BaseServiceFactorySupporter<AcceptorService> {
+		extends BaseServiceFactoryBeanSupporter<AcceptorService> {
 
 	private static final long serialVersionUID = 7441283283901230776L;
 

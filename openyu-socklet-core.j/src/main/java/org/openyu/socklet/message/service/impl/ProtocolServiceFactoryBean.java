@@ -2,7 +2,7 @@ package org.openyu.socklet.message.service.impl;
 
 import org.openyu.commons.enumz.EnumHelper;
 import org.openyu.commons.security.SecurityType;
-import org.openyu.commons.service.supporter.BaseServiceFactorySupporter;
+import org.openyu.commons.service.supporter.BaseServiceFactoryBeanSupporter;
 import org.openyu.commons.util.ChecksumType;
 import org.openyu.commons.util.CompressType;
 import org.openyu.socklet.message.service.ProtocolService;
@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  * ProtocolService工廠
  */
 public final class ProtocolServiceFactoryBean<T extends ProtocolService>
-		extends BaseServiceFactorySupporter<ProtocolService> {
+		extends BaseServiceFactoryBeanSupporter<ProtocolService> {
 
 	private static final long serialVersionUID = -549481762947318694L;
 
