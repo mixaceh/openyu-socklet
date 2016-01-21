@@ -28,13 +28,13 @@
 	<bean
 		id="threadService"
 		class="org.openyu.commons.thread.impl.ThreadServiceFactoryBean"
-		parent="baseServiceFactorySupporter"
+		parent="baseServiceFactoryBeanSupporter"
 		p:configLocation="file:src/test/config/etc/ThreadService.properties" />
 
 	<bean
 		id="blockingThreadService"
 		class="org.openyu.commons.thread.impl.ThreadServiceFactoryBean"
-		parent="baseServiceFactorySupporter"
+		parent="baseServiceFactoryBeanSupporter"
 		p:configLocation="file:src/test/config/etc/BlockingThreadService.properties" />
 
 	<!-- aop -->
@@ -49,7 +49,7 @@
 	<bean
 		id="authKeyService"
 		class="org.openyu.commons.security.impl.AuthKeyServiceFactoryBean"
-		parent="baseServiceFactorySupporter"
+		parent="baseServiceFactoryBeanSupporter"
 		p:configLocation="file:src/test/config/etc/AuthKeyService.properties" />
 
 	<!-- freemarker -->

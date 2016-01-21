@@ -80,9 +80,8 @@ public class MessageImpl extends BaseModelSupporter implements Message {
 	 * @param messageType
 	 * @param receivers
 	 */
-	public MessageImpl(CategoryType categoryType, PriorityType priorityType,
-			ModuleType srcModule, ModuleType destModule,
-			MessageType messageType, List<String> receivers) {
+	public MessageImpl(CategoryType categoryType, PriorityType priorityType, ModuleType srcModule,
+			ModuleType destModule, MessageType messageType, List<String> receivers) {
 		this(categoryType, priorityType);
 		//
 		this.srcModule = srcModule;
@@ -92,8 +91,8 @@ public class MessageImpl extends BaseModelSupporter implements Message {
 		this.receivers = receivers;
 	}
 
-	public MessageImpl(CategoryType categoryType, PriorityType priorityType,
-			ModuleType srcModule, ModuleType destModule, MessageType messageType) {
+	public MessageImpl(CategoryType categoryType, PriorityType priorityType, ModuleType srcModule,
+			ModuleType destModule, MessageType messageType) {
 		this(categoryType, priorityType);
 		//
 		this.srcModule = srcModule;
@@ -110,8 +109,7 @@ public class MessageImpl extends BaseModelSupporter implements Message {
 	 * @param messageType
 	 * @return
 	 */
-	public MessageImpl(CategoryType categoryType, PriorityType priorityType,
-			String sender, MessageType messageType) {
+	public MessageImpl(CategoryType categoryType, PriorityType priorityType, String sender, MessageType messageType) {
 		this(categoryType, priorityType);
 		//
 		this.sender = sender;
@@ -381,11 +379,10 @@ public class MessageImpl extends BaseModelSupporter implements Message {
 		return classes.get(index);
 	}
 
-	// T[94] from [slave1] (152203) CHAT_CHAT_REPONSE => CLIENT to [TEST_ROLE]
+	// T[94] [slave1] (152203) CHAT_CHAT_REPONSE to CLIENT [TEST_ROLE]
 	// 0, 1000, 1000, 632, 13, 1, POTION_0001, 1, 251, 13, 1
 	public String toString() {
-		ToStringBuilder builder = new ToStringBuilder(this,
-				ToStringStyle.SIMPLE_STYLE);
+		ToStringBuilder builder = new ToStringBuilder(this, ToStringStyle.SIMPLE_STYLE);
 		StringBuilder buff = new StringBuilder();
 
 		// thrad id
@@ -393,7 +390,7 @@ public class MessageImpl extends BaseModelSupporter implements Message {
 
 		// 發送者
 		if (sender != null) {
-			buff.append(" from [" + sender + "]");
+			buff.append(" [" + sender + "]");
 		}
 
 		// message.append(categoryType + ", ");
@@ -412,12 +409,12 @@ public class MessageImpl extends BaseModelSupporter implements Message {
 		if (destModule != null) {
 			// message.append(" => (" + destModule.intValue() + ") " +
 			// destModule);
-			buff.append(" => " + destModule);
+			buff.append(" to " + destModule);
 		}
 
 		// 接收者
 		if (!CollectionHelper.isEmpty(receivers)) {
-			buff.append(" to " + receivers);
+			buff.append(" " + receivers);
 		}
 
 		// content
@@ -427,31 +424,19 @@ public class MessageImpl extends BaseModelSupporter implements Message {
 				Object object = null;
 				//
 				Class<?> clazz = getClass(i);
-				if (BooleanEnum.class.equals(clazz)
-						|| Boolean.class.equals(clazz)
-						|| boolean.class.equals(clazz)) {
+				if (BooleanEnum.class.equals(clazz) || Boolean.class.equals(clazz) || boolean.class.equals(clazz)) {
 					object = getBoolean(i);
-				} else if (CharEnum.class.equals(clazz)
-						|| Character.class.equals(clazz)
-						|| char.class.equals(clazz)) {
+				} else if (CharEnum.class.equals(clazz) || Character.class.equals(clazz) || char.class.equals(clazz)) {
 					object = getChar(i);
-				} else if (StringEnum.class.equals(clazz)
-						|| String.class.equals(clazz)) {
+				} else if (StringEnum.class.equals(clazz) || String.class.equals(clazz)) {
 					object = getString(i);
-				} else if (IntEnum.class.equals(clazz)
-						|| Integer.class.equals(clazz)
-						|| int.class.equals(clazz)) {
+				} else if (IntEnum.class.equals(clazz) || Integer.class.equals(clazz) || int.class.equals(clazz)) {
 					object = getInt(i);
-				} else if (LongEnum.class.equals(clazz)
-						|| Long.class.equals(clazz) || long.class.equals(clazz)) {
+				} else if (LongEnum.class.equals(clazz) || Long.class.equals(clazz) || long.class.equals(clazz)) {
 					object = getLong(i);
-				} else if (FloatEnum.class.equals(clazz)
-						|| Float.class.equals(clazz)
-						|| float.class.equals(clazz)) {
+				} else if (FloatEnum.class.equals(clazz) || Float.class.equals(clazz) || float.class.equals(clazz)) {
 					object = getFloat(i);
-				} else if (DoubleEnum.class.equals(clazz)
-						|| Double.class.equals(clazz)
-						|| double.class.equals(clazz)) {
+				} else if (DoubleEnum.class.equals(clazz) || Double.class.equals(clazz) || double.class.equals(clazz)) {
 					object = getDouble(i);
 				} else if (byte[].class.equals(clazz)) {
 					object = getByteArray(i);
@@ -465,7 +450,7 @@ public class MessageImpl extends BaseModelSupporter implements Message {
 				//
 				content.append(object);
 				if (i < contents.size() - 1) {
-					content.append(StringHelper.COMMA);
+					content.append(StringHelper.COMMA + StringHelper.SPACE);
 				}
 			}
 

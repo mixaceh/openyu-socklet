@@ -46,7 +46,7 @@
 	<bean
 		id="protocolServiceFactoryBean"
 		class="org.openyu.socklet.message.service.impl.ProtocolServiceFactoryBean"
-		parent="baseServiceFactorySupporter"
+		parent="baseServiceFactoryBeanSupporter"
 		p:configLocation="file:src/test/config/etc/ProtocolService.properties" />
 
 </beans>

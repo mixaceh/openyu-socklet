@@ -12,7 +12,7 @@
 	<bean
 		id="threadService"
 		class="org.openyu.commons.thread.impl.ThreadServiceFactoryBean"
-		parent="baseServiceFactorySupporter"
+		parent="baseServiceFactoryBeanSupporter"
 		p:configLocation="file:src/test/config/etc/ThreadService.properties" />
 
 	<bean
@@ -23,7 +23,7 @@
 	<bean
 		id="protocolService"
 		class="org.openyu.socklet.message.service.impl.ProtocolServiceFactoryBean"
-		parent="baseServiceFactorySupporter"
+		parent="baseServiceFactoryBeanSupporter"
 		p:configLocation="file:src/test/config/etc/ProtocolService.properties" />
 
 

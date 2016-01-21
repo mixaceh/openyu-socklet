@@ -28,7 +28,7 @@
 	<bean
 		id="acceptorServiceFactoryBean"
 		class="org.openyu.socklet.acceptor.service.impl.AcceptorServiceFactoryBean"
-		parent="baseServiceFactorySupporter"
+		parent="baseServiceFactoryBeanSupporter"
 		p:configLocation="file:src/test/config/etc/AcceptorService.properties"
 		p:acceptorId="account" />
 </beans>
