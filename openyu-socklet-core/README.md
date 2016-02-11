@@ -1,1 +1,1 @@
-# OpenYu Socklet Core Java
+# OpenYu Socklet Core

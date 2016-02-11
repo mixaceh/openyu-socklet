@@ -31,7 +31,7 @@
 	
 	<!--  
 	<modules>
-		<module>openyu-socklet-core.j</module>
+		<module>openyu-socklet-core</module>
 	</modules>
 	-->
 
