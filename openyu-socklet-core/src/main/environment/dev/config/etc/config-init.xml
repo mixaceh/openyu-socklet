@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<config>
+	<classHelper>
+		<!-- po應對表 -->
+		<!-- 1.先使用慣例轉換 -->
+		<!-- 2.若找不到, 才會使用此應對表 -->
+		<poMapping>
+
+		</poMapping>
+	</classHelper>	
+</config>
