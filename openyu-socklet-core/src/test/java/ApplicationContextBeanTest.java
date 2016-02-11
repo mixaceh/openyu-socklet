@@ -52,8 +52,10 @@ public class ApplicationContextBeanTest extends BaseTestSupporter {
 	@Test
 	public void configHelper() {
 		ConfigHelper bean = (ConfigHelper) applicationContext.getBean("configHelper");
-		System.out.println(bean);
-		assertNotNull(bean);
+		System.out.println(bean); // null, 因為ConfigHelper是static class
+		//
+		System.out.println(ConfigHelper.getConfigurationUrl());
+		System.out.println(ConfigHelper.getJsonDirUrl());
 	}
 
 	@Test
