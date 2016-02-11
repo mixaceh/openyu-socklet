@@ -199,6 +199,9 @@ public abstract class SocketConnectorSupporter extends GenericConnectorSupporter
 		InetSocketAddress address = NioHelper.createInetSocketAddress(ip, port);
 		result.connect(address);
 		result.register(selector, SelectionKey.OP_CONNECT);
+
+		// 2016/02/11 設置TCP_NODELAY屬性,禁用Nagle算法
+		// result.socket().setTcpNoDelay(true);
 		return result;
 	}
 

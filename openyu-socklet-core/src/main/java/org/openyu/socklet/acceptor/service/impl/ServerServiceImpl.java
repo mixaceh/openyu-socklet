@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketOptions;
 import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
@@ -121,7 +122,7 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 
 	// ------------------------------------------------
 	// aceptor id, master,slave1...n
-//	private String acceptorId;
+	// private String acceptorId;
 
 	// [slave1][3100]
 	private String acceptorServer;
@@ -132,11 +133,13 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 	private Map<String, ServerService> serverServices = new ConcurrentHashMap<String, ServerService>();
 
 	// 來自於內部其他server的client連線
-//	private Map<String, GenericRelation> passiveRelations = new ConcurrentHashMap<String, GenericRelation>();
+	// private Map<String, GenericRelation> passiveRelations = new
+	// ConcurrentHashMap<String, GenericRelation>();
 
 	// 來自於外部client的連線
 	// <client.sender,client>
-//	private Map<String, AcceptorConnector> acceptorConnectors = new ConcurrentHashMap<String, AcceptorConnector>();
+	// private Map<String, AcceptorConnector> acceptorConnectors = new
+	// ConcurrentHashMap<String, AcceptorConnector>();
 
 	// ------------------------------------------------
 	// listen
@@ -186,9 +189,10 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 
 	public void setAcceptorServiceImpl(AcceptorServiceImpl acceptorServiceImpl) {
 		this.acceptorServiceImpl = acceptorServiceImpl;
-//		this.acceptorId = acceptorServiceImpl.getId();
-//		this.acceptorConnectors = acceptorServiceImpl.getAcceptorConnectors();
-//		this.passiveRelations = acceptorServiceImpl.getPassiveRelations();
+		// this.acceptorId = acceptorServiceImpl.getId();
+		// this.acceptorConnectors =
+		// acceptorServiceImpl.getAcceptorConnectors();
+		// this.passiveRelations = acceptorServiceImpl.getPassiveRelations();
 	}
 
 	public void setContextServiceImpl(ContextServiceImpl contextServiceImpl) {
@@ -401,6 +405,9 @@ public class ServerServiceImpl extends BaseServiceSupporter implements ServerSer
 
 					// client ip,port
 					Socket clientSocket = client.socket();
+					// 2016/02/11 設置TCP_NODELAY屬性,禁用Nagle算法
+					// clientSocket.setTcpNoDelay(true);
+
 					acceptorConnector.setClientIp(clientSocket.getInetAddress().getHostAddress());
 					acceptorConnector.setClientPort(clientSocket.getPort());
 					// acceptorConnector.start();
