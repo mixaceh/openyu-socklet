@@ -140,8 +140,8 @@ public final class ProtocolServiceFactoryBean<T extends ProtocolService>
 			LOGGER.error(new StringBuilder("Exception encountered during createService()").toString(), e);
 			try {
 				result = (ProtocolServiceImpl) shutdownService();
-			} catch (Exception sie) {
-				throw sie;
+			} catch (Exception e2) {
+				throw e2;
 			}
 			throw e;
 		}

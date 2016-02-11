@@ -228,8 +228,8 @@ public final class AcceptorServiceFactoryBean<T extends AcceptorService>
 			LOGGER.error(new StringBuilder("Exception encountered during createService()").toString(), e);
 			try {
 				result = (AcceptorServiceImpl) shutdownService();
-			} catch (Exception sie) {
-				throw sie;
+			} catch (Exception e2) {
+				throw e2;
 			}
 			throw e;
 		}
