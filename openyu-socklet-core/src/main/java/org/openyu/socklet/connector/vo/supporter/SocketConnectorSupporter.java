@@ -154,7 +154,7 @@ public abstract class SocketConnectorSupporter extends GenericConnectorSupporter
 				// // socketChannel.socket().setKeepAlive(true);//
 				// socketChannel.register(selector, SelectionKey.OP_CONNECT);
 
-				socketChannel = createConnection();
+				socketChannel = createSocketChannel();
 				//
 				int select = selector.select();
 				if (select > 0) {
@@ -193,7 +193,7 @@ public abstract class SocketConnectorSupporter extends GenericConnectorSupporter
 	 * @return
 	 * @throws Exception
 	 */
-	protected SocketChannel createConnection() throws Exception {
+	protected SocketChannel createSocketChannel() throws Exception {
 		SocketChannel result = SocketChannel.open();
 		result.configureBlocking(false);
 		InetSocketAddress address = NioHelper.createInetSocketAddress(ip, port);
@@ -244,7 +244,7 @@ public abstract class SocketConnectorSupporter extends GenericConnectorSupporter
 						// 因為沒開啟,isClosed=true,所以也無法close
 
 						// 2.重建socketChannel
-						socketChannel = createConnection();
+						socketChannel = createSocketChannel();
 
 						addTries();
 						// [1/3] time(s) Failed to get the session
