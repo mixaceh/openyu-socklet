@@ -17,6 +17,7 @@ import org.openyu.commons.lang.RuntimeHelper;
 import org.openyu.commons.thread.ThreadHelper;
 import org.openyu.commons.util.AssertHelper;
 import org.openyu.commons.util.ByteUnit;
+import org.openyu.commons.util.MemoryHelper;
 import org.openyu.socklet.acceptor.service.AcceptorService;
 import org.openyu.socklet.connector.vo.AcceptorConnector;
 
@@ -100,12 +101,14 @@ public final class AcceptorBootstrap extends BootstrapSupporter {
 			//
 			RuntimeHelper.gc();
 			usedMemory = Math.max(usedMemory, (RuntimeHelper.usedMemory() - memory));
-			double usedMemoryMB = NumberHelper.round(ByteUnit.BYTE.toMB(usedMemory), 2);
+			double kb = NumberHelper.round(ByteUnit.BYTE.toKiB(usedMemory), 1);
+			double mb = NumberHelper.round(ByteUnit.BYTE.toMiB(usedMemory), 1);
+			double sizeOf = NumberHelper.round(ByteUnit.BYTE.toMiB(MemoryHelper.sizeOf(applicationContext)), 1);
 			//
 			if (started) {
-				String msgPattern = "[{0}] ({1}) ({2}) start in {3} ms, {4} bytes ({5} MB) memory used";
-				StringBuilder msg = new StringBuilder(
-						MessageFormat.format(msgPattern, id, instanceId, outputId, durTime, usedMemory, usedMemoryMB));
+				String MEMORY_PATTERN = "[{0}] ({1}) ({2}) start in {3} ms, {4} bytes, {5} KB, {6} MB, sizeOf: {7} MB memory used";
+				StringBuilder msg = new StringBuilder(MessageFormat.format(MEMORY_PATTERN, id, instanceId, outputId,
+						durTime, usedMemory, kb, mb, sizeOf));
 				LOGGER.info(msg.toString());
 				// loop
 				ThreadHelper.loop(50);

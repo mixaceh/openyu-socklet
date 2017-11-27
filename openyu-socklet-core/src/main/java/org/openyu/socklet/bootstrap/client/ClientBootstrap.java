@@ -7,6 +7,7 @@ import org.openyu.commons.lang.NumberHelper;
 import org.openyu.commons.lang.RuntimeHelper;
 import org.openyu.commons.util.AssertHelper;
 import org.openyu.commons.util.ByteUnit;
+import org.openyu.commons.util.MemoryHelper;
 import org.openyu.socklet.connector.control.ClientControl;
 import org.openyu.socklet.connector.service.ClientService;
 import org.slf4j.Logger;
@@ -87,12 +88,14 @@ public final class ClientBootstrap extends BootstrapSupporter {
 			//
 			RuntimeHelper.gc();
 			usedMemory = Math.max(usedMemory, (RuntimeHelper.usedMemory() - memory));
-			double usedMemoryMB = NumberHelper.round(ByteUnit.BYTE.toMB(usedMemory), 2);
+			double kb = NumberHelper.round(ByteUnit.BYTE.toKiB(usedMemory), 1);
+			double mb = NumberHelper.round(ByteUnit.BYTE.toMiB(usedMemory), 1);
+			double sizeOf = NumberHelper.round(ByteUnit.BYTE.toMiB(MemoryHelper.sizeOf(applicationContext)), 1);
 			//
 			if (started) {
-				String msgPattern = "[{0}] start in {1} ms, {2} bytes ({3} MB) memory used";
+				String MEMORY_PATTERN = "[{0}] start in {1} ms, {2} bytes , {3} KB, {4} MB, sizeOf: {5} MB memory used";
 				StringBuilder msg = new StringBuilder(
-						MessageFormat.format(msgPattern, id, durTime, usedMemory, usedMemoryMB));
+						MessageFormat.format(MEMORY_PATTERN, id, durTime, usedMemory, kb, mb, sizeOf));
 				LOGGER.info(msg.toString());
 				//
 				// ThreadHelper.loop(50);
@@ -103,7 +106,7 @@ public final class ClientBootstrap extends BootstrapSupporter {
 		} catch (Exception e) {
 			clientControl.setVisible(false);
 			LOGGER.error(new StringBuilder("[" + id + "] Exception encountered during main()").toString(), e);
-			//結束
+			// 結束
 			System.exit(0);
 		}
 	}
