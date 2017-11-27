@@ -380,7 +380,7 @@ public class MessageImpl extends BaseModelSupporter implements Message {
 	}
 
 	// T[94] [slave1] (152203) CHAT_CHAT_REPONSE to CLIENT [TEST_ROLE]
-	// 0, 1000, 1000, 632, 13, 1, POTION_0001, 1, 251, 13, 1
+	// > 0, 1000, 1000, 632, 13, 1, POTION_0001, 1, 251, 13, 1
 	public String toString() {
 		ToStringBuilder builder = new ToStringBuilder(this, ToStringStyle.SIMPLE_STYLE);
 		StringBuilder buff = new StringBuilder();
@@ -453,10 +453,11 @@ public class MessageImpl extends BaseModelSupporter implements Message {
 					content.append(StringHelper.COMMA + StringHelper.SPACE);
 				}
 			}
-
-			// 內容,TEST_ROLE,測試角色,50000,1,200000,0
+			// T[94] [slave1] (152203) CHAT_CHAT_REPONSE to CLIENT [TEST_ROLE]
+			// > TEST_ROLE,測試角色,50000,1,200000,0
 			if (content.length() > 0) {
 				buff.append(StringHelper.LF);
+				buff.append("> ");
 				buff.append(content);
 			}
 		}
