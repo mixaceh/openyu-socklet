@@ -55,6 +55,7 @@
 	</properties>
 
 	<dependencies>
+		<!--  
 		<dependency>
 			<groupId>jdk.tools</groupId>
 			<artifactId>jdk.tools</artifactId>
@@ -62,6 +63,7 @@
 			<scope>system</scope>
 			<systemPath>${JAVA_1_7_HOME}/lib/tools.jar</systemPath>
 		</dependency>
+		-->
 
 		<dependency>
 			<groupId>javax.activation</groupId>
