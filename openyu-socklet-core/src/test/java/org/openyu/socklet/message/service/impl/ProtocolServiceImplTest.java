@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
@@ -213,7 +214,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 				-67, -84, 95, -28, -29, -52, -85, -117, -114, 90, 117, -120, -64, -86, 92, 96, 46, 31, 81, 126, 109,
 				-112, -19, -12, -70, 14, -56, 17, 35, -122 };
 
-		assertArrayEquals(expecteds, result);
+		Assert.assertArrayEquals(expecteds, result);
 
 		// 輸出成ser檔
 		// OutputStream out =
@@ -265,7 +266,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 				-7, -62, 48, -115, -98, -77, 123, -104, 118, 58, -69, -21, -101, 42, -74, 12, -111, -63, -13, 41, -120,
 				-41, 110, 112, 102, 103, 54, 53, -60, 0 };
 
-		assertArrayEquals(expecteds, result);
+		Assert.assertArrayEquals(expecteds, result);
 	}
 
 	@Test
@@ -303,7 +304,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 				-7, -62, 48, -115, -98, -77, 123, -104, 118, 58, -69, -21, -101, 42, 52, 30, 89, 0, -121, 114, -103, 64,
 				110, 112, 102, 103, 54, 53, -60, 0 };
 
-		assertArrayEquals(expecteds, result);
+		Assert.assertArrayEquals(expecteds, result);
 	}
 
 	@Test
@@ -344,7 +345,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 				-118, -5, -36, 98, -74, 124, -59, 93, 122, 87, -26, -25, 116, 103, 75, 57, -2, -84, 101, -122, 90, 40,
 				-25, -93, -69, 18 };
 
-		assertArrayEquals(expecteds, result);
+		Assert.assertArrayEquals(expecteds, result);
 	}
 
 	@Test
@@ -370,7 +371,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 				-90, 24, 124, -116, -61, 119, -102, 46, 76, -73, -76, -75, 24, -93, -57, 28, -102, -33, 103, 92, 125,
 				33, -15, 87, 11, 108, -13, 18, -1, -35, -54, 25, -35, -25, -2, 58, 112, -70 };
 		//
-		assertArrayEquals(expecteds, result);
+		Assert.assertArrayEquals(expecteds, result);
 
 		// 輸出成ser檔
 		// OutputStream out =
@@ -420,7 +421,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 				-121, 64, 95, 34, 54, -121, -106, 71, -75, -30, -99, 124, 76, -4, -75, -20, 107, -34, 43, 36, -104,
 				-102, -98, 33, 60, 40, 83 };
 
-		assertArrayEquals(expecteds, result);
+		Assert.assertArrayEquals(expecteds, result);
 
 		// 輸出成ser檔
 		// OutputStream out =
@@ -472,7 +473,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 				-100, 19, 115, 19, -29, -78, 77, -87, -68, -92, -28, 57, 53, 102, 120, -16, -115, -126, -69, -81, 18,
 				-34, -36, -57, -16, 78, -62, 20, -116, 78, -34, -29, 109, 119, -44, 50, -26, -44, 17, 94, 124, -35 };
 
-		assertArrayEquals(expecteds, result);
+		Assert.assertArrayEquals(expecteds, result);
 	}
 
 	@Test
@@ -516,7 +517,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 				105, 8, 90, -65, -75, -16, 13, -11, 27, -99, -99, 96, -60, -119, -31, -30, 114, -30, -10, 121, 30, 54,
 				99, -7, -124, -46, 63, -54, -21, -29, -100, 87, 24, -84 };
 
-		assertArrayEquals(expecteds, result);
+		Assert.assertArrayEquals(expecteds, result);
 	}
 
 	@Test
@@ -559,7 +560,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 				-27, 50, -67, -45, 54, 7, 67, 76, -61, -18, 8, 0, -16, 1, 66, 17, -55, -75, -128, 15, -60, -58, -124,
 				-73, -103, -92, -105, -117, -81, 10 };
 
-		assertArrayEquals(expecteds, result);
+		Assert.assertArrayEquals(expecteds, result);
 	}
 
 	@Test
@@ -600,7 +601,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 
 		byte[] expecteds = new byte[] { 0, 0, 0, 1, 0, 0, 0, 12, 0, 0, 0, 1 };
 
-		assertArrayEquals(expecteds, result);
+		Assert.assertArrayEquals(expecteds, result);
 	}
 
 	@Test
@@ -619,7 +620,7 @@ public class ProtocolServiceImplTest extends BaseTestSupporter {
 
 		byte[] expecteds = new byte[] { 0, 0, 0, 1, 0, 0, 0, 12, 0, 0, 0, 1 };
 
-		assertArrayEquals(expecteds, result.getBody());
+		Assert.assertArrayEquals(expecteds, result.getBody());
 	}
 }
 
