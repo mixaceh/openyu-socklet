@@ -44,7 +44,61 @@ public enum PriorityType implements ByteEnum {
 		}
 	},
 
-	CARELESS((byte) 5) {
+	_5((byte) 5) {
+		public byte[] toByteArray() {
+			if (byteArray == null) {
+				byteArray = new byte[] { getValue() };
+			}
+			return byteArray;
+		}
+	},
+
+	_6((byte) 6) {
+		public byte[] toByteArray() {
+			if (byteArray == null) {
+				byteArray = new byte[] { getValue() };
+			}
+			return byteArray;
+		}
+	},
+
+	_7((byte) 7) {
+		public byte[] toByteArray() {
+			if (byteArray == null) {
+				byteArray = new byte[] { getValue() };
+			}
+			return byteArray;
+		}
+	},
+
+	_8((byte) 8) {
+		public byte[] toByteArray() {
+			if (byteArray == null) {
+				byteArray = new byte[] { getValue() };
+			}
+			return byteArray;
+		}
+	},
+
+	_9((byte) 9) {
+		public byte[] toByteArray() {
+			if (byteArray == null) {
+				byteArray = new byte[] { getValue() };
+			}
+			return byteArray;
+		}
+	},
+
+	_10((byte) 10) {
+		public byte[] toByteArray() {
+			if (byteArray == null) {
+				byteArray = new byte[] { getValue() };
+			}
+			return byteArray;
+		}
+	},
+
+	CARELESS(Byte.MAX_VALUE) {
 		public byte[] toByteArray() {
 			if (byteArray == null) {
 				byteArray = ByteHelper.toByteArray(getValue());
