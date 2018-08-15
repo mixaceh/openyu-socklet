@@ -13,7 +13,7 @@ public enum CategoryType implements ByteEnum {
 	HANDSHAKE_CLIENT((byte) 1) {
 		public byte[] toByteArray() {
 			if (byteArray == null) {
-				byteArray = ByteHelper.toByteArray(getValue());
+				byteArray = new byte[] { getValue() };
 			}
 			return byteArray;
 		}
@@ -25,7 +25,7 @@ public enum CategoryType implements ByteEnum {
 	HANDSHAKE_RELATION((byte) 2) {
 		public byte[] toByteArray() {
 			if (byteArray == null) {
-				byteArray = ByteHelper.toByteArray(getValue());
+				byteArray = new byte[] { getValue() };
 			}
 			return byteArray;
 		}
@@ -37,7 +37,7 @@ public enum CategoryType implements ByteEnum {
 	HANDSHAKE_SERVER((byte) 3) {
 		public byte[] toByteArray() {
 			if (byteArray == null) {
-				byteArray = ByteHelper.toByteArray(getValue());
+				byteArray = new byte[] { getValue() };
 			}
 			return byteArray;
 		}
@@ -49,7 +49,7 @@ public enum CategoryType implements ByteEnum {
 	MESSAGE_CLIENT((byte) 11) {
 		public byte[] toByteArray() {
 			if (byteArray == null) {
-				byteArray = ByteHelper.toByteArray(getValue());
+				byteArray = new byte[] { getValue() };
 			}
 			return byteArray;
 		}
@@ -61,7 +61,7 @@ public enum CategoryType implements ByteEnum {
 	MESSAGE_RELATION((byte) 12) {
 		public byte[] toByteArray() {
 			if (byteArray == null) {
-				byteArray = ByteHelper.toByteArray(getValue());
+				byteArray = new byte[] { getValue() };
 			}
 			return byteArray;
 		}
@@ -73,7 +73,7 @@ public enum CategoryType implements ByteEnum {
 	MESSAGE_SERVER((byte) 13) {
 		public byte[] toByteArray() {
 			if (byteArray == null) {
-				byteArray = ByteHelper.toByteArray(getValue());
+				byteArray = new byte[] { getValue() };
 			}
 			return byteArray;
 		}
@@ -85,7 +85,7 @@ public enum CategoryType implements ByteEnum {
 	MESSAGE_QUEUE((byte) 14) {
 		public byte[] toByteArray() {
 			if (byteArray == null) {
-				byteArray = ByteHelper.toByteArray(getValue());
+				byteArray = new byte[] { getValue() };
 			}
 			return byteArray;
 		}
@@ -99,7 +99,7 @@ public enum CategoryType implements ByteEnum {
 	MESSAGE_ACCEPTOR((byte) 15) {
 		public byte[] toByteArray() {
 			if (byteArray == null) {
-				byteArray = ByteHelper.toByteArray(getValue());
+				byteArray = new byte[] { getValue() };
 			}
 			return byteArray;
 		}
@@ -111,7 +111,7 @@ public enum CategoryType implements ByteEnum {
 	MESSAGE_SYNC((byte) 16) {
 		public byte[] toByteArray() {
 			if (byteArray == null) {
-				byteArray = ByteHelper.toByteArray(getValue());
+				byteArray = new byte[] { getValue() };
 			}
 			return byteArray;
 		}
@@ -123,7 +123,7 @@ public enum CategoryType implements ByteEnum {
 	KEEP_ALIVE_CLIENT((byte) 31) {
 		public byte[] toByteArray() {
 			if (byteArray == null) {
-				byteArray = ByteHelper.toByteArray(getValue());
+				byteArray = new byte[] { getValue() };
 			}
 			return byteArray;
 		}
@@ -135,7 +135,7 @@ public enum CategoryType implements ByteEnum {
 	KEEP_ALIVE_RELATIOM((byte) 32) {
 		public byte[] toByteArray() {
 			if (byteArray == null) {
-				byteArray = ByteHelper.toByteArray(getValue());
+				byteArray = new byte[] { getValue() };
 			}
 			return byteArray;
 		}
@@ -147,7 +147,7 @@ public enum CategoryType implements ByteEnum {
 	KEEP_ALIVE_SERVER((byte) 33) {
 		public byte[] toByteArray() {
 			if (byteArray == null) {
-				byteArray = ByteHelper.toByteArray(getValue());
+				byteArray = new byte[] { getValue() };
 			}
 			return byteArray;
 		}
@@ -159,7 +159,7 @@ public enum CategoryType implements ByteEnum {
 	FILE_CLIENT((byte) 41) {
 		public byte[] toByteArray() {
 			if (byteArray == null) {
-				byteArray = ByteHelper.toByteArray(getValue());
+				byteArray = new byte[] { getValue() };
 			}
 			return byteArray;
 		}
@@ -171,7 +171,7 @@ public enum CategoryType implements ByteEnum {
 	FILE_RELATIOM((byte) 42) {
 		public byte[] toByteArray() {
 			if (byteArray == null) {
-				byteArray = ByteHelper.toByteArray(getValue());
+				byteArray = new byte[] { getValue() };
 			}
 			return byteArray;
 		}
@@ -183,7 +183,7 @@ public enum CategoryType implements ByteEnum {
 	FILE_SERVER((byte) 43) {
 		public byte[] toByteArray() {
 			if (byteArray == null) {
-				byteArray = ByteHelper.toByteArray(getValue());
+				byteArray = new byte[] { getValue() };
 			}
 			return byteArray;
 		}
