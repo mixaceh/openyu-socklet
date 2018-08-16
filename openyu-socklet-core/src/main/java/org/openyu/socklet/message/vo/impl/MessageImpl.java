@@ -37,7 +37,7 @@ public class MessageImpl extends BaseModelSupporter implements Message {
 	 * 
 	 * @return
 	 */
-	private String id;
+	private StringBuffer id;
 
 	/**
 	 * 時間戳
@@ -66,7 +66,7 @@ public class MessageImpl extends BaseModelSupporter implements Message {
 		this.categoryType = categoryType;
 		this.priorityType = priorityType;
 		//
-		this.id = UUID.randomUUID().toString();
+		this.id = new StringBuffer(UUID.randomUUID().toString());
 		this.timeStamp = System.currentTimeMillis();
 	}
 
@@ -116,11 +116,11 @@ public class MessageImpl extends BaseModelSupporter implements Message {
 		this.messageType = messageType;
 	}
 
-	public String getId() {
+	public StringBuffer getId() {
 		return id;
 	}
 
-	public void setId(String id) {
+	public void setId(StringBuffer id) {
 		this.id = id;
 	}
 

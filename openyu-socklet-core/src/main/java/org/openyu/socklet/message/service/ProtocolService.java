@@ -127,12 +127,12 @@ public interface ProtocolService extends BaseService {
 	 * 反訊息協定,反組byte[]
 	 * 
 	 * @param values
-	 * @param moduleEnumType
-	 * @param messageEnumType
+	 * @param moduleTypeClass
+	 * @param messageTypeClass
 	 * @return
 	 */
 	<T extends Enum<T>, U extends Enum<U>> List<Message> disassemble(
-			byte[] values, Class<T> moduleEnumType, Class<U> messageEnumType);
+			byte[] values, Class<T> moduleTypeClass, Class<U> messageTypeClass);
 
 	// ------------------------------------------
 	// 2014/12/15

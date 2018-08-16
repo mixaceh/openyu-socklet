@@ -786,12 +786,12 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 	 * 反訊息協定,反組byte[]
 	 * 
 	 * @param values
-	 * @param moduleEnumType
-	 * @param messageEnumType
+	 * @param moduleTypeClass
+	 * @param messageTypeClass
 	 * @return
 	 */
-	public <T extends Enum<T>, U extends Enum<U>> List<Message> disassemble(byte[] values, Class<T> moduleEnumType,
-			Class<U> messageEnumType) {
+	public <T extends Enum<T>, U extends Enum<U>> List<Message> disassemble(byte[] values, Class<T> moduleTypeClass,
+			Class<U> messageTypeClass) {
 		List<Message> result = new LinkedList<Message>();
 		AssertHelper.notNull(values, "The Values must not be null");
 		//
@@ -803,7 +803,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 			int dataLength = 0;
 			while (pos < buff.length
 					&& (dataLength = ByteHelper.toInt(ByteHelper.getByteArray(buff, pos, 4))) < buff.length - pos + 1) {
-				Message message = disassemble(pos, buff, moduleEnumType, messageEnumType);
+				Message message = disassemble(pos, buff, moduleTypeClass, messageTypeClass);
 				if (message == null) {
 					break;
 				}
@@ -823,12 +823,12 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 	 * 
 	 * @param pos
 	 * @param values
-	 * @param moduleEnumType
-	 * @param messageEnumType
+	 * @param moduleTypeClass
+	 * @param messageTypeClass
 	 * @return
 	 */
 	protected <T extends Enum<T>, U extends Enum<U>> Message disassemble(int pos, byte[] values,
-			Class<T> moduleEnumType, Class<U> messageEnumType) {
+			Class<T> moduleTypeClass, Class<U> messageTypeClass) {
 		Message result = null;
 		//
 		AssertHelper.notNull(values, "The Values must not be null");
@@ -897,7 +897,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 			// info: messageType
 			byte[] messageTypeBytes = ByteHelper.getByteArray(data, pos, 4);
 			int messageTypeValue = ByteHelper.toInt(messageTypeBytes);
-			MessageType messageType = (MessageType) EnumHelper.valueOf(messageEnumType, messageTypeValue);
+			MessageType messageType = (MessageType) EnumHelper.valueOf(messageTypeClass, messageTypeValue);
 			// System.out.println("messageType: " + messageType);
 			dataOut.write(messageTypeBytes);
 			pos += 4;
@@ -931,14 +931,14 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 			if (serverType) {
 				// info: srcModule 來源模組
 				byte[] srcModuleTypeBytes = ByteHelper.getByteArray(data, pos, 4);
-				srcModuleType = (ModuleType) EnumHelper.valueOf(moduleEnumType, ByteHelper.toInt(srcModuleTypeBytes));
+				srcModuleType = (ModuleType) EnumHelper.valueOf(moduleTypeClass, ByteHelper.toInt(srcModuleTypeBytes));
 				// System.out.println("srcModuleType: " + srcModuleType);
 				dataOut.write(srcModuleTypeBytes);
 				pos += 4;
 
 				// info: destModule 目的模組
 				byte[] destModuleTypeBytes = ByteHelper.getByteArray(data, pos, 4);
-				destModuleType = (ModuleType) EnumHelper.valueOf(moduleEnumType, ByteHelper.toInt(destModuleTypeBytes));
+				destModuleType = (ModuleType) EnumHelper.valueOf(moduleTypeClass, ByteHelper.toInt(destModuleTypeBytes));
 				// System.out.println("destModuleType: " + destModuleType);
 				dataOut.write(destModuleTypeBytes);
 				pos += 4;
@@ -1031,7 +1031,7 @@ public class ProtocolServiceImpl extends BaseServiceSupporter implements Protoco
 
 				// System.out.println("destModuleTypeValue: "
 				// + destModuleTypeValue);
-				destModuleType = (ModuleType) EnumHelper.valueOf(moduleEnumType, destModuleTypeValue);
+				destModuleType = (ModuleType) EnumHelper.valueOf(moduleTypeClass, destModuleTypeValue);
 				// System.out.println("destModuleType: " + destModuleType);
 				result.setDestModule(destModuleType);
 

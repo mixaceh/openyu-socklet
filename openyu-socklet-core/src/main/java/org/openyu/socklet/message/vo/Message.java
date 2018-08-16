@@ -34,9 +34,9 @@ public interface Message extends BaseModel {
 	 * 
 	 * @return
 	 */
-	String getId();
+	StringBuffer getId();
 
-	void setId(String id);
+	void setId(StringBuffer id);
 
 	/**
 	 * 時間戳
